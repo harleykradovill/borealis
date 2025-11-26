@@ -1,4 +1,32 @@
+# Project
 .vscode
 .github
 bot-env
+# Environment
 *.env
+env/
+venv/
+
+# Python specific files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+lib/
+include/
+bin/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# Operating System specific files
+.DS_Store
+Thumbs.db

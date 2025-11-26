@@ -5,6 +5,7 @@ from aiohttp import web
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+from web.app import create_web_app
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("finbot")
@@ -13,13 +14,6 @@ load_dotenv("token.env")
 WEB_HOST = "127.0.0.1"
 WEB_PORT = 2929
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-
-def create_web_app():
-    app = web.Application()
-    async def index(request):
-        return web.Response(text="<h1>FinBot configuration UI placeholder</h1>", content_type="text/html")
-    app.router.add_get("/", index)
-    return app
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
