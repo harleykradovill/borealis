@@ -2,10 +2,17 @@
 .vscode
 .github
 bot-env
+
 # Environment
 *.env
 env/
 venv/
+
+# SQLite DB and sidecar files
+web/finbot.db
+web/finbot.db-journal
+web/finbot.db-wal
+web/finbot.db-shm
 
 # Python specific files
 __pycache__/

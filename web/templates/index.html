@@ -1,6 +1,118 @@
 <!doctype html>
 <html>
-  <head><meta charset="utf-8"><title>FinBot Setup</title></head>
+  <head>
+    <meta charset="utf-8">
+    <title>FinBot Setup</title>
+    <style>
+      body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
+      .row { margin: 8px 0; }
+      .status { padding: 8px; border: 1px solid #ccc; display: inline-block; border-radius: 4px; }
+      .ok { color: #0a7; }
+      .bad { color: #c33; }
+    </style>
+  </head>
   <body>
+    <h1>FinBot Configuration</h1>
+
+    <div class="row">
+      <span id="bot-status" class="status">Bot status: <em>loading…</em></span>
+    </div>
+
+    <form id="config-form" method="post" action="/api/config">
+      <div class="row">
+        <label>Discord Token:<br>
+          <input name="DISCORD_TOKEN" id="DISCORD_TOKEN" />
+        </label>
+      </div>
+      <div class="row">
+        <label>Jellyfin URL:<br>
+          <input name="JELLYFIN_URL" id="JELLYFIN_URL" />
+        </label>
+      </div>
+      <div class="row">
+        <label>Jellyfin API Key:<br>
+          <input name="JELLYFIN_API_KEY" id="JELLYFIN_API_KEY" />
+        </label>
+      </div>
+      <button type="submit">Save</button>
+      <span id="save-result"></span>
+    </form>
+
+    <hr>
+
+    <h2>Test Notification</h2>
+    <form id="notify-form">
+      <div class="row">
+        <label>Channel ID:<br>
+          <input id="channel_id" placeholder="123456789012345678" />
+        </label>
+      </div>
+      <div class="row">
+        <label>Message:<br>
+          <input id="message" value="Hello from FinBot!" />
+        </label>
+      </div>
+      <button type="submit">Send Test</button>
+      <span id="notify-result"></span>
+    </form>
+
+    <p><a href="/api/config" target="_blank">View raw config (JSON)</a></p>
+
+    <script>
+      async function refreshStatus() {
+        try {
+          const res = await fetch('/api/status');
+          const j = await res.json();
+          const el = document.getElementById('bot-status');
+          if (j.bot_connected) {
+            el.innerHTML = 'Bot status: <strong class="ok">connected</strong>';
+          } else {
+            el.innerHTML = 'Bot status: <strong class="bad">not connected</strong>';
+          }
+        } catch (e) {
+          document.getElementById('bot-status').textContent = 'Bot status: error';
+        }
+      }
+
+      async function loadConfig() {
+        try {
+          const res = await fetch('/api/config');
+          const j = await res.json();
+          ['DISCORD_TOKEN','JELLYFIN_URL','JELLYFIN_API_KEY'].forEach(k => {
+            const el = document.getElementById(k);
+            if (el) el.value = j[k] || '';
+          });
+        } catch (e) {}
+      }
+
+      document.getElementById('config-form').addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const fd = new FormData(ev.target);
+        const res = await fetch('/api/config', { method: 'POST', body: fd });
+        const j = await res.json();
+        document.getElementById('save-result').textContent = j.updated?.length ? 'Saved.' : 'No changes.';
+        // After saving, refresh status
+        refreshStatus();
+      });
+
+      document.getElementById('notify-form').addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const payload = {
+          channel_id: document.getElementById('channel_id').value,
+          message: document.getElementById('message').value
+        };
+        const res = await fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const j = await res.json();
+        document.getElementById('notify-result').textContent = j.ok ? 'Sent (stub).' : ('Error: ' + (j.error || 'unknown'));
+      });
+
+      loadConfig();
+      refreshStatus();
+      setInterval(refreshStatus, 5000);
+    </script>
   </body>
 </html>

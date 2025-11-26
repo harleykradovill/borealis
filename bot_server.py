@@ -1,59 +1,120 @@
-import os
 import asyncio
 import logging
+import contextlib
 from aiohttp import web
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
-from web.app import create_web_app
+from web.app import create_web_app, get_runtime_config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("finbot")
-load_dotenv("token.env")
 
 WEB_HOST = "127.0.0.1"
 WEB_PORT = 2929
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
-intents = discord.Intents.default()
-bot = commands.Bot(command_prefix="!", intents=intents)
+current_bot: commands.Bot | None = None
+bot_task: asyncio.Task | None = None
+current_token: str = ""
 
-@bot.event
-async def on_ready():
-    logger.info("Discord bot logged in as %s", bot.user)
 
-@bot.command(name="status")
-async def status_cmd(ctx):
-    await ctx.send("FinBot is running.")
+def build_bot(app: web.Application) -> commands.Bot:
+    intents = discord.Intents.default()
+    intents.message_content = True
+    bot = commands.Bot(command_prefix="!", intents=intents)
 
-async def start_web_runner(app: web.Application):
+    @bot.event
+    async def on_ready():
+        logger.info("Discord bot logged in as %s", bot.user)
+        app["bot_connected"] = True
+
+    @bot.event
+    async def on_disconnect():
+        app["bot_connected"] = False
+
+    @bot.command(name="status")
+    async def status_cmd(ctx: commands.Context):
+        await ctx.send("FinBot is running.")
+
+    async def send_message_async(channel_id: str, message: str):
+        try:
+            ch_id = int(channel_id)
+        except ValueError:
+            raise ValueError("channel_id must be an integer")
+        chan = bot.get_channel(ch_id)
+        if chan is None:
+            chan = await bot.fetch_channel(ch_id)
+        await chan.send(message)
+
+    app["send_message_func"] = send_message_async
+    return bot
+
+
+async def run_bot(b: commands.Bot, token: str, app: web.Application):
+    try:
+        await b.start(token)
+    except Exception as e:
+        logger.error("Discord bot stopped with error: %s", e)
+        app["bot_connected"] = False
+    finally:
+        app["bot_connected"] = False
+
+
+async def bot_manager(app: web.Application):
+    global current_bot, bot_task, current_token
+    while True:
+        desired = (get_runtime_config().get("DISCORD_TOKEN") or "").strip()
+        want_running = bool(desired)
+        token_changed = desired != current_token
+
+        if want_running and (token_changed or current_bot is None):
+            if current_bot:
+                await current_bot.close()
+            if bot_task:
+                with contextlib.suppress(Exception):
+                    await bot_task
+            current_bot = build_bot(app)
+            bot_task = asyncio.create_task(run_bot(current_bot, desired, app))
+            current_token = desired
+            logger.info("Starting Discord bot with provided token.")
+        elif not want_running and current_bot:
+            await current_bot.close()
+            if bot_task:
+                with contextlib.suppress(Exception):
+                    await bot_task
+            current_bot = None
+            bot_task = None
+            current_token = ""
+            logger.info("Discord bot stopped because no token is configured.")
+        await asyncio.sleep(2)
+
+
+async def start_web_runner(app: web.Application) -> web.AppRunner:
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, WEB_HOST, WEB_PORT)
     await site.start()
-    logger.info("Web UI running at http://%s:%d", WEB_HOST, WEB_PORT)
+    logger.info("Web UI available at http://%s:%s", WEB_HOST, WEB_PORT)
     return runner
+
 
 async def main():
     app = create_web_app()
     runner = await start_web_runner(app)
 
-    bot_task = None
+    manager_task = asyncio.create_task(bot_manager(app))
     try:
-        if DISCORD_TOKEN:
-            bot_task = asyncio.create_task(bot.start(DISCORD_TOKEN))
-            await bot_task
-        else:
-            # No token provided
-            logger.warning("DISCORD_TOKEN not set, running web UI only.")
-            while True:
-                await asyncio.sleep(3600)
+        while True:
+            await asyncio.sleep(3600)
     except asyncio.CancelledError:
         logger.info("Shutdown requested.")
     finally:
-        if bot_task and not bot_task.done():
-            await bot.close()
+        manager_task.cancel()
+        with contextlib.suppress(Exception):
+            await manager_task
+        if current_bot:
+            await current_bot.close()
         await runner.cleanup()
+
 
 if __name__ == "__main__":
     try:
