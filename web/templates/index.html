@@ -34,6 +34,10 @@
           <input name="JELLYFIN_API_KEY" id="JELLYFIN_API_KEY" />
         </label>
       </div>
+      <div class="row">
+          <button type="button" id="jellyfin-test-btn">Test</button>
+          <span id="jellyfin-test-result" aria-live="polite"></span>
+      </div>
       <button type="submit">Save</button>
       <span id="save-result"></span>
     </form>
@@ -110,9 +114,40 @@
         document.getElementById('notify-result').textContent = j.ok ? 'Sent (stub).' : ('Error: ' + (j.error || 'unknown'));
       });
 
+      document.getElementById('jellyfin-test-btn').addEventListener('click', async () => {
+          const btn = document.getElementById('jellyfin-test-btn');
+          const out = document.getElementById('jellyfin-test-result');
+          const url = document.getElementById('JELLYFIN_URL').value.trim();
+          const apiKey = document.getElementById('JELLYFIN_API_KEY').value.trim();
+
+          out.textContent = '';
+          btn.disabled = true;
+
+          try {
+            const res = await fetch('/api/jellyfin/test', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url, api_key: apiKey })
+            });
+            const j = await res.json();
+            if (j.ok) {
+              const name = j.user?.name || 'unknown';
+              out.textContent = `OK: authenticated as ${name}`;
+              out.className = 'ok';
+            } else {
+              out.textContent = `Error: ${j.error || 'unknown'}`;
+              out.className = 'bad';
+            }
+          } catch (e) {
+            out.textContent = 'Error: network or server issue';
+            out.className = 'bad';
+          } finally {
+            btn.disabled = false;
+          }
+        });
+
       loadConfig();
       refreshStatus();
-      setInterval(refreshStatus, 5000);
     </script>
   </body>
 </html>

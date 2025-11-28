@@ -44,7 +44,7 @@ def _ensure_key_file() -> Optional[bytes]:
         logger.warning("Failed to read key file: %s", e)
         return None
 
-def _get_fernet() -> Optional["Fernet"]:
+def _get_fernet() -> Fernet | None:
     key = _ensure_key_file()
     if not key or not _CRYPTO_AVAILABLE:
         return None
