@@ -34,6 +34,7 @@ nosetests.xml
 coverage.xml
 htmlcov/
 .pytest_cache/
+secret.key
 
 # Operating System specific files
 .DS_Store

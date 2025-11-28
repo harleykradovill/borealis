@@ -113,6 +113,7 @@ def create_web_app():
 
     init_db()
     load_from_db()
+
     return app
 
 async def index_page(request: web.Request):
