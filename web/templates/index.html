@@ -1,61 +1,57 @@
 <!doctype html>
 <html lang="en-US">
-  <head>
-      <meta charset="utf-8">
-      <title>FinBot Setup</title>
-      <link rel="stylesheet" href="/static/style.css">
-  </head>
-  <body>
-    <h1>FinBot Configuration</h1>
-
+<head>
+    <meta charset="utf-8">
+    <title>FinBot Setup</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<h1>FinBot Configuration</h1>
+<div class="row">
+    <span id="bot-status" class="status">Bot status: <em>loading…</em></span>
+</div>
+<form id="config-form" method="post" action="/api/config">
     <div class="row">
-      <span id="bot-status" class="status">Bot status: <em>loading…</em></span>
-    </div>
-
-    <form id="config-form" method="post" action="/api/config">
-      <div class="row">
         <label>Discord Token:<br>
-          <input name="DISCORD_TOKEN" id="DISCORD_TOKEN" />
+            <input name="DISCORD_TOKEN" id="DISCORD_TOKEN" />
         </label>
-      </div>
-      <div class="row">
+        <button type="button" id="DISCORD_TOKEN_clear" aria-label="Clear Discord token">Clear</button>
+    </div>
+    <div class="row">
         <label>Jellyfin URL:<br>
-          <input name="JELLYFIN_URL" id="JELLYFIN_URL" />
+            <input name="JELLYFIN_URL" id="JELLYFIN_URL" />
         </label>
-      </div>
-      <div class="row">
+    </div>
+    <div class="row">
         <label>Jellyfin API Key:<br>
-          <input name="JELLYFIN_API_KEY" id="JELLYFIN_API_KEY" />
+            <input name="JELLYFIN_API_KEY" id="JELLYFIN_API_KEY" />
         </label>
-      </div>
-      <div class="row">
-          <button type="button" id="jellyfin-test-btn">Test</button>
-          <span id="jellyfin-test-result" aria-live="polite"></span>
-      </div>
-      <button type="submit">Save</button>
-      <span id="save-result"></span>
-    </form>
-
-    <hr>
-
-    <h2>Test Notification</h2>
-    <form id="notify-form">
-      <div class="row">
+        <button type="button" id="JELLYFIN_API_KEY_clear" aria-label="Clear Jellyfin API key">Clear</button>
+    </div>
+    <div class="row">
+        <button type="button" id="jellyfin-test-btn">Test</button>
+        <span id="jellyfin-test-result" aria-live="polite"></span>
+    </div>
+    <button type="submit">Save</button>
+    <span id="save-result"></span>
+</form>
+<hr>
+<h2>Test Notification</h2>
+<form id="notify-form">
+    <div class="row">
         <label>Channel ID:<br>
-          <input id="channel_id" placeholder="123456789012345678" />
+            <input id="channel_id" placeholder="123456789012345678" />
         </label>
-      </div>
-      <div class="row">
+    </div>
+    <div class="row">
         <label>Message:<br>
-          <input id="message" value="Hello from FinBot!" />
+            <input id="message" value="Hello from FinBot!" />
         </label>
-      </div>
-      <button type="submit">Send Test</button>
-      <span id="notify-result"></span>
-    </form>
-
-    <p><a href="/api/config" target="_blank">View raw config (JSON)</a></p>
-
-    <script src="/static/app.js"></script>
-  </body>
+    </div>
+    <button type="submit">Send Test</button>
+    <span id="notify-result"></span>
+</form>
+<p><a href="/api/config" target="_blank">View raw config (JSON)</a></p>
+<script src="/static/app.js"></script>
+</body>
 </html>

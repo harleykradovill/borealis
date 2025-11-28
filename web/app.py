@@ -6,6 +6,7 @@ import logging
 import os
 from .db import init_db, get_all_config, set_config_items
 import secrets
+import re
 
 logger = logging.getLogger("finbot.web")
 
@@ -123,6 +124,23 @@ def create_web_app():
 
     return app
 
+def _looks_redacted(value: str) -> bool:
+    if not value:
+        return False
+    v = value.strip()
+    return bool(
+        re.fullmatch(r"\*+", v) or
+        re.fullmatch(r".{1,10}…\*+", v)
+    )
+
+def _is_unmodified_redacted(key: str, submitted: str) -> bool:
+    if not submitted or not _looks_redacted(submitted):
+        return False
+    current = _runtime_config.get(key, "")
+    if not current:
+        return False
+    return submitted == _redact_secret(current)
+
 async def index_page(request: web.Request):
     tpl_path = os.path.join(
         os.path.dirname(__file__), "templates", "index.html"
@@ -221,9 +239,7 @@ async def send_test_notification(request: web.Request):
 async def update_config(request: web.Request):
     if not _check_auth(request):
         return web.json_response({"error": "unauthorized"}, status=401)
-    if request.content_type and request.content_type.startswith(
-            "application/json"
-    ):
+    if request.content_type and request.content_type.startswith("application/json"):
         payload = await request.json()
     else:
         form = await request.post()
@@ -232,10 +248,23 @@ async def update_config(request: web.Request):
     changed = []
     items_to_save = {}
     for key in ("DISCORD_TOKEN", "JELLYFIN_URL", "JELLYFIN_API_KEY"):
-        if key in payload:
-            _runtime_config[key] = payload[key]
-            items_to_save[key] = payload[key]
-            changed.append(key)
+        if key not in payload:
+            continue
+        val = str(payload[key])
+
+        if key in ("DISCORD_TOKEN", "JELLYFIN_API_KEY"):
+            if val == "":
+                if _runtime_config.get(key, "") != "":
+                    _runtime_config[key] = ""
+                    items_to_save[key] = ""
+                    changed.append(key)
+                continue
+            if _is_unmodified_redacted(key, val):
+                continue
+
+        _runtime_config[key] = val
+        items_to_save[key] = val
+        changed.append(key)
 
     if items_to_save:
         set_config_items(items_to_save)
