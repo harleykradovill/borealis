@@ -1,7 +1,7 @@
 from typing import Optional, Dict
 
 try:
-    from flask import Flask, Response
+    from flask import Flask, Response, render_template
 except Exception as exc:  # explicit runtime import error handling
     raise RuntimeError(
         "Flask is required to run the local config site. "
@@ -24,11 +24,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     @app.get("/")
     def index() -> Response:
-        return (
-            "<h1>Borealis</h1>"
-            "<p>Configuration UI will be available at "
-            "<strong>http://localhost:2929</strong>.</p>"
-        ), 200
+        return render_template("index.html"), 200
 
     return app
 
