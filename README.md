@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/harleykradovill/finbot/refs/heads/main/assets/images/finbot.png" alt="Fin for Roku" width="100px"/>
+  <img src="https://raw.githubusercontent.com/harleykradovill/borealis/refs/heads/main/assets/images/borealis.png" 
 </p>
 
 
 <h1 align="center">FinBot</h1>
-<p align="center"><em>A Discord bot that integrates into your Jellyfin server.</em></p>
+<p align="center"><em>Monitor your Jellyfin server</em></p>
 
 ---
 
@@ -12,8 +12,8 @@
 
 To be added.
 
-> FinBot is in a development stage and is currently not 100% functional.
+> Borealis is in a development stage and is currently not 100% functional.
 
 ## License
 
-This project is licensed under the terms of the [GNU GPL v2.0](LICENSE).
+This project is licensed under the terms of the [GNU GPL v3.0](LICENSE).
