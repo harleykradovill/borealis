@@ -2,11 +2,11 @@
 .vscode
 .idea
 .github
-bot-env
 
 # Environment
 *.env
 env/
+.venv
 venv/
 
 # SQLite DB and sidecar files
