@@ -25,6 +25,18 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     @app.get("/")
     def index() -> Response:
         return render_template("index.html"), 200
+    
+    @app.get("/users")
+    def users() -> Response:
+        return render_template("users.html"), 200
+    
+    @app.get("/libraries")
+    def libraries() -> Response:
+        return render_template("libraries.html"), 200
+    
+    @app.get("/settings")
+    def settings() -> Response:
+        return render_template("settings.html"), 200
 
     return app
 

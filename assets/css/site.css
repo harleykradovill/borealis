@@ -76,8 +76,7 @@ html, body {
 
 .nav-links a.active {
   background: #f0f0f0;   
-  color: #000000;        
-  font-weight: 600;
+  color: #000000;
 }
 
 .nav-links a.active:hover {
