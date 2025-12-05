@@ -29,7 +29,56 @@
 
   <main id="content" class="content" tabindex="-1">
     {% block content %}{% endblock %}
+
+    <section class="settings-shell" aria-label="Settings">
+      <div class="settings-container" role="tablist" aria-orientation="vertical">
+        <nav class="settings-nav" aria-label="Sections">
+          <a href="#general" class="settings-tab active" role="tab" aria-selected="true" tabindex="0">
+            General
+          </a>
+          <a href="#jellyfin" class="settings-tab" role="tab" aria-selected="false" tabindex="-1">
+            Jellyfin
+          </a>
+          <a href="#connections" class="settings-tab" role="tab" aria-selected="false" tabindex="-1">
+            Connections
+          </a>
+          <a href="#about" class="settings-tab" role="tab" aria-selected="false" tabindex="-1">
+            About
+          </a>
+        </nav>
+
+        <div class="settings-content" role="tabpanel" id="general" aria-labelledby="general-tab">
+          <div class="settings-placeholder">
+            <h2 class="placeholder-title">General</h2>
+            <p class="placeholder-subtitle">Settings will appear here.</p>
+          </div>
+        </div>
+
+        <div class="settings-content" role="tabpanel" id="jellyfin" aria-labelledby="jellyfin-tab" hidden>
+          <div class="settings-placeholder">
+            <h2 class="placeholder-title">Jellyfin</h2>
+            <p class="placeholder-subtitle">Settings will appear here.</p>
+          </div>
+        </div>
+
+        <div class="settings-content" role="tabpanel" id="connections" aria-labelledby="connections-tab" hidden>
+          <div class="settings-placeholder">
+            <h2 class="placeholder-title">Connections</h2>
+            <p class="placeholder-subtitle">Settings will appear here.</p>
+          </div>
+        </div>
+
+        <div class="settings-content" role="tabpanel" id="about" aria-labelledby="about-tab" hidden>
+          <div class="settings-placeholder">
+            <h2 class="placeholder-title">About</h2>
+            <p class="placeholder-subtitle">Settings will appear here.</p>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <script src="../assets/js/settings.js"></script>
 
 </body>
 </html>

@@ -4,7 +4,7 @@
   --text: #f0f0f0;       
   --text-muted: #b3b3b3; 
   --accent: #ffffff;
-  --border: #222;
+  --border: #333;
   --focus: #8ab4f8;      
 }
 
@@ -17,11 +17,6 @@ html, body {
   font-family: Helvetica, "Helvetica Neue", Arial, system-ui, -apple-system,
     Segoe UI, Roboto, "Apple Color Emoji", "Segoe UI Emoji";
   line-height: 1.5;
-}
-
-:focus {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
 }
 
 .navbar {
@@ -107,12 +102,84 @@ html, body {
   font-size: 1rem;
 }
 
-/* Responsive tweaks */
+.settings-shell {
+  margin-top: 1rem;
+}
+
+.settings-container {
+  max-width: 960px;              
+  margin: 0 auto;                
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-tab {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.settings-tab:hover {
+  background: #1a1a1a;
+  color: var(--accent);
+}
+
+.settings-tab.active {
+  background: #f0f0f0;
+  color: #000000;
+  border-color: #e6e6e6;
+}
+
+.settings-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  min-height: 320px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.settings-placeholder .placeholder-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+  color: var(--accent);
+}
+
+.settings-placeholder .placeholder-subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
 @media (max-width: 640px) {
   .nav-links {
     gap: 0.5rem;
   }
   .hero {
     padding: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-tab,
+  .settings-content {
+    transition: none;
   }
 }
