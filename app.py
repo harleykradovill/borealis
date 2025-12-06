@@ -6,7 +6,7 @@ Flask instance used to server the Borealis site.
 from typing import Optional, Dict
 
 try:
-    from flask import Flask, Response, render_template
+    from flask import Flask, Response, render_template, jsonify, request
 except Exception as exc:
     raise RuntimeError(
         "Flask is required to run the local config site. "
@@ -28,11 +28,42 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         template_folder="templates",
     )
 
+    app.config.setdefault("DEBUG", False)
+    app.config.setdefault("PORT", 2929)
+    app.config.setdefault("DATABASE_URL", "sqlite:///borealis.db")
+    app.config.setdefault("ENCRYPTION_KEY_PATH", "secret.key")
+
     if test_config:
         app.config.update(test_config)
-    else:
-        app.config.setdefault("DEBUG", False)
-        app.config.setdefault("PORT", 2929)
+        if app.config.get("DEBUG", False):
+            if "DATABASE_URL" not in test_config:
+                app.config["DATABASE_URL"] = "sqlite:///:memory:"
+            if "ENCRYPTION_KEY_PATH" not in test_config:
+                app.config["ENCRYPTION_KEY_PATH"] = ":memory:"
+        
+
+    from settings_store import SettingsService
+    svc = SettingsService(
+        database_url=app.config["DATABASE_URL"],
+        encryption_key_path=app.config["ENCRYPTION_KEY_PATH"],
+    )
+
+    @app.get("/api/settings")
+    def get_settings() -> Response:
+        return jsonify(svc.get()), 200
+    
+    @app.put("/api/settings")
+    def update_settings() -> Response:
+        payload = request.get_json(silent=True) or {}
+        updated = svc.update(payload)
+        return jsonify(updated), 200
+    
+    @app.teardown_appcontext
+    def _dispose_db(_exc: Optional[BaseException]) -> None:
+        try:
+            svc.engine.dispose()
+        except Exception:
+            pass
 
     @app.get("/")
     def index() -> Response:

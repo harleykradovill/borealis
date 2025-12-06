@@ -3,6 +3,7 @@
 .idea
 .github/*
 !.github/workflows/
+borealis.db
 
 # Environment
 *.env
