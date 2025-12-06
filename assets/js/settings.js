@@ -2,6 +2,117 @@
       const tabs = Array.from(document.querySelectorAll('.settings-tab'));
       const panels = Array.from(document.querySelectorAll('.settings-content'));
 
+      const toastContainer = document.getElementById('toast-container');
+      function showToast(message, kind = "success") {
+        if (!toastContainer) return;
+        const el = document.createElement('div');
+        el.className = `toast ${kind}`;
+        el.setAttribute('role', 'status');
+        el.textContent = message;
+        toastContainer.appendChild(el);
+    
+        setTimeout(() => { // Auto-remove after 3s
+          el.remove();
+        }, 3000);
+      }
+
+      const fields = {
+        hour_format: document.getElementById('hour-format'),
+        language: document.getElementById('language'),
+        jf_host: document.getElementById('jf-host'),
+        jf_port: document.getElementById('jf-port'),
+        jf_api_key: document.getElementById('jf-api-key'),
+      };
+
+      async function loadSettings() {
+        try {
+          const resp = await fetch('/api/settings');
+          if (!resp.ok) throw new Error(`GET failed: ${resp.status}`);
+          const data = await resp.json();
+          if (fields.hour_format) fields.hour_format.value = data.hour_format || '24';
+          if (fields.language) fields.language.value = data.language || 'en';
+          if (fields.jf_host) fields.jf_host.value = data.jf_host || '';
+          if (fields.jf_port) fields.jf_port.value = data.jf_port || '';
+          if (fields.jf_api_key) fields.jf_api_key.value = data.jf_api_key || '';
+        } catch (err) {
+          showToast('Failed to load settings', 'error');
+          console.error(err);
+        }
+      }
+
+      let saveTimer = null;
+      function scheduleSave(payload) {
+        if (saveTimer) clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => saveSettings(payload), 200);
+      }
+
+      async function saveSettings(payload) {
+        try {
+          const resp = await fetch('/api/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (!resp.ok) throw new Error(`PUT failed: ${resp.status}`);
+          const updated = await resp.json();
+
+          if (fields.hour_format && 'hour_format' in updated) {
+            fields.hour_format.value = updated.hour_format;
+          }
+          if (fields.language && 'language' in updated) {
+            fields.language.value = updated.language;
+          }
+          if (fields.jf_host && 'jf_host' in updated) {
+            fields.jf_host.value = updated.jf_host || '';
+          }
+          if (fields.jf_port && 'jf_port' in updated) {
+            fields.jf_port.value = updated.jf_port || '';
+          }
+          if (fields.jf_api_key && 'jf_api_key' in updated) {
+            fields.jf_api_key.value = updated.jf_api_key || '';
+          }
+          showToast('Settings saved', 'success');
+        } catch (err) {
+          showToast('Failed to save settings', 'error');
+          console.error(err);
+        }
+      }
+
+      function bindAutosave() {
+        if (fields.hour_format) {
+          fields.hour_format.addEventListener('blur', () => {
+            scheduleSave({ hour_format: fields.hour_format.value });
+          });
+          fields.hour_format.addEventListener('change', () => {
+            scheduleSave({ hour_format: fields.hour_format.value });
+          });
+        }
+        if (fields.language) {
+          fields.language.addEventListener('blur', () => {
+            scheduleSave({ language: fields.language.value });
+          });
+          fields.language.addEventListener('change', () => {
+            scheduleSave({ language: fields.language.value });
+          });
+        }
+        if (fields.jf_host) {
+          fields.jf_host.addEventListener('blur', () => {
+            scheduleSave({ jf_host: fields.jf_host.value.trim() });
+          });
+        }
+        if (fields.jf_port) {
+          fields.jf_port.addEventListener('blur', () => {
+            scheduleSave({ jf_port: fields.jf_port.value.trim() });
+          });
+        }
+        if (fields.jf_api_key) {
+          fields.jf_api_key.addEventListener('blur', () => {
+            scheduleSave({ jf_api_key: fields.jf_api_key.value.trim() });
+          });
+        }
+      }
+
+
       /**
        * Activate the tab + panel associated with the provided ID.
        * @param {*} id Panel ID to activate
@@ -39,4 +150,6 @@
 
       window.addEventListener('hashchange', fromHash); // Sync with hash changes
       fromHash(); // Initialize
+
+      loadSettings().then(bindAutosave);
     })();

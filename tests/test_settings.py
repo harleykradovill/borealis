@@ -88,3 +88,24 @@ def test_settings_js_link_and_asset_served(client) -> None:
     js_text = js_resp.get_data(as_text=True)
     assert "document.querySelectorAll('.settings-tab')" in js_text
     assert "window.addEventListener('hashchange', fromHash)" in js_text
+
+def test_settings_autosave_ui_elements(client) -> None:
+    """
+    Validate presence of autosave-related UI parts and field IDs used by settings.js.
+    """
+    resp = client.get("/settings")
+    assert resp.status_code == 200
+    body = resp.get_data(as_text=True)
+
+    assert 'id="toast-container"' in body
+    assert 'class="toast-container"' in body
+    assert 'aria-live="polite"' in body
+    assert 'aria-atomic="true"' in body
+
+    assert 'id="hour-format"' in body
+    assert 'id="language"' in body
+    assert 'id="jf-host"' in body
+    assert 'id="jf-port"' in body
+    assert 'id="jf-api-key"' in body
+
+    assert "Save</button>" not in body

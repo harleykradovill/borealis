@@ -291,3 +291,31 @@ html, body {
     transition: none;
   }
 }
+
+/* Toasts */
+.toast-container {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 2000;
+}
+
+.toast {
+  color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.6rem 0.8rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+  min-width: 240px;
+}
+
+.toast.success {
+  background: var(--text);
+}
+
+.toast.error {
+  background: #c62828;
+}
