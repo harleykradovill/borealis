@@ -65,6 +65,82 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         except Exception:
             pass
 
+    @app.get("/api/test-connection")
+    def test_connection() -> Response:
+        """
+        Test Jellyfin connectivity using persisted settings from the database.
+        """
+        from urllib.request import Request, urlopen
+        from urllib.error import URLError, HTTPError
+
+        settings = svc.get()
+        host = (settings.get("jf_host") or "").strip()
+        port = (settings.get("jf_port") or "").strip()
+        token = (settings.get("jf_api_key") or "").strip()
+
+        if not host or not port or not token:
+            return jsonify({
+                "ok": False,
+                "status": 400,
+                "message": "Missing host, port, or API key in stored settings."
+            }), 200
+
+        if not port.isdigit():
+            return jsonify({
+                "ok": False,
+                "status": 400,
+                "message": "Stored port must be numeric."
+            }), 200
+
+        scheme = "http"
+        if host.startswith(("http://", "https://")):
+            if host.startswith("https://"):
+                scheme = "https"
+                host = host.removeprefix("https://")
+            elif host.startswith("http://"):
+                scheme = "http"
+                host = host.removeprefix("http://")
+
+        url = f"{scheme}://{host}:{port}/System/Info"
+
+        req = Request(url, method="GET")
+        req.add_header("X-Emby-Token", token)
+        req.add_header("Accept", "application/json")
+
+        try:
+            with urlopen(req, timeout=3.0) as resp:
+                status = getattr(resp, "status", 200)
+                if 200 <= status < 300:
+                    return jsonify({
+                        "ok": True,
+                        "status": status,
+                        "message": "Connection successful."
+                    }), 200
+                return jsonify({
+                    "ok": False,
+                    "status": status,
+                    "message": f"Jellyfin returned status {status}."
+                }), 200
+        except HTTPError as he:
+            return jsonify({
+                "ok": False,
+                "status": he.code,
+                "message": f"HTTP error from Jellyfin ({he.code}): {he.reason or 'Unknown'}"
+            }), 200
+        except URLError as ue:
+            reason = getattr(ue, "reason", "Unknown")
+            return jsonify({
+                "ok": False,
+                "status": 0,
+                "message": f"Network error: {reason}"
+            }), 200
+        except Exception as exc:
+            return jsonify({
+                "ok": False,
+                "status": 0,
+                "message": f"Unexpected error: {str(exc)}"
+            }), 200
+
     @app.get("/")
     def index() -> Response:
         return render_template("index.html"), 200
