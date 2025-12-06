@@ -69,7 +69,7 @@ def test_static_css_is_served(client) -> None:
     :param client: The generated client
     :type client: Any
     """
-    resp = client.get("/assets/css/site.css")
+    resp = client.get("/static/css/site.css")
     assert resp.status_code == 200
     text = resp.get_data(as_text=True)
     assert ":root" in text

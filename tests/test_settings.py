@@ -80,7 +80,7 @@ def test_settings_js_link_and_asset_served(client) -> None:
     # Linked script tag present in template
     resp = client.get("/settings")
     body = resp.get_data(as_text=True)
-    assert '<script src="../assets/js/settings.js"></script>' in body
+    assert '<script src="../static/js/settings.js"></script>' in body
 
     # Static asset served
     js_resp = client.get("/assets/js/settings.js")

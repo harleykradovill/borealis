@@ -24,7 +24,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     """
     app = Flask(
         __name__,
-        static_folder="assets",
+        static_folder="static",
         template_folder="templates",
     )
 
@@ -47,6 +47,13 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         database_url=app.config["DATABASE_URL"],
         encryption_key_path=app.config["ENCRYPTION_KEY_PATH"],
     )
+
+    from flask import send_from_directory
+    @app.get("/assets/<path:filename>")
+    def assets(filename: str) -> Response:
+        if filename.startswith("js/"):
+            return send_from_directory("static/js", filename.removeprefix("js/"))
+        return send_from_directory("assets", filename)
 
     @app.get("/api/settings")
     def get_settings() -> Response:
