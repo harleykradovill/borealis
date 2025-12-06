@@ -153,3 +153,50 @@
 
       loadSettings().then(bindAutosave);
     })();
+
+(function () {
+  const testBtn = document.querySelector('#jellyfin .form-actions .btn');
+  if (!testBtn) return;
+
+  testBtn.addEventListener('click', async () => {
+    // Disable while testing to prevent duplicate requests
+    const originalText = testBtn.textContent;
+    testBtn.disabled = true;
+    testBtn.textContent = 'Testing...';
+    try {
+      const resp = await fetch('/api/test-connection', { method: 'GET' });
+      const data = await resp.json();
+      const kind = data.ok ? 'success' : 'error';
+      const statusInfo = typeof data.status === 'number' ? ` (status: ${data.status})` : '';
+      const msg = (data.message || (data.ok ? 'Connection successful.' : 'Connection failed.')) + statusInfo;
+
+      const toastContainer = document.getElementById('toast-container');
+      if (toastContainer) {
+        const el = document.createElement('div');
+        el.className = `toast ${kind}`;
+        el.setAttribute('role', 'status');
+        el.textContent = msg;
+        toastContainer.appendChild(el);
+        setTimeout(() => el.remove(), 3000);
+      } else {
+        console[data.ok ? 'log' : 'error'](msg);
+      }
+    } catch (err) {
+      const toastContainer = document.getElementById('toast-container');
+      const msg = 'Failed to test connection';
+      if (toastContainer) {
+        const el = document.createElement('div');
+        el.className = 'toast error';
+        el.setAttribute('role', 'status');
+        el.textContent = msg;
+        toastContainer.appendChild(el);
+        setTimeout(() => el.remove(), 3000);
+      }
+      console.error(err);
+    } finally {
+      // Restore button state
+      testBtn.disabled = false;
+      testBtn.textContent = originalText;
+    }
+  });
+})();
