@@ -323,24 +323,20 @@ html, body {
   right: 0.4rem;
   top: 50%;
   transform: translateY(-50%);
-  appearance: none;
-  border: 1px solid var(--border);
-  background: #1a1a1a;
+  border: none;
+  background: #202020;
   color: var(--text);
-  border-radius: 8px;
   padding: 0.25rem 0.45rem;
   line-height: 1;
   cursor: pointer;
 }
 
 .icon-btn:hover {
-  background: #202020;
+  color: var(--text-muted)
 }
 
 .icon-btn:focus {
-  outline: none;
-  border-color: var(--focus);
-  box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
+  color: var(--text-muted)
 }
 
 @media (max-width: 640px) {

@@ -6,7 +6,7 @@ Flask instance used to server the Borealis site.
 from typing import Optional, Dict
 
 try:
-    from flask import Flask, Response, render_template, jsonify, request
+    from flask import Flask, Response, render_template, jsonify, request, send_from_directory
 except Exception as exc:
     raise RuntimeError(
         "Flask is required to run the local config site. "
@@ -48,7 +48,10 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         encryption_key_path=app.config["ENCRYPTION_KEY_PATH"],
     )
 
-    from flask import send_from_directory
+    from jellyfin import create_client
+    jf = create_client(svc)
+
+
     @app.get("/assets/<path:filename>")
     def assets(filename: str) -> Response:
         if filename.startswith("js/"):
@@ -163,6 +166,21 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     @app.get("/settings")
     def settings() -> Response:
         return render_template("settings.html"), 200
+
+    @app.get("/api/jellyfin/system-info")
+    def api_jf_system_info() -> Response:
+        result = jf.system_info()
+        return jsonify(result), 200
+
+    @app.get("/api/jellyfin/users")
+    def api_jf_users() -> Response:
+        result = jf.users()
+        return jsonify(result), 200
+
+    @app.get("/api/jellyfin/libraries")
+    def api_jf_libraries() -> Response:
+        result = jf.libraries()
+        return jsonify(result), 200
 
     return app
 
