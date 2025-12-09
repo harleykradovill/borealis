@@ -371,7 +371,7 @@ html, body {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.6rem 0.8rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+  box-shadow: 0px 0px 14px 3px #000000;
   min-width: 240px;
 }
 
