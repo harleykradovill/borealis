@@ -1,5 +1,5 @@
 import json
-from jellyfin import create_client
+from services.jellyfin import create_client
 
 
 class FakeSettings:

@@ -315,42 +315,37 @@
   }
 
   if (pullDataBtn) {
-    pullDataBtn.addEventListener('click', async () => {
-      const originalText = pullDataBtn.textContent;
-      pullDataBtn.disabled = true;
-      pullDataBtn.textContent = 'Pulling...';
+  pullDataBtn.textContent = 'Sync Data';
+  pullDataBtn.addEventListener('click', async () => {
+    const originalText = pullDataBtn.textContent;
+    pullDataBtn.disabled = true;
+    pullDataBtn.textContent = 'Syncing...';
 
-      try {
-        const usersResp = await fetch('/api/jellyfin/users', { method: 'GET' });
-        const usersResult = await usersResp.json();
+    try {
+      const resp = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'full' })
+      });
+      const result = await resp.json();
 
-        const libsResp = await fetch('/api/jellyfin/libraries', { method: 'GET' });
-        const libsResult = await libsResp.json();
-
-        const usersOk = usersResult && usersResult.ok;
-        const libsOk = libsResult && libsResult.ok;
-
-        const userCount = Array.isArray(usersResult?.data) ? usersResult.data.length : 0;
-        const libCount = Array.isArray(libsResult?.data) ? libsResult.data.length : 0;
-
-        if (usersOk || libsOk) {
-          const msg = `Pulled: users=${userCount}, libraries=${libCount}`;
-          showToast(msg, 'success');
-        } else {
-          const uStatus = usersResult?.status ?? usersResp.status;
-          const lStatus = libsResult?.status ?? libsResp.status;
-          showToast(`Pull failed (users: ${uStatus}, libs: ${lStatus})`, 'error');
-        }
-      } catch (err) {
-        showToast('Failed to pull data', 'error');
-        console.error(err);
-      } finally {
-        pullDataBtn.textContent = originalText;
-        const COOLDOWN_MS = 5000;
-        setTimeout(() => { pullDataBtn.disabled = false; }, COOLDOWN_MS);
+      if (result.ok) {
+        const data = result.data;
+        const msg = `Synced: ${data.users_synced} users, ${data.libraries_synced} libraries, ${data.items_synced} items (${data.duration_ms}ms)`;
+        showToast(msg, 'success');
+      } else {
+        const errors = result.data?.errors || ['Unknown error'];
+        showToast(`Sync failed: ${errors.join(', ')}`, 'error');
       }
-    });
-  }
+    } catch (err) {
+      showToast('Failed to sync data', 'error');
+      console.error(err);
+    } finally {
+      pullDataBtn.textContent = originalText;
+      setTimeout(() => { pullDataBtn.disabled = false; }, 5000);
+    }
+  });
+}
 })();
 
 (function () {

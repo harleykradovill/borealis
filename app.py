@@ -17,10 +17,6 @@ except Exception as exc:
 def create_app(test_config: Optional[Dict] = None) -> "Flask":
     """
     Create and configure the Borealis Flask application.
-    
-    :param test_config: Optional dictionary to inject configuration for tests
-    :return: A fully initialized Flash application instance for Borealis
-    :rtype: Flask
     """
     app = Flask(
         __name__,
@@ -32,6 +28,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     app.config.setdefault("PORT", 2929)
     app.config.setdefault("DATABASE_URL", "sqlite:///borealis.db")
     app.config.setdefault("ENCRYPTION_KEY_PATH", "secret.key")
+    app.config.setdefault("DATA_DATABASE_URL", "sqlite:///borealis_data.db")
 
     if test_config:
         app.config.update(test_config)
@@ -40,27 +37,67 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 app.config["DATABASE_URL"] = "sqlite:///:memory:"
             if "ENCRYPTION_KEY_PATH" not in test_config:
                 app.config["ENCRYPTION_KEY_PATH"] = ":memory:"
-        
+            if "DATA_DATABASE_URL" not in test_config:
+                app.config["DATA_DATABASE_URL"] = "sqlite:///:memory:"
 
-    from settings_store import SettingsService
+    from services.settings_store import SettingsService
     svc = SettingsService(
         database_url=app.config["DATABASE_URL"],
         encryption_key_path=app.config["ENCRYPTION_KEY_PATH"],
     )
 
-    from analytics_store import AnalyticsService
-    analytics = AnalyticsService(
-        database_url="sqlite:///analytics.db"
+    from services.repository import Repository
+    repo = Repository(
+        database_url=app.config["DATA_DATABASE_URL"]
     )
 
-    from jellyfin import create_client
+    from services.jellyfin import create_client
     jf = create_client(svc)
 
+    from services.sync_service import SyncService
+    sync = SyncService(
+        jellyfin_client=jf,
+        repository=repo
+    )
+
+    from services.sync_scheduler import SyncScheduler
+
+    sync_scheduler = SyncScheduler(
+        sync_service=sync,
+        interval_seconds=300
+    )
+
+    if not app.config.get("DEBUG"):
+        sync_scheduler.start()
+
+    import atexit
+    
+    def cleanup():
+        """
+        Cleanup function called when app shuts down.
+        """
+        try:
+            sync_scheduler.stop()
+        except Exception:
+            pass
+        try:
+            svc.engine.dispose()
+        except Exception:
+            pass
+        try:
+            repo.engine.dispose()
+        except Exception:
+            pass
+    
+    atexit.register(cleanup)
 
     @app.get("/assets/<path:filename>")
     def assets(filename: str) -> Response:
         if filename.startswith("js/"):
-            return send_from_directory("static/js", filename.removeprefix("js/"))
+            return send_from_directory(
+                "static/js",
+                filename.removeprefix("js/")
+            )
         return send_from_directory("assets", filename)
 
     @app.get("/api/settings")
@@ -79,11 +116,15 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             svc.engine.dispose()
         except Exception:
             pass
+        try:
+            repo.engine.dispose()
+        except Exception:
+            pass
 
     @app.get("/api/test-connection")
     def test_connection() -> Response:
         """
-        Test Jellyfin connectivity using persisted settings from the database.
+        Test Jellyfin connectivity using persisted settings.
         """
         from urllib.request import Request, urlopen
         from urllib.error import URLError, HTTPError
@@ -140,7 +181,10 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             return jsonify({
                 "ok": False,
                 "status": he.code,
-                "message": f"HTTP error from Jellyfin ({he.code}): {he.reason or 'Unknown'}"
+                "message": (
+                    f"HTTP error from Jellyfin ({he.code}): "
+                    f"{he.reason or 'Unknown'}"
+                )
             }), 200
         except URLError as ue:
             reason = getattr(ue, "reason", "Unknown")
@@ -179,21 +223,33 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     @app.get("/api/jellyfin/users")
     def api_jf_users() -> Response:
+        """
+        Fetches users and upserts to repository.
+        """
         result = jf.users()
-        if result and result.get("ok") and isinstance(result.get("data"), list):
+        if result and result.get("ok") and isinstance(
+            result.get("data"), list
+        ):
             try:
-                analytics.upsert_users(result["data"])
+                from services.mappers import map_users
+                mapped = map_users(result["data"])
+                repo.upsert_users(mapped)
             except Exception:
                 pass
         return jsonify(result), 200
 
     @app.get("/api/jellyfin/libraries")
     def api_jf_libraries() -> Response:
+        """
+        Fetches libraries with item counts and upserts to repository.
+        """
         result = jf.libraries()
 
         data = result.get("data")
         if result and result.get("ok"):
-            if isinstance(data, dict) and isinstance(data.get("Items"), list):
+            if isinstance(data, dict) and isinstance(
+                data.get("Items"), list
+            ):
                 flat = data["Items"]
                 for lib in flat:
                     lib_id = lib.get("Id")
@@ -204,7 +260,9 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
                 result["data"] = flat
                 try:
-                    analytics.upsert_libraries(flat)
+                    from services.mappers import map_libraries
+                    mapped = map_libraries(flat)
+                    repo.upsert_libraries(mapped)
                 except Exception:
                     pass
             elif isinstance(data, list):
@@ -215,7 +273,9 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                         if stats.get("ok"):
                             lib["ItemCount"] = stats.get("item_count", 0)
                 try:
-                    analytics.upsert_libraries(data)
+                    from services.mappers import map_libraries
+                    mapped = map_libraries(data)
+                    repo.upsert_libraries(mapped)
                 except Exception:
                     pass
 
@@ -223,28 +283,69 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     @app.get("/api/analytics/users")
     def api_analytics_users() -> Response:
-        return jsonify({"ok": True, "data": analytics.list_users()}), 200
+        """
+        Retrieve all users from repository.
+        """
+        return jsonify({"ok": True, "data": repo.list_users()}), 200
 
     @app.get("/api/analytics/libraries")
     def api_analytics_libraries() -> Response:
-        return jsonify({"ok": True, "data": analytics.list_libraries()}), 200
+        """
+        Retrieve all libraries from repository.
+        """
+        return jsonify({"ok": True, "data": repo.list_libraries()}), 200
 
     @app.post("/api/analytics/library/<string:jellyfin_id>/tracked")
     def api_analytics_set_tracked(jellyfin_id: str) -> Response:
+        """
+        Update the tracked flag for a library.
+        """
         payload = request.get_json(silent=True) or {}
         tracked = payload.get("tracked", None)
         if not isinstance(tracked, bool):
-            return jsonify({"ok": False, "status": 400, "message": "tracked must be boolean"}), 200
+            return jsonify({
+                "ok": False,
+                "status": 400,
+                "message": "tracked must be boolean"
+            }), 200
 
-        updated = analytics.set_library_tracked(jellyfin_id, tracked)
+        updated = repo.set_library_tracked(jellyfin_id, tracked)
         if not updated:
-            return jsonify({"ok": False, "status": 404, "message": "Library not found"}), 200
+            return jsonify({
+                "ok": False,
+                "status": 404,
+                "message": "Library not found"
+            }), 200
 
         return jsonify({"ok": True, "data": updated}), 200
+
+    @app.post("/api/sync")
+    def api_sync() -> Response:
+        """
+        Trigger a manual sync operation.
+        """
+        payload = request.get_json(silent=True) or {}
+        sync_type = payload.get("type", "full")
+
+        if sync_type == "partial":
+            sync_users = payload.get("sync_users", True)
+            result = sync.sync_partial(
+                sync_users=sync_users,
+            )
+        else:
+            result = sync.sync_full()
+
+        return jsonify({
+            "ok": result.success,
+            "data": result.to_dict()
+        }), 200
 
     return app
 
 
 if __name__ == "__main__":
     application = create_app()
-    application.run(host="127.0.0.1", port=application.config["PORT"])
+    application.run(
+        host="127.0.0.1",
+        port=application.config["PORT"]
+    )

@@ -3,8 +3,8 @@
 .idea
 .github/*
 !.github/workflows/
+borealis_data.db
 borealis.db
-analytics.db
 api/jellyfin-api.js
 /api/jellyfin-openapi-stable.json
 
