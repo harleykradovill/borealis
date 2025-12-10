@@ -1,3 +1,7 @@
+"""
+Tests for the Jellyfin client module.
+"""
+
 import json
 from services.jellyfin import create_client
 
@@ -29,7 +33,9 @@ class FakeResp:
 def fake_urlopen(req, timeout: float = 5.0):
     url = getattr(req, "full_url", None)
     if not url:
-        url = req.get_full_url() if hasattr(req, "get_full_url") else ""
+        url = (
+            req.get_full_url() if hasattr(req, "get_full_url") else ""
+        )
     if url.endswith("/System/Info"):
         return FakeResp(200, {"name": "jellyfin", "version": "10.8"})
     if url.endswith("/Users"):
@@ -40,10 +46,16 @@ def fake_urlopen(req, timeout: float = 5.0):
 
 
 def test_system_users_libraries_success(monkeypatch):
+    """
+    Test successful calls to system info, users, and libraries endpoints.
+    
+    :param monkeypatch: Pytest monkeypatch fixture
+    :type monkeypatch: MonkeyPatch
+    """
     svc = FakeSettings()
     client = create_client(svc)
 
-    monkeypatch.setattr("jellyfin.urlopen", fake_urlopen)
+    monkeypatch.setattr("services.jellyfin.urlopen", fake_urlopen)
 
     sys_info = client.system_info()
     assert sys_info["ok"] is True
@@ -62,13 +74,26 @@ def test_system_users_libraries_success(monkeypatch):
     assert isinstance(libs["data"], list)
     assert libs["data"][0]["Id"] == "folder1"
 
+
 def test_get_http_error_returns_proper_response(monkeypatch):
+    """
+    Test that HTTP errors are properly caught and returned.
+    
+    :param monkeypatch: Pytest monkeypatch fixture
+    :type monkeypatch: MonkeyPatch
+    """
     from urllib.error import HTTPError
 
     def raise_http(req, timeout: float = 5.0):
-        raise HTTPError(url="http://fake", code=401, msg="Unauthorized", hdrs=None, fp=None)
+        raise HTTPError(
+            url="http://fake",
+            code=401,
+            msg="Unauthorized",
+            hdrs=None,
+            fp=None
+        )
 
-    monkeypatch.setattr("jellyfin.urlopen", raise_http)
+    monkeypatch.setattr("services.jellyfin.urlopen", raise_http)
 
     client = create_client(FakeSettings())
     res = client.system_info()
@@ -79,12 +104,18 @@ def test_get_http_error_returns_proper_response(monkeypatch):
 
 
 def test_get_url_error_returns_proper_response(monkeypatch):
+    """
+    Test that URL errors (network issues) are properly caught.
+    
+    :param monkeypatch: Pytest monkeypatch fixture
+    :type monkeypatch: MonkeyPatch
+    """
     from urllib.error import URLError
 
     def raise_url(req, timeout: float = 5.0):
         raise URLError("timed out")
 
-    monkeypatch.setattr("jellyfin.urlopen", raise_url)
+    monkeypatch.setattr("services.jellyfin.urlopen", raise_url)
 
     client = create_client(FakeSettings())
     res = client.system_info()
@@ -94,7 +125,11 @@ def test_get_url_error_returns_proper_response(monkeypatch):
     assert "Network error" in res.get("message", "")
     assert "timed out" in res.get("message", "")
 
+
 def test_missing_settings_returns_400():
+    """
+    Test that missing settings return a 400 error.
+    """
     class MissingSettings:
         def get(self):
             return {}
@@ -104,10 +139,15 @@ def test_missing_settings_returns_400():
 
     assert res["ok"] is False
     assert res["status"] == 400
-    assert "Missing or invalid host/port/token" in res.get("message", "")
+    assert "Missing or invalid host/port/token" in res.get(
+        "message", ""
+    )
 
 
 def test_missing_token_returns_400():
+    """
+    Test that missing API token returns a 400 error.
+    """
     class NoTokenSettings:
         def get(self):
             return {
@@ -121,10 +161,15 @@ def test_missing_token_returns_400():
 
     assert res["ok"] is False
     assert res["status"] == 400
-    assert "Missing or invalid host/port/token" in res.get("message", "")
+    assert "Missing or invalid host/port/token" in res.get(
+        "message", ""
+    )
 
 
 def test_non_numeric_port_returns_400():
+    """
+    Test that non-numeric port returns a 400 error.
+    """
     class BadPortSettings:
         def get(self):
             return {
@@ -138,4 +183,6 @@ def test_non_numeric_port_returns_400():
 
     assert res["ok"] is False
     assert res["status"] == 400
-    assert "Missing or invalid host/port/token" in res.get("message", "")
+    assert "Missing or invalid host/port/token" in res.get(
+        "message", ""
+    )
