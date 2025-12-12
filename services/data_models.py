@@ -34,6 +34,7 @@ class User(Base):
     jellyfin_id = Column(String(128), nullable=False, unique=True)
     name = Column(String(255), nullable=False)
     is_admin = Column(Boolean, default=False)
+    total_plays = Column(Integer, default=0)
     archived = Column(Boolean, default=False)
     created_at = Column(BigInteger, nullable=False)
     updated_at = Column(BigInteger, nullable=False)
@@ -41,6 +42,7 @@ class User(Base):
     __table_args__ = (
         Index("idx_user_jellyfin_id", "jellyfin_id"),
         Index("idx_user_archived", "archived"),
+        Index("idx_user_total_plays", "total_plays"),
     )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -49,6 +51,7 @@ class User(Base):
             "jellyfin_id": self.jellyfin_id,
             "name": self.name,
             "is_admin": self.is_admin,
+            "total_plays": self.total_plays,
             "archived": self.archived,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
@@ -67,6 +70,7 @@ class Library(Base):
     type = Column(String(64), nullable=True)
     image_url = Column(String(1024), nullable=True)
     tracked = Column(Boolean, default=False)
+    total_plays = Column(Integer, default=0)
     archived = Column(Boolean, default=False)
     created_at = Column(BigInteger, nullable=False)
     updated_at = Column(BigInteger, nullable=False)
@@ -77,6 +81,7 @@ class Library(Base):
         Index("idx_library_jellyfin_id", "jellyfin_id"),
         Index("idx_library_tracked", "tracked"),
         Index("idx_library_archived", "archived"),
+        Index("idx_library_total_plays", "total_plays"),
     )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -87,6 +92,7 @@ class Library(Base):
             "type": self.type,
             "image_url": self.image_url,
             "tracked": self.tracked,
+            "total_plays": self.total_plays,
             "archived": self.archived,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
@@ -109,6 +115,7 @@ class Item(Base):
     parent_id = Column(String(128), nullable=True)
     name = Column(String(512), nullable=False)
     type = Column(String(64), nullable=True)
+    play_count = Column(Integer, default=0)
     archived = Column(Boolean, default=False)
     created_at = Column(BigInteger, nullable=False)
     updated_at = Column(BigInteger, nullable=False)
@@ -119,6 +126,7 @@ class Item(Base):
         Index("idx_item_jellyfin_id", "jellyfin_id"),
         Index("idx_item_library_id", "library_id"),
         Index("idx_item_archived", "archived"),
+        Index("idx_item_play_count", "play_count"),
     )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -129,6 +137,7 @@ class Item(Base):
             "parent_id": self.parent_id,
             "name": self.name,
             "type": self.type,
+            "play_count": self.play_count,
             "archived": self.archived,
             "created_at": self.created_at,
             "updated_at": self.updated_at,

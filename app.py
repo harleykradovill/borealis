@@ -333,6 +333,65 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             "ok": result.success,
             "data": result.to_dict()
         }), 200
+    
+    @app.get("/api/analytics/stats/libraries")
+    def api_analytics_stats_libraries() -> Response:
+        """
+        Retrieve all libraries with their play count statistics.
+        """
+        try:
+            stats = repo.get_library_stats(include_archived=False)
+            return jsonify({
+                "ok": True,
+                "data": stats
+            }), 200
+        except Exception as exc:
+            return jsonify({
+                "ok": False,
+                "message": f"Failed to fetch library stats: {str(exc)}"
+            }), 500
+
+    @app.get("/api/analytics/stats/items")
+    def api_analytics_stats_items() -> Response:
+        """
+        Retrieve the most played items across all libraries.
+        """
+        try:
+            limit = request.args.get("limit", 10, type=int)
+            if limit < 1 or limit > 100:
+                limit = 10
+            
+            items = repo.get_top_items_by_plays(limit=limit)
+            return jsonify({
+                "ok": True,
+                "data": items
+            }), 200
+        except Exception as exc:
+            return jsonify({
+                "ok": False,
+                "message": f"Failed to fetch item stats: {str(exc)}"
+            }), 500
+
+    @app.get("/api/analytics/stats/users")
+    def api_analytics_stats_users() -> Response:
+        """
+        Retrieve the most active users by total play count.
+        """
+        try:
+            limit = request.args.get("limit", 10, type=int)
+            if limit < 1 or limit > 100:
+                limit = 10
+            
+            users = repo.get_top_users_by_plays(limit=limit)
+            return jsonify({
+                "ok": True,
+                "data": users
+            }), 200
+        except Exception as exc:
+            return jsonify({
+                "ok": False,
+                "message": f"Failed to fetch user stats: {str(exc)}"
+            }), 500
 
     return app
 

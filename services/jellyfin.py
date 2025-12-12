@@ -216,6 +216,35 @@ class JellyfinClient:
         if start_timestamp:
             path += f"&MinDate={start_timestamp}"
         return self._get(path)
+    
+    def get_activity_log(
+        self,
+        start_index: int = 0,
+        limit: int = 100,
+        min_date: Optional[str] = None,
+        has_user_id: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Retrieve activity log entries from Jellyfin with pagination.
+
+        Supports filtering by date range and user context. Returns
+        paginated results suitable for bulk historical pulls.
+        """
+        # Build query parameters carefully to avoid exceeding
+        # line length
+        path = (
+            f"/System/ActivityLog/Entries?"
+            f"startIndex={start_index}&"
+            f"limit={limit}&"
+            f"hasUserId={str(has_user_id).lower()}"
+        )
+
+        if min_date:
+            from urllib.parse import quote
+            encoded_date = quote(min_date, safe='')
+            path += f"&minDate={encoded_date}"
+
+        return self._get(path)
 
 
 def create_client(settings_service: SettingsService) -> JellyfinClient:

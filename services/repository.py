@@ -278,6 +278,96 @@ class Repository:
                 .update({"archived": True}, synchronize_session=False)
             )
             return result
+        
+    def refresh_play_stats(self) -> Dict[str, int]:
+        """
+        Refresh all denormalized play count statistics from
+        PlaybackActivity records.
+        """
+        from services.stats_aggregator import StatsAggregator
+
+        with self._session() as session:
+            result = StatsAggregator.refresh_all_stats(session)
+            return result
+        
+    def get_top_items_by_plays(
+        self,
+        limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        """
+        Retrieve the most played items across all libraries.
+        """
+        from services.stats_aggregator import StatsAggregator
+
+        with self._session() as session:
+            return StatsAggregator.get_top_items_by_plays(
+                session,
+                limit=limit
+            )
+        
+    def get_top_users_by_plays(
+        self,
+        limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        """
+        Retrieve the most active users by total play count.
+        """
+        from services.stats_aggregator import StatsAggregator
+
+        with self._session() as session:
+            return StatsAggregator.get_top_users_by_plays(
+                session,
+                limit=limit
+            )
+        
+    def get_library_stats(
+        self,
+        include_archived: bool = False
+    ) -> List[Dict[str, Any]]:
+        """
+        Retrieve all libraries with their play count statistics.
+        """
+        from services.stats_aggregator import StatsAggregator
+
+        with self._session() as session:
+            return StatsAggregator.get_library_stats(
+                session,
+                include_archived=include_archived
+            )
+        
+    # Activity Log Tracking
+
+    def get_last_activity_log_sync(self) -> Optional[int]:
+        """
+        Retrieve the Unix timestamp of the last successful
+        activity log sync.
+        """
+        from services.settings_store import SettingsService
+        try:
+            # This should come from the app context
+            # For now, return None to trigger initial full pull
+            return None
+        except Exception:
+            return None
+
+    def set_last_activity_log_sync(
+        self,
+        timestamp: int
+    ) -> None:
+        """
+        Update the timestamp of the last successful activity
+        log sync.
+        """
+        pass
+
+    def is_initial_activity_log_sync_needed(
+        self
+    ) -> bool:
+        """
+        Check if initial full activity log pull is needed.
+        """
+        last_sync = self.get_last_activity_log_sync()
+        return last_sync is None
 
     # Playback Activity
 

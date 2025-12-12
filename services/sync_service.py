@@ -197,3 +197,259 @@ class SyncService:
             )
             
             return result
+
+    def sync_activity_log_full(self) -> SyncResult:
+        """
+        Perform initial full activity log sync from Jellyfin.
+        """
+        start_time = time.time()
+        errors: List[str] = []
+        events_count = 0
+
+        task_id = self.repository.create_task_log(
+            name="Activity Log Sync (Full)",
+            task_type="sync",
+            execution_type="full"
+        )
+
+        try:
+            # Build user lookup for username denormalization
+            users = self.repository.list_users(include_archived=True)
+            user_lookup: Dict[str, str] = {
+                u["jellyfin_id"]: u["name"] for u in users
+            }
+
+            page_size = 1000
+            start_index = 0
+            total_fetched = 0
+
+            while True:
+                # Fetch one page of activity log
+                activity_result = (
+                    self.jellyfin_client.get_activity_log(
+                        start_index=start_index,
+                        limit=page_size,
+                        has_user_id=True
+                    )
+                )
+
+                if not activity_result.get("ok"):
+                    error_msg = (
+                        f"Failed to fetch activity log at index "
+                        f"{start_index}: "
+                        f"{activity_result.get('message')}"
+                    )
+                    errors.append(error_msg)
+                    break
+
+                data = activity_result.get("data", {})
+                if not isinstance(data, dict):
+                    error_msg = (
+                        f"Activity log returned non-dict: "
+                        f"{type(data)}"
+                    )
+                    errors.append(error_msg)
+                    break
+
+                items = data.get("Items", [])
+                if not items:
+                    # No more entries to fetch
+                    break
+
+                # Filter for playback events only
+                from services.mappers import map_playback_events
+                playback_events = [
+                    item for item in items
+                    if item.get("Type") == "VideoPlaybackStopped"
+                ]
+
+                if playback_events:
+                    mapped_events = map_playback_events(
+                        playback_events,
+                        user_lookup=user_lookup
+                    )
+                    count = (
+                        self.repository.insert_playback_events(
+                            mapped_events
+                        )
+                    )
+                    events_count += count
+
+                total_fetched += len(items)
+                start_index += page_size
+
+                # Safety check to prevent infinite loops
+                if total_fetched > 100000:
+                    error_msg = (
+                        "Activity log exceeded 100,000 entries, "
+                        "stopping to prevent overload"
+                    )
+                    errors.append(error_msg)
+                    break
+
+            # Refresh stats after inserting events
+            if events_count > 0:
+                self.repository.refresh_play_stats()
+
+            # Update last sync timestamp
+            now = int(time.time())
+            self.repository.set_last_activity_log_sync(now)
+
+            duration_ms = int((time.time() - start_time) * 1000)
+            result = SyncResult(
+                success=len(errors) == 0,
+                duration_ms=duration_ms,
+                users_synced=0,
+                libraries_synced=0,
+                items_synced=events_count,
+                errors=errors,
+            )
+
+            self.repository.complete_task_log(
+                task_id=task_id,
+                result="SUCCESS" if result.success else "FAILED",
+                log_data=result.to_dict(),
+            )
+
+            return result
+
+        except Exception as exc:
+            duration_ms = int((time.time() - start_time) * 1000)
+            error_msg = f"Unexpected error: {str(exc)}"
+            errors.append(error_msg)
+
+            result = SyncResult(
+                success=False,
+                duration_ms=duration_ms,
+                users_synced=0,
+                libraries_synced=0,
+                items_synced=events_count,
+                errors=errors,
+            )
+
+            self.repository.complete_task_log(
+                task_id=task_id,
+                result="FAILED",
+                log_data=result.to_dict(),
+            )
+
+            return result
+
+    def sync_activity_log_incremental(
+        self,
+        minutes_back: int = 30
+    ) -> SyncResult:
+        """
+        Perform incremental activity log sync for recent entries.
+        """
+        from datetime import datetime, timedelta
+
+        start_time = time.time()
+        errors: List[str] = []
+        events_count = 0
+
+        task_id = self.repository.create_task_log(
+            name="Activity Log Sync (Incremental)",
+            task_type="sync",
+            execution_type="incremental"
+        )
+
+        try:
+            # Calculate minDate for API query
+            minutes_ago = datetime.utcnow() - timedelta(
+                minutes=minutes_back
+            )
+            min_date = minutes_ago.isoformat() + "Z"
+
+            # Build user lookup
+            users = self.repository.list_users(include_archived=True)
+            user_lookup: Dict[str, str] = {
+                u["jellyfin_id"]: u["name"] for u in users
+            }
+
+            # Fetch recent activity log with date filter
+            activity_result = (
+                self.jellyfin_client.get_activity_log(
+                    start_index=0,
+                    limit=5000,
+                    min_date=min_date,
+                    has_user_id=True
+                )
+            )
+
+            if not activity_result.get("ok"):
+                error_msg = (
+                    f"Failed to fetch recent activity log: "
+                    f"{activity_result.get('message')}"
+                )
+                errors.append(error_msg)
+            else:
+                data = activity_result.get("data", {})
+                if isinstance(data, dict):
+                    items = data.get("Items", [])
+
+                    # Filter for playback events only
+                    from services.mappers import map_playback_events
+                    playback_events = [
+                        item for item in items
+                        if item.get("Type") == "VideoPlaybackStopped"
+                    ]
+
+                    if playback_events:
+                        mapped_events = map_playback_events(
+                            playback_events,
+                            user_lookup=user_lookup
+                        )
+                        events_count = (
+                            self.repository.insert_playback_events(
+                                mapped_events
+                            )
+                        )
+
+            # Refresh stats after inserting events
+            if events_count > 0:
+                self.repository.refresh_play_stats()
+
+            # Update last sync timestamp
+            now = int(time.time())
+            self.repository.set_last_activity_log_sync(now)
+
+            duration_ms = int((time.time() - start_time) * 1000)
+            result = SyncResult(
+                success=len(errors) == 0,
+                duration_ms=duration_ms,
+                users_synced=0,
+                libraries_synced=0,
+                items_synced=events_count,
+                errors=errors,
+            )
+
+            self.repository.complete_task_log(
+                task_id=task_id,
+                result="SUCCESS" if result.success else "FAILED",
+                log_data=result.to_dict(),
+            )
+
+            return result
+
+        except Exception as exc:
+            duration_ms = int((time.time() - start_time) * 1000)
+            error_msg = f"Unexpected error: {str(exc)}"
+            errors.append(error_msg)
+
+            result = SyncResult(
+                success=False,
+                duration_ms=duration_ms,
+                users_synced=0,
+                libraries_synced=0,
+                items_synced=events_count,
+                errors=errors,
+            )
+
+            self.repository.complete_task_log(
+                task_id=task_id,
+                result="FAILED",
+                log_data=result.to_dict(),
+            )
+
+            return result

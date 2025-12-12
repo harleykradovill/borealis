@@ -85,7 +85,6 @@ def map_item(
 ) -> Optional[Dict[str, Any]]:
     """
     Transform a Jellyfin media item into an Item table row dict.
-             invalid
     """
     jf_id = (jf_item.get("Id") or "").strip()
     name = (jf_item.get("Name") or "").strip()
