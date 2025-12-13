@@ -93,8 +93,17 @@ class SyncService:
                     libs_list = libs_data
                 else:
                     libs_list = []
+
+                def _is_media_library(lib: dict) -> bool:
+                    t = (lib.get("CollectionType") or lib.get("Type") or "")
+                    t_norm = str(t).strip().lower()
+                    if not t_norm:
+                        return False
+                    return any(k in t_norm for k in ("movies", "tvshows"))
                 
-                mapped_libs = map_libraries(libs_list)
+                filtered_libs = [l for l in libs_list if _is_media_library(l)]
+                
+                mapped_libs = map_libraries(filtered_libs)
                 libraries_count = self.repository.upsert_libraries(
                     mapped_libs
                 )
@@ -288,11 +297,9 @@ class SyncService:
                     errors.append(error_msg)
                     break
 
-            # Refresh stats after inserting events
             if events_count > 0:
                 self.repository.refresh_play_stats()
 
-            # Update last sync timestamp
             now = int(time.time())
             self.repository.set_last_activity_log_sync(now)
 
