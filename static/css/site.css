@@ -156,7 +156,6 @@ body {
 }
 
 .hero {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 2.5rem;
