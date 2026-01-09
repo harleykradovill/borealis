@@ -482,32 +482,14 @@ function maskKey(key) {
 (function () {
   const noServerDiv = document.getElementById("jf-no-server");
   const serverAddedDiv = document.getElementById("jf-server-added");
-  const syncProgressDiv = document.getElementById("jf-sync-progress");
-  const addServerBtn = document.getElementById("jf-add-server-btn");
   const removeServerBtn = document.getElementById("jf-remove-server-btn");
-  const modalBackdrop = document.getElementById("jf-modal-backdrop");
-  const modal = document.getElementById("jf-add-server-modal");
-  const modalForm = document.getElementById("jf-modal-form");
-  const modalCloseBtn = document.getElementById("jf-modal-close");
-  const modalTestBtn = document.getElementById("jf-modal-test-btn");
-  const modalHostInput = document.getElementById("jf-modal-host");
-  const modalPortInput = document.getElementById("jf-modal-port");
-  const modalKeyInput = document.getElementById("jf-modal-api-key");
   const serverHostDisplay = document.getElementById("jf-server-host-display");
   const serverKeyDisplay = document.getElementById("jf-server-key-display");
   const serverNameDisplay = document.getElementById("jf-server-name-display");
 
-  let modalServerName = "";
-  let modalServerVersion = "";
-
   function updateServerState(hasServer) {
     if (noServerDiv) noServerDiv.hidden = hasServer;
     if (serverAddedDiv) serverAddedDiv.hidden = !hasServer;
-    if (syncProgressDiv) syncProgressDiv.hidden = true;
-  }
-
-  function showSyncProgress(show = true) {
-    if (syncProgressDiv) syncProgressDiv.hidden = !show;
   }
 
   function displayServer(name, host, port, apiKey) {
@@ -561,8 +543,8 @@ function maskKey(key) {
             jf_host: "",
             jf_port: "",
             jf_api_key: "",
-            jf_server_name: modalServerName || "",
-            jf_server_version: modalServerVersion || "",
+            jf_server_name: "",
+            jf_server_version: "",
           }),
         });
 
@@ -573,7 +555,6 @@ function maskKey(key) {
 
         showToast("Server removed", "success");
         updateServerState(false);
-        showSyncProgress(false);
 
         const libList = document.getElementById("libraries-list");
         const libEmpty = document.getElementById("libraries-empty");

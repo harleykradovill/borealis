@@ -98,11 +98,6 @@ body {
   padding: 2rem 1rem;
 }
 
-.modal,
-.modal-backdrop {
-  z-index: 2200;
-}
-
 .btn {
   appearance: none;
   border: none;
@@ -171,52 +166,6 @@ body {
   font-size: 1rem;
 }
 
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1900;
-  backdrop-filter: blur(2px);
-}
-
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2000;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-content {
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-  gap: 1rem;
-  position: relative;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: var(--text);
-  flex: 1;
-}
-
 .icon-btn {
   appearance: none;
   border: none;
@@ -239,16 +188,6 @@ body {
   box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
 }
 
-.modal-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.modal-actions .btn {
-  flex: 1;
-}
-
 .btn-danger {
   background: var(--negative);
   color: var(--text);
@@ -262,46 +201,6 @@ body {
   outline: none;
   border-color: var(--border);
   box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
-}
-
-/* Modal Form */
-#jf-modal-form {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-#jf-modal-form .form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-#jf-modal-form label {
-  font-size: 0.95rem;
-  color: var(--text);
-  font-weight: 500;
-}
-
-#jf-modal-form input {
-  appearance: none;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--bg);
-  color: var(--text);
-  padding: 0.75rem;
-  font: inherit;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
-}
-
-#jf-modal-form input:focus {
-  outline: none;
-  border-color: var(--border);
-  box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
-}
-
-#jf-modal-form input::placeholder {
-  color: var(--text-muted);
 }
 
 .switch {

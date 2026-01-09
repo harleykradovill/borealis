@@ -112,10 +112,9 @@
               </div>
 
               <div id="jf-no-server" class="jf-server-container">
-                <p>You do not have a server added yet.</p>
-                <button id="jf-add-server-btn" class="btn" type="button">
-                  Add Server
-                </button>
+                <p>
+                  You do not have a server added yet. You should not be here.
+                </p>
               </div>
 
               <div id="jf-server-added" class="jf-server-container" hidden>
@@ -138,65 +137,6 @@
                   >
                     Remove Server
                   </button>
-                </div>
-
-                <div id="jf-sync-progress" class="jf-sync-progress" hidden>
-                  <div class="jf-sync-info">
-                    <div class="jf-sync-spinner"></div>
-                    <p id="jf-sync-text">Syncing...</p>
-                  </div>
-                  <div class="jf-sync-actions">
-                    <div id="jf-sync-percent" class="jf-sync-percent">0%</div>
-                  </div>
-                </div>
-              </div>
-
-              <div id="jf-add-server-modal" class="modal" hidden>
-                <div class="modal-inner" role="dialog">
-                  <button id="jf-modal-close" class="modal-close">×</button>
-                  <form id="jf-modal-form" class="modal-form">
-                    <div class="form-field" style="grid-column: 1 / -1">
-                      <label for="jf-modal-host">Host</label>
-                      <input
-                        id="jf-modal-host"
-                        type="text"
-                        inputmode="url"
-                        placeholder="127.0.0.1 or example.com"
-                        required
-                      />
-                    </div>
-
-                    <div class="form-field" style="grid-column: 1 / -1">
-                      <label for="jf-modal-port">Port</label>
-                      <input
-                        id="jf-modal-port"
-                        type="text"
-                        inputmode="numeric"
-                        placeholder="8096"
-                        required
-                      />
-                    </div>
-
-                    <div class="form-field" style="grid-column: 1 / -1">
-                      <label for="jf-modal-api-key">API Key</label>
-                      <input
-                        id="jf-modal-api-key"
-                        type="text"
-                        autocomplete="off"
-                        placeholder="Paste your API key"
-                        required
-                      />
-                    </div>
-
-                    <div class="modal-actions" style="grid-column: 1 / -1">
-                      <button type="button" id="jf-modal-test-btn" class="btn">
-                        Test Connection
-                      </button>
-                      <button type="submit" id="jf-modal-add-btn" class="btn">
-                        Add Server
-                      </button>
-                    </div>
-                  </form>
                 </div>
               </div>
             </div>

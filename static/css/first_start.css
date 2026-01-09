@@ -87,6 +87,16 @@
   margin: 0 auto 0.5rem;
 }
 
+.modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.modal-actions .btn {
+  flex: 1;
+}
+
 #jf-first-sync[hidden] {
   display: none !important;
 }
