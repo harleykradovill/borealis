@@ -85,6 +85,33 @@ class Repository:
         finally:
             session.close()
 
+    def get_latest_sync_task(
+        self
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve the most recent sync task log entry.
+        """
+        with self._session() as session:
+            task = (
+                session.query(TaskLog)
+                .filter(TaskLog.type == "sync")
+                .order_by(TaskLog.started_at.desc())
+                .first()
+            )
+            if task:
+                return {
+                    "id": task.id,
+                    "name": task.name,
+                    "type": task.type,
+                    "execution_type": task.execution_type,
+                    "result": task.result,
+                    "started_at": task.started_at,
+                    "finished_at": task.finished_at,
+                    "duration_ms": task.duration_ms,
+                    "log_json": task.log_json,
+                }
+            return None
+
     # -------------------------
     # Users
     # -------------------------

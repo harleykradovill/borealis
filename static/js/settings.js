@@ -495,20 +495,10 @@ function maskKey(key) {
   const modalKeyInput = document.getElementById("jf-modal-api-key");
   const serverHostDisplay = document.getElementById("jf-server-host-display");
   const serverKeyDisplay = document.getElementById("jf-server-key-display");
+  const serverNameDisplay = document.getElementById("jf-server-name-display");
 
-  function openModal() {
-    if (!modal || !modalBackdrop || !modalHostInput) return;
-    modal.hidden = false;
-    modalBackdrop.hidden = false;
-    modalHostInput.focus();
-  }
-
-  function closeModal() {
-    if (!modal || !modalBackdrop || !modalForm) return;
-    modal.hidden = true;
-    modalBackdrop.hidden = true;
-    modalForm.reset();
-  }
+  let modalServerName = "";
+  let modalServerVersion = "";
 
   function updateServerState(hasServer) {
     if (noServerDiv) noServerDiv.hidden = hasServer;
@@ -520,7 +510,10 @@ function maskKey(key) {
     if (syncProgressDiv) syncProgressDiv.hidden = !show;
   }
 
-  function displayServer(host, port, apiKey) {
+  function displayServer(name, host, port, apiKey) {
+    if (serverNameDisplay) {
+      serverNameDisplay.textContent = name || "Unknown Name";
+    }
     if (serverHostDisplay) {
       serverHostDisplay.textContent = `${host}:${port}`;
     }
@@ -542,99 +535,18 @@ function maskKey(key) {
 
       if (hasServer) {
         updateServerState(true);
-        displayServer(data.jf_host, data.jf_port, data.jf_api_key);
+        displayServer(
+          data.jf_server_name,
+          data.jf_host,
+          data.jf_port,
+          data.jf_api_key
+        );
       } else {
         updateServerState(false);
       }
     } catch (err) {
       console.error("Failed to check server state:", err);
     }
-  }
-
-  if (addServerBtn) addServerBtn.addEventListener("click", openModal);
-  if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeModal);
-  if (modalBackdrop) modalBackdrop.addEventListener("click", closeModal);
-
-  if (modalForm) {
-    modalForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const host = (modalHostInput.value || "").trim();
-      const port = (modalPortInput.value || "").trim();
-      const apiKey = (modalKeyInput.value || "").trim();
-
-      if (!host || !port || !apiKey) {
-        showToast("Please fill in all fields", "error");
-        return;
-      }
-
-      try {
-        const resp = await fetch("/api/settings", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jf_host: host,
-            jf_port: port,
-            jf_api_key: apiKey,
-          }),
-        });
-
-        if (!resp.ok) {
-          showToast("Failed to save server settings", "error");
-          return;
-        }
-
-        closeModal();
-        showToast("Server added successfully", "success");
-        await checkServerState();
-      } catch (err) {
-        showToast("Error adding server", "error");
-        console.error(err);
-      }
-    });
-  }
-
-  if (modalTestBtn) {
-    modalTestBtn.addEventListener("click", async () => {
-      const host = (modalHostInput.value || "").trim();
-      const port = (modalPortInput.value || "").trim();
-      const apiKey = (modalKeyInput.value || "").trim();
-
-      if (!host || !port || !apiKey) {
-        showToast("Please fill in all fields", "error");
-        return;
-      }
-
-      const originalText = modalTestBtn.textContent;
-      modalTestBtn.disabled = true;
-      modalTestBtn.textContent = "Testing...";
-
-      try {
-        const resp = await fetch("/api/test-connection-with-credentials", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jf_host: host,
-            jf_port: port,
-            jf_api_key: apiKey,
-          }),
-        });
-        const result = await resp.json();
-
-        if (result.ok) {
-          showToast("Connection successful!", "success");
-        } else {
-          const msg = result.message || "Connection failed";
-          showToast(msg, "error");
-        }
-      } catch (err) {
-        showToast("Failed to test connection", "error");
-        console.error(err);
-      } finally {
-        modalTestBtn.textContent = originalText;
-        modalTestBtn.disabled = false;
-      }
-    });
   }
 
   if (removeServerBtn) {
@@ -645,7 +557,13 @@ function maskKey(key) {
         const resp = await fetch("/api/settings", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ jf_host: "", jf_port: "", jf_api_key: "" }),
+          body: JSON.stringify({
+            jf_host: "",
+            jf_port: "",
+            jf_api_key: "",
+            jf_server_name: modalServerName || "",
+            jf_server_version: modalServerVersion || "",
+          }),
         });
 
         if (!resp.ok) {

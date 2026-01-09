@@ -46,6 +46,8 @@
 
   let lastTestOk = false;
   let testingConnection = false;
+  let capturedServerName = "";
+  let capturedServerVersion = "";
 
   if (addBtn) {
     addBtn.disabled = true;
@@ -93,6 +95,8 @@
 
       if (result && result.ok) {
         lastTestOk = true;
+        capturedServerName = result.server_name || "";
+        capturedServerVersion = result.server_version || "";
         showToast("Connection successful", "success");
         if (addBtn) {
           addBtn.disabled = false;
@@ -152,6 +156,8 @@
           jf_host: host,
           jf_port: port,
           jf_api_key: apiKey,
+          jf_server_name: capturedServerName,
+          jf_server_version: capturedServerVersion,
           hour_format: hourFormat,
           language: language,
         }),
@@ -196,9 +202,30 @@
             const r = await fetch("/api/analytics/server/sync-progress", {
               cache: "no-store",
             });
-            if (!r.ok) throw new Error("Network");
+            if (!r.ok) {
+              if (r.status === 500) {
+                console.error("Server error checking sync progress", r.status);
+                if (Date.now() - startTs > TIMEOUT_MS) {
+                  showToast(
+                    "Initial sync is taking longer than expected. You " +
+                      "can continue to the app; background sync will finish " +
+                      "automatically.",
+                    "error"
+                  );
+                  setTimeout(() => {
+                    window.location.href = "/";
+                  }, 1200);
+                  return;
+                }
+                setTimeout(pollProgress, POLL_INTERVAL);
+                return;
+              }
+              throw new Error("Network");
+            }
             const j = await r.json();
-            if (!j || !j.ok) throw new Error(j?.message || "Bad response");
+            if (!j || !j.ok) {
+              throw new Error(j?.message || "Bad response");
+            }
 
             const syncing = Boolean(j.syncing);
 
@@ -211,7 +238,9 @@
 
             if (Date.now() - startTs > TIMEOUT_MS) {
               showToast(
-                "Initial sync is taking longer than expected. You can continue to the app; background sync will finish automatically.",
+                "Initial sync is taking longer than expected. You can " +
+                  "continue to the app; background sync will finish " +
+                  "automatically.",
                 "error"
               );
               setTimeout(() => {
@@ -220,7 +249,6 @@
               return;
             }
 
-            // Continue polling
             setTimeout(pollProgress, POLL_INTERVAL);
           } catch (err) {
             console.error("Sync progress fetch error", err);

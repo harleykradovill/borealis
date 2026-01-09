@@ -29,6 +29,8 @@ class Settings(Base):
     jf_host = Column(String(255), default="127.0.0.1")
     jf_port = Column(String(8), default="8096")
     jf_api_key_encrypted = Column(String(4096), nullable=True)
+    jf_server_name = Column(String(4096), nullable=True)
+    jf_server_version = Column(String(4096), nullable=True)
     last_activity_log_sync = Column(Integer, nullable=True)
     sync_interval = Column(Integer, default=1800)
 
@@ -52,6 +54,8 @@ class Settings(Base):
             "jf_host": self.jf_host,
             "jf_port": self.jf_port,
             "jf_api_key": api_key_plain,
+            "jf_server_name": self.jf_server_name,
+            "jf_server_version": self.jf_server_version,
             "sync_interval": self.sync_interval,
         }
 
@@ -143,6 +147,8 @@ class SettingsService:
             "jf_host",
             "jf_port",
             "jf_api_key",
+            "jf_server_name",
+            "jf_server_version",
             "sync_interval",
         }
         clean = {k: v for k, v in values.items() if k in allowed}
@@ -182,6 +188,12 @@ class SettingsService:
                     ).decode("utf-8")
                 else:
                     settings.jf_api_key_encrypted = None
+
+            if isinstance(clean.get("jf_server_name"), str):
+                settings.jf_server_name = clean["jf_server_name"]
+
+            if isinstance(clean.get("jf_server_version"), str):
+                settings.jf_server_version = clean["jf_server_version"]
 
             return settings.to_dict(self.fernet)
 

@@ -3,6 +3,7 @@ Provides an application factory that constructs and configures a
 Flask instance used to server the Borealis site.
 """
 
+import json
 import logging
 from typing import Optional, Dict
 import time
@@ -323,9 +324,15 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             with urlopen(req, timeout=3.0) as resp:
                 status = getattr(resp, "status", 200)
                 if 200 <= status < 300:
+                    response_data = json.loads(resp.read().decode('utf-8'))
+                    server_name = response_data.get("ServerName", "")
+                    server_version = response_data.get("Version", "")
                     return jsonify({
                         "ok": True,
                         "status": status,
+                        "message": "Connection successful.",
+                        "server_name": server_name,
+                        "server_version": server_version
                     }), 200
                 return jsonify({
                     "ok": False,
