@@ -7,36 +7,6 @@
   border-radius: 12px;
 }
 
-#first-start-form.first-start-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.jf-server-fieldset {
-  border: 1px solid var(--border);
-  padding: 1rem;
-  border-radius: 12px;
-  background: transparent;
-}
-
-.jf-server-fieldset .form-field input,
-.jf-server-fieldset .form-field select,
-#first-start-form .form-field input,
-#first-start-form .form-field select {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.jf-server-info .jf-server-host {
-  font-weight: 600;
-  color: var(--text);
-}
-.jf-server-info .jf-server-key {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-}
-
 .first-start .placeholder-title {
   font-size: 1.5rem;
   margin: 0 0 0.25rem 0;
@@ -52,11 +22,6 @@
   margin: 0;
   color: var(--text-muted);
   font-size: 0.95rem;
-}
-
-.jf-sync-info {
-  margin: 1rem;
-  padding: 1rem;
 }
 
 #jf-first-sync-text {
@@ -87,16 +52,193 @@
   margin: 0 auto 0.5rem;
 }
 
-.modal-actions {
+.first-start-pages {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.modal-actions .btn {
+.first-start-page {
+  display: none;
+}
+
+.first-start-page.active {
+  display: block;
+}
+
+.page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.page-header {
+  margin-bottom: 0.5rem;
+}
+
+.page-header h2 {
+  font-size: 1.25rem;
+  margin: 0 0 0.25rem 0;
+  color: var(--text);
+}
+
+.page-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.page-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.page-navigation button {
+  flex: 1;
+  max-width: 150px;
+}
+
+.page-nav-spacer {
   flex: 1;
 }
 
-#jf-first-sync[hidden] {
-  display: none !important;
+.first-start-progress {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.progress-dot.active {
+  background: var(--accent);
+}
+
+.progress-dot.completed {
+  background: var(--positive);
+}
+
+.first-start-form {
+  display: contents;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-grid .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-grid .form-field label {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.form-grid .form-field input,
+.form-grid .form-field select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.form-grid .form-field input:focus,
+.form-grid .form-field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.15);
+}
+
+.libraries-tracking {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  background: var(--surface);
+}
+
+.libraries-tracking h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  color: var(--accent);
+}
+
+.library-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.library-item:last-child {
+  border-bottom: none;
+}
+
+.library-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.library-item label {
+  flex: 1;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.library-name {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.library-type {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.server-info-display {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  background: var(--surface);
+  margin-bottom: 1rem;
+}
+
+.server-info-display .info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  color: var(--text);
+}
+
+.server-info-display .info-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.server-info-display .info-value {
+  font-weight: 500;
+  word-break: break-all;
 }

@@ -421,15 +421,37 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         return jsonify(result), 200
 
     @app.get("/api/jellyfin/libraries")
+    @app.post("/api/jellyfin/libraries")
     def api_jf_libraries() -> Response:
         """
         Fetches libraries with item counts and upserts to repository.
+        Accepts credentials in POST body for first-start flow.
         """
-        result = jf.libraries()
+        payload = request.get_json(silent=True) or {}
+        host = (payload.get("jf_host") or "").strip()
+        port = (payload.get("jf_port") or "").strip()
+        token = (payload.get("jf_api_key") or "").strip()
+
+        use_temp_client = bool(host and port and token)
+
+        if use_temp_client:
+            from services.jellyfin import JellyfinClient
+
+            class TempSettings:
+                def get(self):
+                    return {
+                        "jf_host": host,
+                        "jf_port": port,
+                        "jf_api_key": token,
+                    }
+
+            temp_jf = JellyfinClient(TempSettings())
+            result = temp_jf.libraries()
+        else:
+            result = jf.libraries()
 
         data = result.get("data")
         if result and result.get("ok"):
-            # Normalize Items shape
             if isinstance(data, dict) and isinstance(
                 data.get("Items"), list
             ):
@@ -438,46 +460,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 flat = data
             else:
                 flat = []
-
-            try:
-                import concurrent.futures
-
-                id_map = [
-                    (idx, lib.get("Id"))
-                    for idx, lib in enumerate(flat)
-                    if lib.get("Id")
-                ]
-
-                if id_map:
-                    max_workers = min(8, len(id_map))
-                    with concurrent.futures.ThreadPoolExecutor(
-                        max_workers=max_workers
-                    ) as ex:
-                        future_to_idx = {
-                            ex.submit(jf.library_stats, jf_id): idx
-                            for idx, jf_id in id_map
-                        }
-
-                        for fut in concurrent.futures.as_completed(
-                            future_to_idx, timeout=None
-                        ):
-                            idx = future_to_idx.get(fut)
-                            try:
-                                stats = fut.result(timeout=5)
-                                flat[idx]["ItemCount"] = (
-                                    stats.get("item_count", 0)
-                                    if isinstance(stats, dict) and stats.get("ok")
-                                    else 0
-                                )
-                            except Exception:
-                                flat[idx]["ItemCount"] = 0
-            except Exception:
-                for lib in flat:
-                    lib_id = lib.get("Id")
-                    if lib_id:
-                        stats = jf.library_stats(lib_id)
-                        if stats.get("ok"):
-                            lib["ItemCount"] = stats.get("item_count", 0)
 
             def _is_media_library(lib: dict) -> bool:
                 t = (lib.get("CollectionType") or lib.get("Type") or "")
@@ -489,6 +471,96 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             filtered = [l for l in flat if _is_media_library(l)]
             result["data"] = filtered
 
+            if not use_temp_client:
+                try:
+                    import concurrent.futures
+
+                    id_map = [
+                        (idx, lib.get("Id"))
+                        for idx, lib in enumerate(flat)
+                        if lib.get("Id")
+                    ]
+
+                    if id_map:
+                        max_workers = min(8, len(id_map))
+                        with concurrent.futures.ThreadPoolExecutor(
+                            max_workers=max_workers
+                        ) as ex:
+                            future_to_idx = {
+                                ex.submit(jf.library_stats, jf_id): idx
+                                for idx, jf_id in id_map
+                            }
+
+                            for fut in concurrent.futures.as_completed(
+                                future_to_idx, timeout=None
+                            ):
+                                idx = future_to_idx.get(fut)
+                                try:
+                                    stats = fut.result(timeout=5)
+                                    flat[idx]["ItemCount"] = (
+                                        stats.get("item_count", 0)
+                                        if isinstance(
+                                            stats, dict
+                                        ) and stats.get("ok")
+                                        else 0
+                                    )
+                                except Exception:
+                                    flat[idx]["ItemCount"] = 0
+                except Exception:
+                    for lib in flat:
+                        lib_id = lib.get("Id")
+                        if lib_id:
+                            stats = jf.library_stats(lib_id)
+                            lib["ItemCount"] = (
+                                stats.get("item_count", 0)
+                                if stats.get("ok")
+                                else 0
+                            )
+
+                try:
+                    from services.mappers import map_libraries
+
+                    mapped = map_libraries(filtered)
+                    repo.upsert_libraries(mapped)
+                except Exception:
+                    pass
+
+        return jsonify(result), 200
+
+    @app.post("/api/sync/libraries-only")
+    def api_sync_libraries_only() -> Response:
+        """
+        Sync only library metadata without fetching item counts.
+        Used during initial setup for faster library discovery.
+        """
+        try:
+            result = jf.libraries()
+
+            data = result.get("data")
+            if not result.get("ok"):
+                return jsonify({
+                    "ok": False,
+                    "message": "Failed to fetch libraries from Jellyfin"
+                }), 200
+
+            if isinstance(data, dict) and isinstance(
+                data.get("Items"), list
+            ):
+                flat = data["Items"]
+            elif isinstance(data, list):
+                flat = data
+            else:
+                flat = []
+
+            def _is_media_library(lib: dict) -> bool:
+                t = (lib.get("CollectionType") or lib.get("Type") or "")
+                t_norm = str(t).strip().lower()
+                if not t_norm:
+                    return False
+                return any(k in t_norm for k in ("movies", "tvshows"))
+
+            filtered = [l for l in flat if _is_media_library(l)]
+
             try:
                 from services.mappers import map_libraries
                 mapped = map_libraries(filtered)
@@ -496,7 +568,15 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             except Exception:
                 pass
 
-        return jsonify(result), 200
+            return jsonify({
+                "ok": True,
+                "data": filtered
+            }), 200
+        except Exception as exc:
+            return jsonify({
+                "ok": False,
+                "message": f"Error syncing libraries: {str(exc)}"
+            }), 500
 
     @app.get("/api/analytics/users")
     def api_analytics_users() -> Response:
