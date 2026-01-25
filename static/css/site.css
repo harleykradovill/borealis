@@ -21,8 +21,16 @@ body {
   padding: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: Helvetica, "Helvetica Neue", Arial, system-ui, -apple-system,
-    Segoe UI, Roboto, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family:
+    Helvetica,
+    "Helvetica Neue",
+    Arial,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    "Apple Color Emoji",
+    "Segoe UI Emoji";
   line-height: 1.5;
 }
 
@@ -69,28 +77,38 @@ body {
 }
 
 .sidebar-links a {
-  display: block;
-  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
   color: var(--text);
   text-decoration: none;
   border-radius: 12px;
-  transition: background-color 120ms ease, color 120ms ease;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
-.sidebar-links a:hover,
-.sidebar-links a:focus {
-  background: rgba(255, 255, 255, 0.02);
-  outline: none;
+.sidebar-links a:hover {
+  background-color: var(--surface);
 }
 
-.sidebar-links a.active,
-.sidebar-links a[aria-current="page"] {
-  background: var(--accent);
+.sidebar-links a.active {
+  background-color: var(--accent);
   color: var(--bg);
 }
 
-.sidebar-links a:focus-visible {
-  box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.18);
+.sidebar-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.sidebar-icon-active {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  filter: invert(1);
 }
 
 .content {
@@ -108,7 +126,9 @@ body {
   font: inherit;
   line-height: 1;
   cursor: pointer;
-  transition: background-color 120ms ease, box-shadow 120ms ease,
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease,
     color 120ms ease;
 }
 
@@ -223,7 +243,9 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 999px;
-  transition: background-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .switch .slider::before {
@@ -296,7 +318,9 @@ textarea.form-control {
   padding: 0.6rem 0.75rem;
   line-height: 1.25rem;
   outline: none;
-  transition: border-color 120ms ease, box-shadow 120ms ease,
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
     background-color 120ms ease;
 }
 

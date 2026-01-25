@@ -8,12 +8,12 @@
     <span class="brand-text">Borealis</span>
   </a>
 
-  {# Determine active route for server-side highlighting #} {% set is_dashboard
-  = request.path == url_for('index') %} {% set is_users = request.path ==
-  url_for('users') %} {% set is_libraries = request.path == url_for('libraries')
-  %} {% set is_activitylog = request.path == url_for('activitylog') %} {% set
-  is_settings = request.path == url_for('settings') %} {% set is_first_start =
-  request.path == url_for('first_start') %}
+  {% set is_dashboard = request.path == url_for('index') %} {% set is_users =
+  request.path == url_for('users') %} {% set is_libraries = request.path ==
+  url_for('libraries') %} {% set is_activitylog = request.path ==
+  url_for('activitylog') %} {% set is_settings = request.path ==
+  url_for('settings') %} {% set is_first_start = request.path ==
+  url_for('first_start') %}
 
   <ul class="sidebar-links" role="menu">
     <li role="none">
@@ -22,8 +22,14 @@
         href="/"
         class="{{ 'active' if is_dashboard else '' }}"
         data-path="{{ url_for('index') }}"
-        >Dashboard</a
       >
+        <img
+          src="{{ url_for('assets', filename='icons/dashboard.png') }}"
+          alt=""
+          class="{{ 'sidebar-icon-active' if is_dashboard else 'sidebar-icon'}}"
+        />
+        <span>Dashboard</span>
+      </a>
     </li>
     <li role="none">
       <a
@@ -31,8 +37,14 @@
         href="/users"
         class="{{ 'active' if is_users else '' }}"
         data-path="{{ url_for('users') }}"
-        >Users</a
       >
+        <img
+          src="{{ url_for('assets', filename='icons/users.png') }}"
+          alt=""
+          class="{{ 'sidebar-icon-active' if is_users else 'sidebar-icon'}}"
+        />
+        <span>Users</span>
+      </a>
     </li>
     <li role="none">
       <a
@@ -40,8 +52,14 @@
         href="/libraries"
         class="{{ 'active' if is_libraries else '' }}"
         data-path="{{ url_for('libraries') }}"
-        >Libraries</a
       >
+        <img
+          src="{{ url_for('assets', filename='icons/libraries.png') }}"
+          alt=""
+          class="{{ 'sidebar-icon-active' if is_libraries else 'sidebar-icon'}}"
+        />
+        <span>Libraries</span>
+      </a>
     </li>
     <li role="none">
       <a
@@ -49,8 +67,14 @@
         href="/activitylog"
         class="{{ 'active' if is_activitylog else '' }}"
         data-path="{{ url_for('activitylog') }}"
-        >Activity Log</a
       >
+        <img
+          src="{{ url_for('assets', filename='icons/activitylog.png') }}"
+          alt=""
+          class="{{ 'sidebar-icon-active' if is_activitylog else 'sidebar-icon'}}"
+        />
+        <span>Activity Log</span>
+      </a>
     </li>
     <li role="none">
       <a
@@ -58,8 +82,14 @@
         href="/settings"
         class="{{ 'active' if is_settings else '' }}"
         data-path="{{ url_for('settings') }}"
-        >Settings</a
       >
+        <img
+          src="{{ url_for('assets', filename='icons/settings.png') }}"
+          alt=""
+          class="{{ 'sidebar-icon-active' if is_settings else 'sidebar-icon'}}"
+        />
+        <span>Settings</span>
+      </a>
     </li>
   </ul>
 </aside>
