@@ -128,7 +128,7 @@
   async function loadPage3() {
     const serverNameDisplay = document.getElementById("server-name-display");
     const serverVersionDisplay = document.getElementById(
-      "server-version-display"
+      "server-version-display",
     );
 
     if (serverNameDisplay) {
@@ -186,6 +186,9 @@
         const item = document.createElement("div");
         item.className = "library-item";
 
+        const toggleWrap = document.createElement("label");
+        toggleWrap.className = "switch";
+
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.id = `lib-${jfId}`;
@@ -199,6 +202,12 @@
             state.trackedLibraries.delete(jfId);
           }
         });
+
+        const slider = document.createElement("span");
+        slider.className = "slider";
+
+        toggleWrap.appendChild(checkbox);
+        toggleWrap.appendChild(slider);
 
         const label = document.createElement("label");
         label.htmlFor = `lib-${jfId}`;
@@ -214,8 +223,8 @@
         label.appendChild(nameSpan);
         label.appendChild(typeSpan);
 
-        item.appendChild(checkbox);
         item.appendChild(label);
+        item.appendChild(toggleWrap);
         librariesList.appendChild(item);
       });
     } catch (err) {
@@ -261,7 +270,7 @@
       const result = await postJson(
         "/api/test-connection-with-credentials",
         { jf_host: host, jf_port: port, jf_api_key: apiKey },
-        "POST"
+        "POST",
       );
 
       if (result && result.ok) {
@@ -359,7 +368,7 @@
 
           try {
             const progressResp = await fetch(
-              "/api/analytics/server/sync-progress"
+              "/api/analytics/server/sync-progress",
             );
             const progressData = await progressResp.json();
 
