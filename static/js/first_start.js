@@ -75,6 +75,11 @@
   };
 
   function updateProgressIndicator() {
+    const progressIndicator = document.getElementById("progress-indicator");
+    if (progressIndicator && progressIndicator.hidden) {
+      return;
+    }
+
     const dots = document.querySelectorAll(".progress-dot");
     dots.forEach((dot) => {
       const page = parseInt(dot.dataset.page);
@@ -95,6 +100,12 @@
       pageElements[pageNum].classList.add("active");
     }
     currentPage = pageNum;
+
+    const progressIndicator = document.getElementById("progress-indicator");
+    if (progressIndicator) {
+      progressIndicator.hidden = pageNum === "sync";
+    }
+
     updateProgressIndicator();
     window.scrollTo(0, 0);
   }
@@ -350,7 +361,7 @@
           return;
         }
 
-        showToast("Settings saved, starting initial sync", "success");
+        showToast("Settings saved", "success");
         showPage("sync");
 
         const syncText = document.getElementById("jf-first-sync-text");
@@ -361,7 +372,7 @@
         async function pollProgress() {
           if (Date.now() - startTs > TIMEOUT_MS) {
             if (syncText) {
-              syncText.textContent = "Sync timeout. Please refresh.";
+              syncText.textContent = "Sync timeout. Please refresh the page.";
             }
             return;
           }
@@ -374,7 +385,7 @@
 
             if (progressData && progressData.ok && !progressData.syncing) {
               if (syncText) {
-                syncText.textContent = "Setup complete!";
+                syncText.textContent = "Setup complete";
               }
               setTimeout(() => {
                 window.location.href = "/";
