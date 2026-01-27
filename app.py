@@ -83,6 +83,14 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     )
 
     app.sync_scheduler = sync_scheduler
+
+    from services.sessions import SessionsService
+
+    sessions_svc = SessionsService(
+        jellyfin_client=jf,
+        sync_interval=5
+    )
+    app.sessions_service = sessions_svc
     
     has_server = bool(
         current_settings.get("jf_host")
@@ -92,6 +100,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     if not app.config.get("DEBUG") and has_server:
         sync_scheduler.start()
+        sessions_svc.start()
 
     import atexit
 
@@ -103,6 +112,12 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             sched = getattr(app, "sync_scheduler", None)
             if sched:
                 sched.stop()
+        except Exception:
+            pass
+        try:
+            sessions = getattr(app, "sessions_service", None)
+            if sessions:
+                sessions.stop()
         except Exception:
             pass
         try:
@@ -881,6 +896,24 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 "ok": False,
                 "message": f"Failed to fetch activity logs: {str(exc)}"
             }), 500
+        
+    @app.get("/api/analytics/sessions")
+    def api_analytics_sessions() -> Response:
+        """
+        Retrieve active sessions from the sessions service.
+        """
+        sessions_svc = getattr(app, "sessions_service", None)
+        if not sessions_svc:
+            return jsonify({
+                "ok": False,
+                "message": "Sessions service not available"
+            }), 500
+
+        sessions = sessions_svc.get_sessions()
+        return jsonify({
+            "ok": True,
+            "data": sessions
+        }), 200
 
     logging.info("Startup Complete. Running sync tasks")
 

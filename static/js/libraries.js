@@ -74,8 +74,8 @@
         lib.type === "movies"
           ? "Movies"
           : lib.type === "tvshows"
-          ? "TV Shows"
-          : lib.type || "";
+            ? "TV Shows"
+            : lib.type || "";
 
       const attrs = [
         { label: "Name", value: lib.name || "(unnamed)", isName: true },
@@ -86,7 +86,7 @@
           label: "Total Playback",
           value: humanTime(lib.total_playback_seconds || 0),
         },
-        { label: "Last Played", value: lib.last_played_item_name || "—" },
+        { label: "Last Played", value: lib.last_played_item_name || "-" },
       ];
 
       attrs.forEach((attr) => {
@@ -217,7 +217,7 @@
 
       const borderColor =
         getComputedStyle(document.documentElement).getPropertyValue(
-          "--border"
+          "--border",
         ) || "#333";
       const textColor =
         getComputedStyle(document.documentElement).getPropertyValue("--text") ||
@@ -331,7 +331,7 @@
       const bgColors = paletteFor(labels.length);
       const borderColor =
         getComputedStyle(document.documentElement).getPropertyValue(
-          "--border"
+          "--border",
         ) || "#333";
       const textColor =
         getComputedStyle(document.documentElement).getPropertyValue("--text") ||
@@ -368,7 +368,7 @@
               titleColor: textColor.trim() || "#fff",
               backgroundColor:
                 getComputedStyle(document.documentElement).getPropertyValue(
-                  "--bg"
+                  "--bg",
                 ) || "#121212",
             },
           },
@@ -428,7 +428,7 @@
             titleColor: textColor2.trim() || "#fff",
             backgroundColor:
               getComputedStyle(document.documentElement).getPropertyValue(
-                "--bg"
+                "--bg",
               ) || "#121212",
           },
         },

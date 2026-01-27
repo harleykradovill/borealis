@@ -235,6 +235,12 @@ class JellyfinClient:
         Returns Jellyfin system info.
         """
         return self._get("/System/Info")
+    
+    def sessions(self) -> Dict[str, Any]:
+        """
+        Returns active sessions from Jellyfin server.
+        """
+        return self._get("/Sessions")
 
     def users(self) -> Dict[str, Any]:
         """

@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       while (page <= maxPages) {
         const resp = await fetch(
-          `/api/analytics/activitylog?page=${page}&per_page=${perPage}`
+          `/api/analytics/activitylog?page=${page}&per_page=${perPage}`,
         );
         if (!resp.ok) break;
         const payload = await resp.json();
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
         all.push(...pageItems);
 
         const minTsSec = Math.min(
-          ...pageItems.map((it) => Number(it.activity_at || 0))
+          ...pageItems.map((it) => Number(it.activity_at || 0)),
         );
         if (isFinite(minTsSec) && minTsSec * 1000 <= cutoff) break;
 
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const dayDiff = Math.floor(
         (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
           Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())) /
-          msPerDay
+          msPerDay,
       );
       const index = days - 1 - dayDiff;
       if (index < 0 || index >= days) return;
@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const index = w * 7 + wd;
         const dayOffset = days - 1 - index;
         const d = new Date(
-          Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+          Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
         );
         d.setUTCDate(d.getUTCDate() - dayOffset);
         const iso = d.toISOString().slice(0, 10);
@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const t = Math.min(1, v / Math.max(1, maxV));
     const idx = Math.max(
       0,
-      Math.min(palette.length - 1, Math.round(t * (palette.length - 1)))
+      Math.min(palette.length - 1, Math.round(t * (palette.length - 1))),
     );
     return palette[idx];
   }
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
           {
             data,
             borderWidth: 0,
-            borderRadius: 12,
+            borderRadius: 5,
             backgroundColor: (ctxArg) => {
               const v = ctxArg.raw.v || 0;
               return colorFor(v, maxV);
@@ -195,3 +195,159 @@ document.addEventListener("DOMContentLoaded", () => {
 
   render();
 });
+
+(function () {
+  const container = document.getElementById("sessions-container");
+  const empty = document.getElementById("sessions-empty");
+  const cardsContainer = document.getElementById("sessions-cards");
+
+  if (!container || !cardsContainer) return;
+
+  const REFRESH_INTERVAL = 5000;
+  let refreshTimer = null;
+
+  function formatTranscodeStatus(isTranscoding, transcodeReason) {
+    if (!isTranscoding) return "Direct Playing";
+    return `Transcoding (${transcodeReason || "unknown"})`;
+  }
+
+  function formatProgress(progressTicks, runtimeTicks) {
+    if (!progressTicks || !runtimeTicks) return "-";
+    const percent = Math.round((progressTicks / runtimeTicks) * 100);
+    return `${percent}%`;
+  }
+
+  function formatETA(progressTicks, runtimeTicks, playbackRate) {
+    if (!progressTicks || !runtimeTicks || !playbackRate) return "-";
+    const remainingTicks = runtimeTicks - progressTicks;
+    const remainingMs = remainingTicks / 10000;
+    const remainingSec = Math.round(remainingMs / 1000);
+
+    if (remainingSec < 0) return "-";
+    if (remainingSec < 60) return `${remainingSec}s`;
+
+    const minutes = Math.floor(remainingSec / 60);
+    const seconds = remainingSec % 60;
+    return `${minutes}m ${seconds}s`;
+  }
+
+  function renderSessions(sessions) {
+    if (!sessions || sessions.length === 0) {
+      container.hidden = true;
+      if (empty) empty.hidden = false;
+      return;
+    }
+
+    container.hidden = false;
+    if (empty) empty.hidden = true;
+    cardsContainer.innerHTML = "";
+
+    sessions.forEach((session) => {
+      const card = document.createElement("div");
+      card.className = "session-card";
+
+      const deviceName = session.DeviceName || "Unknown Device";
+      const clientName = session.Client || "Unknown Client";
+      const userName = session.UserName || "Unknown User";
+      const ipAddr = session.RemoteEndPoint || "-";
+
+      const nowPlayingItem = session.NowPlayingItem || {};
+      const itemName = nowPlayingItem.Name || "Unknown Item";
+
+      const playState = session.PlayState || {};
+      const progressTicks = playState.PositionTicks || 0;
+      const runtimeTicks = nowPlayingItem.RunTimeTicks || 0;
+      const playbackRate = playState.PlaybackRate || 1;
+
+      const mediaSource = (session.NowPlayingSessions || [{}])[0] || {};
+      const videoCodec = mediaSource.VideoCodec || "unknown";
+      const audioCodec = mediaSource.AudioCodec || "unknown";
+      const videoIsTranscoding = !!mediaSource.TranscodingInfo?.VideoCodec;
+      const audioIsTranscoding = !!mediaSource.TranscodingInfo?.AudioCodec;
+
+      const attrs = [
+        { label: "Device", value: deviceName },
+        { label: "Client", value: clientName },
+        { label: "User", value: userName },
+        { label: "IP Address", value: ipAddr },
+        {
+          label: "Video",
+          value: formatTranscodeStatus(videoIsTranscoding, videoCodec),
+        },
+        {
+          label: "Audio",
+          value: formatTranscodeStatus(audioIsTranscoding, audioCodec),
+        },
+        {
+          label: "Progress",
+          value: formatProgress(progressTicks, runtimeTicks),
+        },
+        {
+          label: "ETA",
+          value: formatETA(progressTicks, runtimeTicks, playbackRate),
+        },
+        { label: "Now Playing", value: itemName },
+      ];
+
+      attrs.forEach((attr) => {
+        const div = document.createElement("div");
+        div.className = "session-card-attr";
+
+        const label = document.createElement("span");
+        label.className = "session-card-attr-label";
+        label.textContent = attr.label;
+
+        const value = document.createElement("span");
+        value.className = "session-card-attr-value";
+        value.textContent = attr.value;
+
+        div.appendChild(label);
+        div.appendChild(value);
+        card.appendChild(div);
+      });
+
+      cardsContainer.appendChild(card);
+    });
+  }
+
+  async function loadSessions() {
+    try {
+      const resp = await fetch("/api/analytics/sessions");
+      if (!resp.ok) {
+        renderSessions([]);
+        return;
+      }
+
+      const result = await resp.json();
+      if (!result.ok || !Array.isArray(result.data)) {
+        renderSessions([]);
+        return;
+      }
+
+      renderSessions(result.data);
+    } catch (err) {
+      console.error("Failed to load sessions:", err);
+      renderSessions([]);
+    }
+  }
+
+  function startRefresh() {
+    if (refreshTimer) clearInterval(refreshTimer);
+    loadSessions();
+    refreshTimer = setInterval(loadSessions, REFRESH_INTERVAL);
+  }
+
+  function stopRefresh() {
+    if (refreshTimer) clearInterval(refreshTimer);
+  }
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopRefresh();
+    } else {
+      startRefresh();
+    }
+  });
+
+  startRefresh();
+})();
