@@ -74,4 +74,8 @@ class SessionsService:
             self._last_sessions = []
             return
 
-        self._last_sessions = data
+        playing_sessions = [
+            s for s in data
+            if s.get("NowPlayingItem") and s.get("PlayState", {}).get("IsPaused") is False
+        ]
+        self._last_sessions = playing_sessions
