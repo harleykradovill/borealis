@@ -183,6 +183,61 @@ class Repository:
             if not include_archived:
                 query = query.filter(User.archived.is_(False))
             return [u.to_dict() for u in query.all()]
+        
+    def get_users_with_stats(
+        self, include_archived: bool = False
+    ) -> List[Dict[str, Any]]:
+        with self._session() as session:
+            users = session.query(User).filter(
+                User.archived.is_(False) if not include_archived
+                else True
+            ).all()
+    
+            results = []
+            for user in users:
+                total_plays = session.query(
+                    func.count(PlaybackActivity.id)
+                ).filter(
+                    PlaybackActivity.user_id == user.jellyfin_id
+                ).scalar() or 0
+    
+                total_seconds = session.query(
+                    func.sum(Item.runtime_seconds)
+                ).join(
+                    PlaybackActivity,
+                    PlaybackActivity.item_id == Item.jellyfin_id
+                ).filter(
+                    PlaybackActivity.user_id == user.jellyfin_id
+                ).scalar() or 0
+    
+                last_activity = session.query(
+                    PlaybackActivity, Item
+                ).join(
+                    Item,
+                    PlaybackActivity.item_id == Item.jellyfin_id
+                ).filter(
+                    PlaybackActivity.user_id == user.jellyfin_id
+                ).order_by(
+                    PlaybackActivity.activity_at.desc()
+                ).first()
+    
+                item_name = last_activity[1].name if last_activity else None
+                last_activity_ts = (
+                    last_activity[0].activity_at if last_activity else None
+                )
+    
+                results.append({
+                    "id": user.id,
+                    "jellyfin_id": user.jellyfin_id,
+                    "name": user.name,
+                    "is_admin": user.is_admin,
+                    "total_plays": int(total_plays),
+                    "total_watch_time_seconds": int(total_seconds or 0),
+                    "last_watched_item_name": item_name,
+                    "last_seen_at": last_activity_ts,
+                })
+    
+            return results
 
     # -------------------------
     # Libraries

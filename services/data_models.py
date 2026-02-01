@@ -21,21 +21,24 @@ Base = declarative_base()
 
 class User(Base):
     """
-    Jellyfin user metadata.
+    Jellyfin user account.
     """
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    jellyfin_id = Column(String(128), nullable=False, unique=True)
+    jellyfin_id = Column(String(128), unique=True, nullable=False)
     name = Column(String(255), nullable=False)
     is_admin = Column(Boolean, default=False)
+    last_watched_item_name = Column(String(512), nullable=True)
+    last_client = Column(String(255), nullable=True)
     total_plays = Column(Integer, default=0)
+    total_watch_time_seconds = Column(Integer, default=0)
+    last_seen_at = Column(BigInteger, nullable=True)
     archived = Column(Boolean, default=False)
 
     __table_args__ = (
         Index("idx_user_jellyfin_id", "jellyfin_id"),
         Index("idx_user_archived", "archived"),
-        Index("idx_user_total_plays", "total_plays"),
     )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -44,8 +47,11 @@ class User(Base):
             "jellyfin_id": self.jellyfin_id,
             "name": self.name,
             "is_admin": self.is_admin,
+            "last_watched_item_name": self.last_watched_item_name,
+            "last_client": self.last_client,
             "total_plays": self.total_plays,
-            "archived": self.archived,
+            "total_watch_time_seconds": self.total_watch_time_seconds,
+            "last_seen_at": self.last_seen_at,
         }
 
 
