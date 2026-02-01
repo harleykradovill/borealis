@@ -158,7 +158,7 @@
 .form-grid .form-field select {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--surface);
   color: var(--text);
   font-size: 0.95rem;

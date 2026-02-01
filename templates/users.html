@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -13,15 +13,49 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/site.css') }}"
     />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/users.css') }}"
+    />
   </head>
   <body>
     <div class="app-shell">
       {% include '_sidebar.html' %}
-      <main id="content" class="content" tabindex="-1">
-        {% block content %}{% endblock %}
+      <main id="content" class="content" tabindex="-1" role="main">
+        <section class="hero" style="max-width: 1500px; margin: 1.5rem auto">
+          <h1 style="margin: 0 0 0.5rem 0">Users</h1>
+          <p class="subtitle">User statistics and activity overview</p>
+        </section>
+
+        <div
+          id="users-container"
+          hidden
+          style="max-width: 1500px; margin: 0 auto"
+        >
+          <table id="users-table" class="users-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Last Watched</th>
+                <th>Last Client</th>
+                <th class="align-right">Total Plays</th>
+                <th class="align-right">Watch Time</th>
+                <th class="align-right">Last Seen</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+
+        <div id="users-empty" class="settings-placeholder">
+          <p>No users found.</p>
+        </div>
       </main>
     </div>
 
+    <div id="toast-container" class="toast-container" role="status"></div>
+
     <script src="../static/js/toast.js"></script>
+    <script src="../static/js/users.js"></script>
   </body>
 </html>

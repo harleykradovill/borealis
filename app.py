@@ -599,6 +599,23 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         Retrieve all users from repository.
         """
         return jsonify({"ok": True, "data": repo.list_users()}), 200
+    
+    @app.get("/api/analytics/stats/users")
+    def api_analytics_stats_users() -> Response:
+        """
+        Retrieve all users with their play statistics.
+        """
+        try:
+            users = repo.get_users_with_stats(include_archived=False)
+            return jsonify({
+                "ok": True,
+                "data": users
+            }), 200
+        except Exception as exc:
+            return jsonify({
+                "ok": False,
+                "message": f"Failed to fetch users: {str(exc)}"
+            }), 500
 
     @app.get("/api/analytics/libraries")
     def api_analytics_libraries() -> Response:
@@ -796,27 +813,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             return jsonify({
                 "ok": False,
                 "message": f"Failed to fetch item stats: {str(exc)}"
-            }), 500
-
-    @app.get("/api/analytics/stats/users")
-    def api_analytics_stats_users() -> Response:
-        """
-        Retrieve the most active users by total play count.
-        """
-        try:
-            limit = request.args.get("limit", 10, type=int)
-            if limit < 1 or limit > 100:
-                limit = 10
-
-            users = repo.get_top_users_by_plays(limit=limit)
-            return jsonify({
-                "ok": True,
-                "data": users
-            }), 200
-        except Exception as exc:
-            return jsonify({
-                "ok": False,
-                "message": f"Failed to fetch user stats: {str(exc)}"
             }), 500
 
     @app.get("/api/analytics/server/sync-progress")
