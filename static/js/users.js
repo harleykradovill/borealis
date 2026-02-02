@@ -62,10 +62,6 @@
       lastWatchedCell.className = "cell-muted";
       lastWatchedCell.textContent = user.last_watched_item_name || "(no data)";
 
-      const lastClientCell = document.createElement("td");
-      lastClientCell.className = "cell-muted";
-      lastClientCell.textContent = user.last_client || "(no data)";
-
       const totalPlaysCell = document.createElement("td");
       totalPlaysCell.className = "align-right cell-value";
       totalPlaysCell.textContent = String(user.total_plays || 0);
@@ -82,7 +78,6 @@
 
       row.appendChild(nameCell);
       row.appendChild(lastWatchedCell);
-      row.appendChild(lastClientCell);
       row.appendChild(totalPlaysCell);
       row.appendChild(watchTimeCell);
       row.appendChild(lastSeenCell);
