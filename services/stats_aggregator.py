@@ -69,6 +69,23 @@ class StatsAggregator:
                 new_total = int(user_counts.get(user.jellyfin_id, 0))
                 if user.total_plays != new_total:
                     user.total_plays = new_total
+
+                last_activity = (
+                    session.query(PlaybackActivity)
+                    .filter(PlaybackActivity.user_id == user.jellyfin_id)
+                    .order_by(PlaybackActivity.activity_at.desc())
+                    .limit(1)
+                    .first()
+                )
+
+                if last_activity and last_activity.event_name:
+                    device = StatsAggregator._extract_device_from_event_name(
+                        last_activity.event_name
+                    )
+                    if device and user.last_device != device:
+                        user.last_device = device
+
+                session.merge(user)
                 users_processed += 1
 
         # ---- Library aggregates ----
@@ -248,3 +265,18 @@ class StatsAggregator:
             })
 
         return out
+    
+    @staticmethod
+    def _extract_device_from_event_name(event_name: str) -> str | None:
+        """
+        Extract device name from playback event_name string.
+        """
+        if not event_name or " on " not in event_name:
+            return None
+
+        parts = event_name.rsplit(" on ", 1)
+        if len(parts) == 2:
+            device = parts[1].strip()
+            return device if device else None
+
+        return None

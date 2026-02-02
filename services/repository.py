@@ -234,6 +234,7 @@ class Repository:
                     "total_plays": int(total_plays),
                     "total_watch_time_seconds": int(total_seconds or 0),
                     "last_watched_item_name": item_name,
+                    "last_device": user.last_device,
                     "last_seen_at": last_activity_ts,
                 })
     

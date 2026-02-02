@@ -30,7 +30,7 @@ class User(Base):
     name = Column(String(255), nullable=False)
     is_admin = Column(Boolean, default=False)
     last_watched_item_name = Column(String(512), nullable=True)
-    last_client = Column(String(255), nullable=True)
+    last_device = Column(String(255), nullable=True)
     total_plays = Column(Integer, default=0)
     total_watch_time_seconds = Column(Integer, default=0)
     last_seen_at = Column(BigInteger, nullable=True)
@@ -48,7 +48,7 @@ class User(Base):
             "name": self.name,
             "is_admin": self.is_admin,
             "last_watched_item_name": self.last_watched_item_name,
-            "last_client": self.last_client,
+            "last_device": self.last_device,
             "total_plays": self.total_plays,
             "total_watch_time_seconds": self.total_watch_time_seconds,
             "last_seen_at": self.last_seen_at,
