@@ -79,7 +79,6 @@
 .statistics-group {
   max-width: 1500px;
   margin: 2rem auto;
-  padding: 0 1.5rem;
 }
 
 .statistics-group h1 {
@@ -91,6 +90,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
+  width: 100%;
 }
 
 .statistics-card {
@@ -107,7 +107,7 @@
 .statistics-card-image {
   width: 120px;
   height: 180px;
-  border-radius: 8px;
+  border-radius: 12px;
   object-fit: cover;
   flex-shrink: 0;
 }
