@@ -44,47 +44,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function buildMatrix(items, days = 365) {
     const now = new Date();
-    const WEEKS = Math.ceil(days / 7);
-    const buckets = Array.from({ length: WEEKS }, () => Array(7).fill(0));
-    const msPerDay = 24 * 60 * 60 * 1000;
+    now.setHours(0, 0, 0, 0);
 
+    const startDate = new Date(now);
+    startDate.setDate(startDate.getDate() - (days - 1));
+    startDate.setDate(startDate.getDate() - startDate.getDay());
+
+    const toLocalISO = (d) => {
+      const yr = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, "0");
+      const da = String(d.getDate()).padStart(2, "0");
+      return `${yr}-${mo}-${da}`;
+    };
+
+    const counts = {};
     items.forEach((it) => {
       const ts = Number(it.activity_at || 0) * 1000;
       if (!ts) return;
       const d = new Date(ts);
-      const dayDiff = Math.floor(
-        (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
-          Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())) /
-          msPerDay,
-      );
-      const index = days - 1 - dayDiff;
-      if (index < 0 || index >= days) return;
-      const weekIdx = Math.floor(index / 7);
-      const weekday = d.getUTCDay();
-      if (weekIdx < 0 || weekIdx >= WEEKS) return;
-      buckets[weekIdx][weekday] = (buckets[weekIdx][weekday] || 0) + 1;
+      const iso = toLocalISO(d);
+      counts[iso] = (counts[iso] || 0) + 1;
     });
 
-    let maxV = 0;
     const data = [];
-    for (let w = 0; w < WEEKS; w++) {
-      for (let wd = 0; wd < 7; wd++) {
-        const v = buckets[w][wd] || 0;
-        if (v > maxV) maxV = v;
+    let maxV = 0;
+    let weekIdx = 0;
+    const curr = new Date(startDate);
 
-        const index = w * 7 + wd;
-        const dayOffset = days - 1 - index;
-        const d = new Date(
-          Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-        );
-        d.setUTCDate(d.getUTCDate() - dayOffset);
-        const iso = d.toISOString().slice(0, 10);
+    while (curr <= now) {
+      const iso = toLocalISO(curr);
+      const v = counts[iso] || 0;
+      if (v > maxV) maxV = v;
 
-        data.push({ x: w + 1, y: wd + 1, v, date: iso });
-      }
+      const weekday = curr.getDay();
+      data.push({
+        x: weekIdx + 1,
+        y: weekday + 1,
+        v,
+        date: iso,
+      });
+
+      if (weekday === 6) weekIdx++;
+      curr.setDate(curr.getDate() + 1);
     }
 
-    return { data, maxV, weeks: WEEKS };
+    return { data, maxV, weeks: weekIdx + 1 };
   }
 
   function colorFor(v, maxV) {
