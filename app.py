@@ -35,6 +35,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     app.config.setdefault("DATABASE_URL", "sqlite:///borealis.db")
     app.config.setdefault("ENCRYPTION_KEY_PATH", "secret.key")
     app.config.setdefault("DATA_DATABASE_URL", "sqlite:///borealis_data.db")
+    app.config['TEMPLATES_AUTO_RELOAD'] = True #TODO: TURN OFF IN PROD
 
     logging.info("-=-=-=-=-=-=-=-=-=-=-=-=-")
     logging.info("         Borealis        ")

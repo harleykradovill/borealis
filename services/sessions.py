@@ -76,6 +76,10 @@ class SessionsService:
 
         playing_sessions = [
             s for s in data
-            if s.get("NowPlayingItem") and s.get("PlayState", {}).get("IsPaused") is False
+            if s.get("NowPlayingItem") and
+            s.get("PlayState", {}).get("IsPaused") is False
         ]
+        playing_sessions.sort(
+            key=lambda x: (x.get("UserName") or "", x.get("Id") or "")
+        )
         self._last_sessions = playing_sessions
