@@ -79,7 +79,45 @@ class SessionsService:
             if s.get("NowPlayingItem") and
             s.get("PlayState", {}).get("IsPaused") is False
         ]
-        playing_sessions.sort(
+        
+        sanitized = self._sanitize_sessions(playing_sessions)
+
+        sanitized.sort(
             key=lambda x: (x.get("UserName") or "", x.get("Id") or "")
         )
-        self._last_sessions = playing_sessions
+        self._last_sessions = sanitized
+
+    def _sanitize_sessions(
+        self,
+        sessions: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Reduces session objects to essential fields for frontend display.
+        """
+        root_keys = {
+            "Id", "UserName", "Client", "DeviceName", "RemoteEndPoint",
+            "PlayState", "NowPlayingItem", "TranscodingInfo"
+        }
+        item_keys = {"Name", "RunTimeTicks", "Id", "Type"}
+
+        sanitized = []
+        for s in sessions:
+            clean = {k: s[k] for k in root_keys if k in s}
+
+            item = clean.get("NowPlayingItem")
+            if isinstance(item, dict):
+                clean["NowPlayingItem"] = {
+                    k: item[k] for k in item_keys if k in item
+                }
+
+            sanitized.append(clean)
+        return sanitized
+
+    def _update_cache(self) -> None:
+        """
+        Polls Jellyfin for sessions and updates the sanitized cache.
+        """
+        result = self.jellyfin_client.sessions()
+        if result.get("ok"):
+            raw_data = result.get("data", [])
+            self._cached_sessions = self._sanitize_sessions(raw_data)

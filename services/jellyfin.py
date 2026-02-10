@@ -240,7 +240,7 @@ class JellyfinClient:
         """
         Returns active sessions from Jellyfin server.
         """
-        return self._get("/Sessions")
+        return self._get("/Sessions?activeWithinSeconds=900")
 
     def users(self) -> Dict[str, Any]:
         """
