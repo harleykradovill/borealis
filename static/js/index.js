@@ -156,6 +156,10 @@ document.addEventListener("DOMContentLoaded", () => {
         ],
       },
       options: {
+        animation: {
+          x: { duration: 0 },
+          y: { duration: 0 },
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
