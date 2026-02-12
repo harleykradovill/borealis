@@ -10,7 +10,7 @@
   border-radius: 12px;
   padding: 0.75rem;
   box-shadow: none;
-  height: 260px;
+  height: 290px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -23,6 +23,60 @@
   margin: 0;
   font-size: 1rem;
   color: var(--accent);
+}
+
+.matrix-labels-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.matrix-top-labels {
+  display: flex;
+  align-items: flex-end;
+  padding-left: 60px;
+  gap: 0;
+}
+
+.matrix-month-label {
+  flex: 1 1 auto;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  height: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  min-width: 0;
+}
+
+.matrix-content {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.matrix-left-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 40px;
+}
+
+.matrix-day-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-align: right;
+  padding-right: 0.5rem;
+  height: calc((260px - 3.5rem - 0.5rem) / 7);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.matrix-canvas-wrapper {
+  flex: 1;
 }
 
 .session-card {

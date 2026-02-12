@@ -124,7 +124,48 @@ document.addEventListener("DOMContentLoaded", () => {
       canvas.style.display = "";
     }
 
-    const ctx = canvas.getContext("2d");
+    const monthLabels = generateMonthLabels(data, weeks);
+    const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    const canvasContainer = canvas.parentElement;
+    const labelsWrapper = document.createElement("div");
+    labelsWrapper.className = "matrix-labels-wrapper";
+
+    const topLabels = document.createElement("div");
+    topLabels.className = "matrix-top-labels";
+    monthLabels.forEach((label) => {
+      const div = document.createElement("div");
+      div.className = "matrix-month-label";
+      div.textContent = label;
+      topLabels.appendChild(div);
+    });
+
+    const contentWrapper = document.createElement("div");
+    contentWrapper.className = "matrix-content";
+
+    const leftLabels = document.createElement("div");
+    leftLabels.className = "matrix-left-labels";
+    dayLabels.forEach((day) => {
+      const div = document.createElement("div");
+      div.className = "matrix-day-label";
+      div.textContent = day;
+      leftLabels.appendChild(div);
+    });
+
+    const canvasWrapper = document.createElement("div");
+    canvasWrapper.className = "matrix-canvas-wrapper";
+    canvasWrapper.appendChild(canvas.cloneNode(true));
+    const newCanvas = canvasWrapper.querySelector("canvas");
+
+    contentWrapper.appendChild(leftLabels);
+    contentWrapper.appendChild(canvasWrapper);
+
+    labelsWrapper.appendChild(topLabels);
+    labelsWrapper.appendChild(contentWrapper);
+
+    canvasContainer.replaceChild(labelsWrapper, canvas);
+
+    const ctx = newCanvas.getContext("2d");
 
     const config = {
       type: "matrix",
@@ -199,6 +240,40 @@ document.addEventListener("DOMContentLoaded", () => {
       window.__playsMatrixChart = null;
     }
     window.__playsMatrixChart = new Chart(ctx, config);
+  }
+
+  function generateMonthLabels(data, weeks) {
+    const shortMonths = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const labels = Array(weeks).fill("");
+    const seenMonths = new Set();
+
+    data.forEach((point) => {
+      const dateStr = point.date;
+      const date = new Date(dateStr + "T00:00:00Z");
+      const month = shortMonths[date.getUTCMonth()];
+      const weekIdx = point.x - 1;
+
+      const monthKey = `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
+      if (!seenMonths.has(monthKey) && weekIdx < weeks) {
+        labels[weekIdx] = month;
+        seenMonths.add(monthKey);
+      }
+    });
+
+    return labels;
   }
 
   render();
