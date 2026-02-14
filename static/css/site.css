@@ -303,6 +303,17 @@ body {
   color: var(--text);
 }
 
+.toast.sync {
+  background: var(--text);
+  color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.6rem 0.8rem;
+  box-shadow: 0px 0px 14px 3px #000000;
+  min-width: 240px;
+  order: -1;
+}
+
 /* Inputs */
 .form-field input,
 .form-field select,

@@ -1,4 +1,34 @@
 (function () {
+  let syncToastId = null;
+
+  async function checkSyncStatus() {
+    try {
+      const resp = await fetch("/api/analytics/server/sync-progress");
+      if (!resp.ok) return;
+
+      const data = await resp.json();
+      if (!data.ok) return;
+
+      if (data.syncing) {
+        if (!syncToastId) {
+          syncToastId = Toast.showSyncToast("Syncing...");
+        }
+      } else {
+        if (syncToastId) {
+          Toast.hideSyncToast(syncToastId);
+          syncToastId = null;
+        }
+      }
+    } catch (err) {
+      console.error("Failed to check sync status:", err);
+    }
+  }
+
+  checkSyncStatus();
+  setInterval(checkSyncStatus, 2000);
+})();
+
+(function () {
   const container = document.getElementById("libraries-container");
   const empty = document.getElementById("libraries-empty");
   const cardsContainer = document.getElementById("libraries-cards");

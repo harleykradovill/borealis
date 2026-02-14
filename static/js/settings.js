@@ -1,3 +1,33 @@
+(function () {
+  let syncToastId = null;
+
+  async function checkSyncStatus() {
+    try {
+      const resp = await fetch("/api/analytics/server/sync-progress");
+      if (!resp.ok) return;
+
+      const data = await resp.json();
+      if (!data.ok) return;
+
+      if (data.syncing) {
+        if (!syncToastId) {
+          syncToastId = Toast.showSyncToast("Syncing...");
+        }
+      } else {
+        if (syncToastId) {
+          Toast.hideSyncToast(syncToastId);
+          syncToastId = null;
+        }
+      }
+    } catch (err) {
+      console.error("Failed to check sync status:", err);
+    }
+  }
+
+  checkSyncStatus();
+  setInterval(checkSyncStatus, 2000);
+})();
+
 const jf_helpers = (function () {
   function getToastContainer() {
     return document.getElementById("toast-container");
@@ -85,7 +115,7 @@ const jf_helpers = (function () {
           ">": "&gt;",
           '"': "&quot;",
           "'": "&#39;",
-        }[c])
+        })[c],
     );
   }
 
@@ -162,7 +192,7 @@ function maskKey(key) {
 (function () {
   const tabs = Array.from(document.querySelectorAll(".settings-tab"));
   const panels = Array.from(
-    document.querySelectorAll('.settings-content[role="tabpanel"]')
+    document.querySelectorAll('.settings-content[role="tabpanel"]'),
   );
 
   const fields = {
@@ -436,7 +466,7 @@ function maskKey(key) {
         checkbox.disabled = true;
         const desired = checkbox.checked;
         const path = `/api/analytics/library/${encodeURIComponent(
-          lib.jellyfin_id
+          lib.jellyfin_id,
         )}/tracked`;
         const result = await postJson(path, { tracked: desired });
         if (result.ok && result.data) {
@@ -444,7 +474,7 @@ function maskKey(key) {
           tracked.textContent = lib.tracked ? "Tracked" : "Not tracked";
           showToast(
             `${lib.name}: tracking ${lib.tracked ? "enabled" : "disabled"}`,
-            "success"
+            "success",
           );
         } else {
           checkbox.checked = !!lib.tracked;
@@ -521,7 +551,7 @@ function maskKey(key) {
           data.jf_server_name,
           data.jf_host,
           data.jf_port,
-          data.jf_api_key
+          data.jf_api_key,
         );
       } else {
         updateServerState(false);
@@ -613,7 +643,7 @@ function maskKey(key) {
           <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
             <div>
               <div style="font-weight:600;color:var(--text);">${escapeHtml(
-                l.name || "(unnamed)"
+                l.name || "(unnamed)",
               )}</div>
               <div style="font-size:0.9rem;color:var(--text-muted);">
                 ${started ? started.toLocaleString() : ""}
@@ -622,10 +652,10 @@ function maskKey(key) {
             </div>
             <div style="text-align:right;">
               <div style="font-weight:600;color:var(--text);">${humanDuration(
-                Number(l.duration_ms || 0)
+                Number(l.duration_ms || 0),
               )}</div>
               <div class="task-log-result" style="font-size:0.85rem;color:var(--text-muted);">${escapeHtml(
-                l.result || ""
+                l.result || "",
               )}</div>
             </div>
           </div>

@@ -95,9 +95,39 @@
     return true;
   }
 
+  function showSyncToast(message = "Syncing...") {
+    const container = getContainer();
+
+    const id = makeId();
+    const el = document.createElement("div");
+    el.className = "toast sync";
+    el.setAttribute("role", "status");
+    el.dataset.toastId = id;
+    el.textContent = String(message);
+
+    container.appendChild(el);
+
+    toasts.set(id, { el, timeoutId: null });
+    return id;
+  }
+
+  function updateSyncToast(toastId, message) {
+    const toast = toasts.get(toastId);
+    if (toast && toast.el) {
+      toast.el.textContent = String(message);
+    }
+  }
+
+  function hideSyncToast(toastId) {
+    removeToast(toastId);
+  }
+
   window.Toast = {
     showToast,
     updateToast,
     removeToast,
+    showSyncToast,
+    updateSyncToast,
+    hideSyncToast,
   };
 })();
