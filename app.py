@@ -23,6 +23,8 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     """
     logging.basicConfig(level=logging.INFO)
     logging.getLogger().setLevel(logging.INFO)
+    logging.getLogger('werkzeug').setLevel(logging.CRITICAL) # Disable annoying useless flask logs
+
 
     app = Flask(
         __name__,
