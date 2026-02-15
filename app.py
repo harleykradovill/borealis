@@ -914,7 +914,8 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             "data": sessions
         }), 200
 
-    logging.info("Startup Complete. Running sync tasks")
+    logging.info("\033[92mStartup Complete. Running sync tasks")
+    logging.info("Access Borealis at http://localhost:2929/\033[0m")
 
     return app
 

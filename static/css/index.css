@@ -10,7 +10,7 @@
   border-radius: 12px;
   padding: 0.75rem;
   box-shadow: none;
-  height: 290px;
+  height: 250px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -19,9 +19,8 @@
   padding-bottom: 3rem;
 }
 
-.matrix-chart-group h1 {
-  margin: 0;
-  font-size: 1rem;
+.matrix-chart-group h2 {
+  margin: 0 0 1rem 0;
   color: var(--accent);
 }
 
@@ -135,8 +134,8 @@
   margin: 2rem auto;
 }
 
-.statistics-group h1 {
-  margin: 0 0 1.5rem 0;
+.statistics-group h2 {
+  margin: 0 0 1rem 0;
   color: var(--accent);
 }
 
