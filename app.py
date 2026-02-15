@@ -192,19 +192,19 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
         if not had_server and has_server:
             ts = int(time.time())
-            try:
-                svc.set_last_activity_log_sync(ts)
-            except Exception:
-                logging.error("[ERROR] Failed to persist last_activity_log_sync to settings DB before initial sync")
+            svc.set_last_activity_log_sync(ts)
 
             import threading
 
             def run_initial_sync():
                 try:
                     sync.sync_initial()
-                except Exception:
-                    import traceback
-                    traceback.print_exc()
+                except Exception as exc:
+                    logging.error(
+                        "[ERROR] Initial sync failed: %s",
+                        exc,
+                        exc_info=True
+                    )
 
             sync_thread = threading.Thread(
                 target=run_initial_sync,
