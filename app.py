@@ -7,6 +7,8 @@ import json
 import logging
 from typing import Optional, Dict
 import time
+from functools import wraps
+from flask import redirect
 
 try:
     from flask import Flask, Response, render_template, jsonify, request, send_from_directory
@@ -133,6 +135,23 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             pass
 
     atexit.register(cleanup)
+
+    def require_server(f):
+        """
+        Decorator that redirects to first-start if no server is configured.
+        """
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            settings = svc.get()
+            has_server = (
+                settings.get("jf_host")
+                and settings.get("jf_port")
+                and settings.get("jf_api_key")
+            )
+            if not has_server:
+                return redirect("/first-start")
+            return f(*args, **kwargs)
+        return decorated_function
 
     @app.get("/assets/<path:filename>")
     def assets(filename: str) -> Response:
@@ -383,17 +402,8 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             }), 200
 
     @app.get("/")
+    @require_server
     def index() -> Response:
-        settings = svc.get()
-        has_server = (
-            settings.get("jf_host")
-            and settings.get("jf_port")
-            and settings.get("jf_api_key")
-        )
-
-        if not has_server:
-            return render_template("first_start.html"), 200
-
         return render_template("index.html"), 200
 
     @app.get("/first-start")
@@ -401,18 +411,22 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         return render_template("first_start.html"), 200
 
     @app.get("/users")
+    @require_server
     def users() -> Response:
         return render_template("users.html"), 200
 
     @app.get("/libraries")
+    @require_server
     def libraries() -> Response:
         return render_template("libraries.html"), 200
 
     @app.get("/activitylog")
+    @require_server
     def activitylog() -> Response:
         return render_template("activitylog.html"), 200
 
     @app.get("/settings")
+    @require_server
     def settings() -> Response:
         return render_template("settings.html"), 200
 
