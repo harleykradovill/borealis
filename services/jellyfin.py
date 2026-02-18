@@ -270,7 +270,7 @@ class JellyfinClient:
         while True:
             path = ( # Build paginated items query
                 f"/Items?ParentId={library_id}&Recursive=true"
-                f"&Fields=MediaSources,DateCreated"
+                f"&Fields=MediaSources,DateCreated,ParentId"
                 f"&Limit={page_size}&StartIndex={start_index}"
             )
             resp = self._get(path)
