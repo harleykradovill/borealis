@@ -124,7 +124,6 @@
   padding: 2rem;
   text-align: center;
   color: var(--text-muted);
-  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
 }

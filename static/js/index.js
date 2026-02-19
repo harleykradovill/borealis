@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "#285b7a",
       "#004c6d",
     ];
-    if (!v) return "#333";
+    if (!v) return "#222";
     const t = Math.min(1, v / Math.max(1, maxV));
     const idx = Math.max(
       0,
