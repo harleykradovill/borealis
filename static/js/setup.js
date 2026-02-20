@@ -50,10 +50,10 @@
   let availableLibraries = [];
 
   const pageElements = {
-    1: document.querySelector('.first-start-page[data-page="1"]'),
-    2: document.querySelector('.first-start-page[data-page="2"]'),
-    3: document.querySelector('.first-start-page[data-page="3"]'),
-    sync: document.querySelector('.first-start-page[data-page="sync"]'),
+    1: document.querySelector('.setup-page[data-page="1"]'),
+    2: document.querySelector('.setup-page[data-page="2"]'),
+    3: document.querySelector('.setup-page[data-page="3"]'),
+    sync: document.querySelector('.setup-page[data-page="sync"]'),
   };
 
   const formFields = {

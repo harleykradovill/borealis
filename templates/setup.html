@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Borealis | First Start</title>
+    <title>Borealis | Setup</title>
     <link
       rel="icon"
       type="image/x-icon"
@@ -15,19 +15,19 @@
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/first_start.css') }}"
+      href="{{ url_for('static', filename='css/setup.css') }}"
     />
   </head>
   <body>
     <main id="content" class="content" tabindex="-1">
-      <section class="first-start">
-        <div class="first-start-progress" id="progress-indicator">
+      <section class="setup">
+        <div class="setup-progress" id="progress-indicator">
           <div class="progress-dot active" data-page="1"></div>
           <div class="progress-dot" data-page="2"></div>
           <div class="progress-dot" data-page="3"></div>
         </div>
-        <div class="first-start-pages" id="pages-container">
-          <div class="first-start-page active" data-page="1">
+        <div class="setup-pages" id="pages-container">
+          <div class="setup-page active" data-page="1">
             <div class="page-content">
               <div class="page-header">
                 <h2>General Settings</h2>
@@ -65,7 +65,7 @@
               <button type="button" class="btn" id="page1-next">Next</button>
             </div>
           </div>
-          <div class="first-start-page" data-page="2">
+          <div class="setup-page" data-page="2">
             <div class="page-content">
               <div class="page-header">
                 <h2>Jellyfin Server</h2>
@@ -123,7 +123,7 @@
             </div>
           </div>
 
-          <div class="first-start-page" data-page="3">
+          <div class="setup-page" data-page="3">
             <div class="page-content">
               <div class="page-header">
                 <h2>Select Libraries</h2>
@@ -147,11 +147,7 @@
               <div class="libraries-tracking" id="libraries-tracking">
                 <h3>Available Libraries</h3>
                 <div id="libraries-list"></div>
-                <div
-                  id="libraries-empty"
-                  class="first-start-placeholder"
-                  hidden
-                >
+                <div id="libraries-empty" class="setup-placeholder" hidden>
                   No libraries found
                 </div>
               </div>
@@ -167,7 +163,7 @@
             </div>
           </div>
 
-          <div class="first-start-page" data-page="sync">
+          <div class="setup-page" data-page="sync">
             <div class="page-content" style="align-items: center">
               <div class="jf-sync-spinner"></div>
               <p id="jf-first-sync-text" style="margin: 0">
@@ -182,6 +178,6 @@
     <div id="toast-container" class="toast-container" role="status"></div>
 
     <script src="../static/js/toast.js"></script>
-    <script src="../static/js/first_start.js"></script>
+    <script src="../static/js/setup.js"></script>
   </body>
 </html>

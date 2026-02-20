@@ -12,8 +12,7 @@
   request.path == url_for('users') %} {% set is_libraries = request.path ==
   url_for('libraries') %} {% set is_activitylog = request.path ==
   url_for('activitylog') %} {% set is_settings = request.path ==
-  url_for('settings') %} {% set is_first_start = request.path ==
-  url_for('first_start') %}
+  url_for('settings') %} {% set is_setup = request.path == url_for('setup') %}
 
   <ul class="sidebar-links" role="menu">
     <li role="none">

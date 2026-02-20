@@ -138,7 +138,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     def require_server(f):
         """
-        Decorator that redirects to first-start if no server is configured.
+        Decorator that redirects to setup if no server is configured.
         """
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -149,7 +149,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 and settings.get("jf_api_key")
             )
             if not has_server:
-                return redirect("/first-start")
+                return redirect("/setup")
             return f(*args, **kwargs)
         return decorated_function
 
@@ -406,9 +406,9 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     def index() -> Response:
         return render_template("index.html"), 200
 
-    @app.get("/first-start")
-    def first_start() -> Response:
-        return render_template("first_start.html"), 200
+    @app.get("/setup")
+    def setup() -> Response:
+        return render_template("setup.html"), 200
 
     @app.get("/users")
     @require_server
@@ -457,7 +457,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     def api_jf_libraries() -> Response:
         """
         Fetches libraries with item counts and upserts to repository.
-        Accepts credentials in POST body for first-start flow.
+        Accepts credentials in POST body for setup flow.
         """
         payload = request.get_json(silent=True) or {}
         host = (payload.get("jf_host") or "").strip()
