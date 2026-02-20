@@ -76,8 +76,7 @@ class SessionsService:
 
         playing_sessions = [
             s for s in data
-            if s.get("NowPlayingItem") and
-            s.get("PlayState", {}).get("IsPaused") is False
+            if s.get("NowPlayingItem")
         ]
         
         sanitized = self._sanitize_sessions(playing_sessions)
