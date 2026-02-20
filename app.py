@@ -231,6 +231,10 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             )
             sync_thread.start()
 
+            sessions_svc = getattr(app, "sessions_service", None)
+            if sessions_svc and not app.config.get("DEBUG"):
+                sessions_svc.start()
+
         return jsonify(updated), 200
 
     @app.get("/api/test-connection")
