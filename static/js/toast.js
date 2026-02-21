@@ -95,7 +95,7 @@
     return true;
   }
 
-  function showSyncToast(message = "Syncing...") {
+  function showSyncToast(message = "Syncing") {
     const container = getContainer();
 
     const id = makeId();
@@ -103,8 +103,15 @@
     el.className = "toast sync";
     el.setAttribute("role", "status");
     el.dataset.toastId = id;
-    el.textContent = String(message);
 
+    const messageSpan = document.createElement("span");
+    messageSpan.textContent = String(message);
+
+    const spinner = document.createElement("div");
+    spinner.className = "sync-spinner";
+
+    el.appendChild(messageSpan);
+    el.appendChild(spinner);
     container.appendChild(el);
 
     toasts.set(id, { el, timeoutId: null });
@@ -114,7 +121,10 @@
   function updateSyncToast(toastId, message) {
     const toast = toasts.get(toastId);
     if (toast && toast.el) {
-      toast.el.textContent = String(message);
+      const messageSpan = toast.el.querySelector("span");
+      if (messageSpan) {
+        messageSpan.textContent = String(message);
+      }
     }
   }
 
