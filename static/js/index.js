@@ -391,14 +391,6 @@ document.addEventListener("DOMContentLoaded", () => {
           label: "Audio",
           value: formatTranscodeStatus(audioIsTranscoding, audioCodec),
         },
-        {
-          label: "Progress",
-          value: formatProgress(progressTicks, runtimeTicks),
-        },
-        {
-          label: "ETA",
-          value: formatETA(progressTicks, runtimeTicks, playbackRate),
-        },
         { label: "Now Playing", value: itemName },
       ];
 
@@ -418,6 +410,27 @@ document.addEventListener("DOMContentLoaded", () => {
         div.appendChild(value);
         card.appendChild(div);
       });
+
+      const progressPercent = Math.round((progressTicks / runtimeTicks) * 100);
+      const progressDiv = document.createElement("div");
+      progressDiv.className = "session-card-progress";
+
+      const progressBar = document.createElement("div");
+      progressBar.className = "session-card-progress-bar";
+
+      const progressFill = document.createElement("div");
+      progressFill.className = "session-card-progress-fill";
+      progressFill.style.width = `${Math.max(0, Math.min(100, progressPercent))}%`;
+
+      progressBar.appendChild(progressFill);
+
+      const progressLabel = document.createElement("div");
+      progressLabel.className = "session-card-progress-label";
+      progressLabel.textContent = `${progressPercent}%`;
+
+      progressDiv.appendChild(progressBar);
+      progressDiv.appendChild(progressLabel);
+      card.appendChild(progressDiv);
 
       cardsContainer.appendChild(card);
     });

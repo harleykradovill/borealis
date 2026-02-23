@@ -110,6 +110,39 @@
   flex: 1;
 }
 
+.session-card-progress {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.session-card-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--text-muted);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.session-card-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 200ms ease;
+}
+
+.session-card-progress-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 3rem;
+  text-align: right;
+}
+
 #sessions-container {
   margin-bottom: 2rem;
 }

@@ -2,8 +2,7 @@
 .vscode
 .idea
 .github
-borealis_data.db
-borealis.db
+*.db
 api
 
 # Environment
