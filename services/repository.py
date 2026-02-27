@@ -61,7 +61,7 @@ class Repository:
     Data access layer for all Borealis entities.
     """
 
-    database_url: str = "sqlite:///borealis_data.db"
+    database_url: str = "sqlite:///borealis.db"
 
     def __post_init__(self) -> None:
         self.engine = create_engine(self.database_url, future=True)

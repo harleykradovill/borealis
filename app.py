@@ -52,8 +52,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 app.config["DATABASE_URL"] = "sqlite:///:memory:"
             if "ENCRYPTION_KEY_PATH" not in test_config:
                 app.config["ENCRYPTION_KEY_PATH"] = ":memory:"
-            if "DATA_DATABASE_URL" not in test_config:
-                app.config["DATA_DATABASE_URL"] = "sqlite:///:memory:"
 
     from services.settings_store import SettingsService
     svc = SettingsService(
@@ -122,10 +120,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             sessions = getattr(app, "sessions_service", None)
             if sessions:
                 sessions.stop()
-        except Exception:
-            pass
-        try:
-            svc.engine.dispose()
         except Exception:
             pass
         try:
