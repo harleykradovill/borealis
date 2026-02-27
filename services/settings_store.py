@@ -15,55 +15,6 @@ from cryptography.fernet import Fernet, InvalidToken
 
 Base = declarative_base()
 
-
-# -------------------------
-# ORM Model
-# -------------------------
-
-class Settings(Base):
-    __tablename__ = "settings"
-
-    id = Column(Integer, primary_key=True)
-    hour_format = Column(String(4), default="12")
-    language = Column(String(8), default="en")
-    jf_host = Column(String(255), default="127.0.0.1")
-    jf_port = Column(String(8), default="8096")
-    jf_api_key_encrypted = Column(String(4096), nullable=True)
-    jf_server_name = Column(String(4096), nullable=True)
-    jf_server_version = Column(String(4096), nullable=True)
-    last_activity_log_sync = Column(Integer, nullable=True)
-    sync_interval = Column(Integer, default=1800)
-
-    def to_dict(self, fernet: Optional[Fernet] = None) -> Dict[str, Any]:
-        """
-        Convert to dict. If fernet provided, decrypt jf_api_key.
-        """
-        api_key_plain = None
-
-        if fernet and self.jf_api_key_encrypted:
-            try:
-                api_key_plain = fernet.decrypt(
-                    self.jf_api_key_encrypted.encode("utf-8")
-                ).decode("utf-8")
-            except InvalidToken:
-                api_key_plain = None
-
-        return {
-            "hour_format": self.hour_format,
-            "language": self.language,
-            "jf_host": self.jf_host,
-            "jf_port": self.jf_port,
-            "jf_api_key": api_key_plain,
-            "jf_server_name": self.jf_server_name,
-            "jf_server_version": self.jf_server_version,
-            "sync_interval": self.sync_interval,
-        }
-
-
-# -------------------------
-# Service
-# -------------------------
-
 @dataclass
 class SettingsService:
     database_url: str
