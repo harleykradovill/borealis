@@ -38,7 +38,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     app.config.setdefault("PORT", 2929)
     app.config.setdefault("DATABASE_URL", "sqlite:///borealis.db")
     app.config.setdefault("ENCRYPTION_KEY_PATH", "secret.key")
-    app.config.setdefault("DATA_DATABASE_URL", "sqlite:///borealis_data.db")
     app.config['TEMPLATES_AUTO_RELOAD'] = True #TODO: TURN OFF IN PROD
 
     logging.info("-=-=-=-=-=-=-=-=-=-=-=-=-")
@@ -64,7 +63,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     from services.repository import Repository
     repo = Repository(
-        database_url=app.config["DATA_DATABASE_URL"]
+        database_url=app.config["DATABASE_URL"]
     )
 
     from services.jellyfin import create_client

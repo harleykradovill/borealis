@@ -16,7 +16,7 @@ from sqlalchemy import (
     Index,
 )
 from sqlalchemy.orm import declarative_base, relationship
-from cryptography import Fernet, InvalidToken
+from cryptography.fernet import Fernet, InvalidToken
 
 Base = declarative_base()
 

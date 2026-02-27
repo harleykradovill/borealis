@@ -9,11 +9,12 @@ from pathlib import Path
 from typing import Optional, Dict, Any, Iterator
 from contextlib import contextmanager
 
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, Session
 from cryptography.fernet import Fernet, InvalidToken
 
-Base = declarative_base()
+from services.data_models import Base, Settings
+
 
 @dataclass
 class SettingsService:
@@ -46,9 +47,12 @@ class SettingsService:
 
     def _load_or_create_key(self) -> bytes:
         """
-        Load a Fernet key from disk, or create one if it does not exist.
+        Load a Fernet key from disk, or create one if missing.
         """
-        if not self.encryption_key_path or self.encryption_key_path == ":memory:":
+        if (
+            not self.encryption_key_path
+            or self.encryption_key_path == ":memory:"
+        ):
             return Fernet.generate_key()
 
         key_file = Path(self.encryption_key_path)
@@ -64,7 +68,7 @@ class SettingsService:
 
     def _get_or_create_row(self, session: Session) -> Settings:
         """
-        Retrieve the single Settings row, creating it if missing.
+        Retrieve the single Settings row, creating if missing.
         """
         obj = session.query(Settings).first()
         if obj:
@@ -74,10 +78,6 @@ class SettingsService:
         session.add(obj)
         session.flush()
         return obj
-
-    # -------------------------
-    # Public API
-    # -------------------------
 
     def get(self) -> Dict[str, Any]:
         """
@@ -89,62 +89,34 @@ class SettingsService:
 
     def update(self, values: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Update settings. Handles encryption for jf_api_key automatically.
-        Unknown keys are ignored.
+        Update settings with provided values.
         """
-        allowed = {
-            "hour_format",
-            "language",
-            "jf_host",
-            "jf_port",
-            "jf_api_key",
-            "jf_server_name",
-            "jf_server_version",
-            "sync_interval",
-        }
-        clean = {k: v for k, v in values.items() if k in allowed}
-
         with self._session() as session:
             settings = self._get_or_create_row(session)
 
-            if clean.get("hour_format") in {"12", "24"}:
-                settings.hour_format = clean["hour_format"]
-
-            if isinstance(clean.get("language"), str):
-                settings.language = clean["language"]
-
-            if isinstance(clean.get("jf_host"), str):
-                settings.jf_host = clean["jf_host"]
-
-            if isinstance(clean.get("jf_port"), str):
-                settings.jf_port = clean["jf_port"]
-
-            if "sync_interval" in clean:
-                try:
-                    val = int(clean["sync_interval"])
-                    if val > 0:
-                        settings.sync_interval = val
-                except Exception:
-                    pass
-
-            if "jf_api_key" in clean:
-                api = clean["jf_api_key"]
-
-                # Prevent accidental overwrite with masked value
-                if isinstance(api, str) and api == "*" * 32:
-                    pass
-                elif isinstance(api, str) and api.strip():
-                    settings.jf_api_key_encrypted = self.fernet.encrypt(
-                        api.encode("utf-8")
-                    ).decode("utf-8")
-                else:
-                    settings.jf_api_key_encrypted = None
-
-            if isinstance(clean.get("jf_server_name"), str):
-                settings.jf_server_name = clean["jf_server_name"]
-
-            if isinstance(clean.get("jf_server_version"), str):
-                settings.jf_server_version = clean["jf_server_version"]
+            if "hour_format" in values:
+                settings.hour_format = str(values["hour_format"])
+            if "language" in values:
+                settings.language = str(values["language"])
+            if "jf_host" in values:
+                settings.jf_host = str(values["jf_host"])
+            if "jf_port" in values:
+                settings.jf_port = str(values["jf_port"])
+            if "jf_api_key" in values:
+                key = values["jf_api_key"]
+                settings.jf_api_key_encrypted = (
+                    self.fernet.encrypt(key.encode("utf-8")).decode(
+                        "utf-8"
+                    )
+                    if key
+                    else None
+                )
+            if "jf_server_name" in values:
+                settings.jf_server_name = values["jf_server_name"]
+            if "jf_server_version" in values:
+                settings.jf_server_version = values["jf_server_version"]
+            if "sync_interval" in values:
+                settings.sync_interval = int(values["sync_interval"])
 
             return settings.to_dict(self.fernet)
 
