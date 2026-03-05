@@ -157,24 +157,24 @@
   let itemLineChart = null;
 
   function paletteFor(n) {
-    const base = [
-      "#c3d1dd",
-      "#adbfce",
-      "#98aec0",
-      "#829cb2",
-      "#6d8ca3",
-      "#577b95",
-      "#416b88",
-      "#285b7a",
+    const palette = [
+      "#9bbfe0",
+      "#82b0db",
+      "#69a1d6",
+      "#5092d1",
+      "#3783cc",
+      "#1f75c6",
+      "#1567b3",
+      "#0b5990",
       "#004c6d",
     ];
     if (!n || n <= 0) return [];
 
-    if (n <= base.length) {
+    if (n <= palette.length) {
       const colors = [];
       for (let i = 0; i < n; i++) {
-        const idx = Math.round((i * (base.length - 1)) / (n - 1));
-        colors.push(base[idx]);
+        const idx = Math.round((i * (palette.length - 1)) / (n - 1));
+        colors.push(palette[idx]);
       }
       return colors;
     }

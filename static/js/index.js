@@ -123,14 +123,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function colorFor(v, maxV) {
     const palette = [
-      "#c3d1dd",
-      "#adbfce",
-      "#98aec0",
-      "#829cb2",
-      "#6d8ca3",
-      "#577b95",
-      "#416b88",
-      "#285b7a",
+      "#9bbfe0",
+      "#82b0db",
+      "#69a1d6",
+      "#5092d1",
+      "#3783cc",
+      "#1f75c6",
+      "#1567b3",
+      "#0b5990",
       "#004c6d",
     ];
     if (!v) return "#222";
