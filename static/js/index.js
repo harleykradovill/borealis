@@ -324,26 +324,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return `Transcoding (${transcodeReason || "unknown"})`;
   }
 
-  function formatProgress(progressTicks, runtimeTicks) {
-    if (!progressTicks || !runtimeTicks) return "-";
-    const percent = Math.round((progressTicks / runtimeTicks) * 100);
-    return `${percent}%`;
-  }
-
-  function formatETA(progressTicks, runtimeTicks, playbackRate) {
-    if (!progressTicks || !runtimeTicks || !playbackRate) return "-";
-    const remainingTicks = runtimeTicks - progressTicks;
-    const remainingMs = remainingTicks / 10000;
-    const remainingSec = Math.round(remainingMs / 1000);
-
-    if (remainingSec < 0) return "-";
-    if (remainingSec < 60) return `${remainingSec}s`;
-
-    const minutes = Math.floor(remainingSec / 60);
-    const seconds = remainingSec % 60;
-    return `${minutes}m ${seconds}s`;
-  }
-
   function renderSessions(sessions) {
     if (!sessions || sessions.length === 0) {
       container.hidden = true;
@@ -370,7 +350,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const playState = session.PlayState || {};
       const progressTicks = playState.PositionTicks || 0;
       const runtimeTicks = nowPlayingItem.RunTimeTicks || 0;
-      const playbackRate = playState.PlaybackRate || 1;
 
       const mediaSource = (session.NowPlayingSessions || [{}])[0] || {};
       const videoCodec = mediaSource.VideoCodec || "unknown";
