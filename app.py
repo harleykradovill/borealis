@@ -743,7 +743,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                     .all()
                 )
 
-                for jellyfin_item_id, library_id, date_created in rows:
+                for library_id, date_created in rows:
                     try:
                         ts = int(date_created)
                     except Exception:
@@ -781,7 +781,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         Trigger a manual sync operation.
         """
         payload = request.get_json(silent=True) or {}
-        sync_type = payload.get("type", "full")
         auto_track = bool(payload.get("auto_track", False))
 
         result = sync.sync_metadata(auto_track=auto_track)

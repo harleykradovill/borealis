@@ -5,7 +5,6 @@ Decoupled from activity log syncing.
 
 from typing import Any, Dict, List, Optional
 from threading import Thread, Event
-import time
 import logging
 
 logger = logging.getLogger(__name__)
