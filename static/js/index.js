@@ -123,17 +123,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function colorFor(v, maxV) {
     const palette = [
-      "#9bbfe0",
-      "#82b0db",
-      "#69a1d6",
-      "#5092d1",
-      "#3783cc",
-      "#1f75c6",
-      "#1567b3",
-      "#0b5990",
-      "#004c6d",
+      "#2b313d",
+      "#2d3647",
+      "#2f3c52",
+      "#364c6d",
+      "#35537a",
+      "#3869a5",
+      "#346daf",
+      "#2a73c7",
+      "#187ddb",
     ];
-    if (!v) return "#222";
+    if (!v) return "#191e27";
     const t = Math.min(1, v / Math.max(1, maxV));
     const idx = Math.max(
       0,

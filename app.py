@@ -732,13 +732,13 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
             counts_by_lib = {}
             for lib in libraries:
-                counts_by_lib[lib["jellyfin_id"]] = Object = {d: 0 for d in dates}
+                counts_by_lib[lib["jellyfin_id"]] = {d: 0 for d in dates}
 
             from services.data_models import Item
             with repo._session() as session:
                 rows = (
-                    session.query(Item.jellyfin_id, Item.library_id, Item.date_created)
-                    .filter(Item.date_created != None)
+                    session.query(Item.library_id, Item.date_created)
+                    .filter(Item.date_created.isnot(None))
                     .filter(Item.date_created >= cutoff)
                     .all()
                 )
