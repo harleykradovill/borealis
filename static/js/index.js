@@ -456,3 +456,101 @@ document.addEventListener("DOMContentLoaded", () => {
 
   startRefresh();
 })();
+
+(function () {
+  const LIMIT = 5;
+
+  function fmtHours(seconds) {
+    const sec = Number(seconds || 0);
+    return `${Math.round(sec / 3600)}h`;
+  }
+
+  function fmtDate(tsSec) {
+    const ts = Number(tsSec || 0);
+    if (!ts) return "-";
+    const d = new Date(ts * 1000);
+    if (Number.isNaN(d.getTime())) return "-";
+    return d.toLocaleDateString();
+  }
+
+  function renderRows(nameListId, valueListId, rows, nameFn, valueFn) {
+    const nameList = document.getElementById(nameListId);
+    const valueList = document.getElementById(valueListId);
+    if (!nameList || !valueList) return;
+
+    const safeRows = Array.isArray(rows) ? rows.slice(0, LIMIT) : [];
+    while (safeRows.length < LIMIT) safeRows.push(null);
+
+    nameList.innerHTML = safeRows
+      .map((row) => `<li class="statistics-item">${nameFn(row)}</li>`)
+      .join("");
+
+    valueList.innerHTML = safeRows
+      .map((row) => `<li class="statistics-value">${valueFn(row)}</li>`)
+      .join("");
+  }
+
+  async function loadWatchStatistics() {
+    try {
+      const resp = await fetch("/api/analytics/stats/dashboard");
+      if (!resp.ok) return;
+
+      const payload = await resp.json();
+      if (!payload?.ok) return;
+
+      const sections = payload.data?.sections || {};
+
+      renderRows(
+        "stat-top-users-names",
+        "stat-top-users-values",
+        sections.top_users_by_plays,
+        (r) => r?.name || "-",
+        (r) => String(Number(r?.plays || 0)),
+      );
+
+      renderRows(
+        "stat-top-items-names",
+        "stat-top-items-values",
+        sections.top_items_by_plays,
+        (r) => r?.name || "-",
+        (r) => String(Number(r?.plays || 0)),
+      );
+
+      renderRows(
+        "stat-top-libraries-names",
+        "stat-top-libraries-values",
+        sections.top_libraries_by_plays,
+        (r) => r?.name || "-",
+        (r) => String(Number(r?.plays || 0)),
+      );
+
+      renderRows(
+        "stat-watch-time-names",
+        "stat-watch-time-values",
+        sections.top_users_by_watch_time,
+        (r) => r?.name || "-",
+        (r) => fmtHours(r?.watch_seconds),
+      );
+
+      renderRows(
+        "stat-active-day-names",
+        "stat-active-day-values",
+        sections.most_active_weekdays,
+        (r) => r?.weekday || "-",
+        (r) => String(Number(r?.plays || 0)),
+      );
+
+      renderRows(
+        "stat-recent-names",
+        "stat-recent-values",
+        sections.recently_watched,
+        (r) => r?.name || "-",
+        (r) => fmtDate(r?.last_watched_at),
+      );
+    } catch (err) {
+      console.error("Failed to load watch statistics:", err);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", loadWatchStatistics);
+})();

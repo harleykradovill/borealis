@@ -634,7 +634,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     @app.get("/api/analytics/stats/dashboard")
     def api_analytics_stats_dashboard() -> Response:
         """
-        Retrieve watch statistics for index dashboard cards.
+        Retrieve watch statistics for dashboard.
         """
         try:
             section_keys = [
