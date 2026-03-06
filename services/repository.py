@@ -16,6 +16,7 @@ from services.data_models import (
     Item,
     PlaybackActivity,
     TaskLog,
+    DashboardStat,
 )
 from services.stats_aggregator import StatsAggregator
 from services.settings_store import Settings
@@ -449,6 +450,69 @@ class Repository:
                 session,
                 include_archived=include_archived,
             )
+        
+    # -------------------------
+    # Dashboard Watch Statistics
+    # -------------------------
+
+    def upsert_dashboard_stat(
+        self, section_key: str, payload: Any
+    ) -> Dict[str, Any]:
+        """
+        Insert or update one dashboard stats section payload.
+        """
+        if not section_key:
+            raise ValueError("section_key is required")
+
+        payload_json = json.dumps(payload if payload is not None else [])
+
+        with self._session() as session:
+            row = (
+                session.query(DashboardStat)
+                .filter(DashboardStat.section_key == section_key)
+                .first()
+            )
+
+            now = _now()
+            if row:
+                row.payload_json = payload_json
+                row.updated_at = now
+            else:
+                row = DashboardStat(
+                    section_key=section_key,
+                    payload_json=payload_json,
+                    updated_at=now,
+                )
+                session.add(row)
+                session.flush()
+
+            return row.to_dict()
+
+    def get_dashboard_stats(
+        self, section_keys: Optional[List[str]] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Retrieve cached dashboard stats rows, optionally filtered by section.
+        """
+        with self._session() as session:
+            query = session.query(DashboardStat)
+
+            if section_keys:
+                query = query.filter(
+                    DashboardStat.section_key.in_(section_keys)
+                )
+
+            rows = query.order_by(DashboardStat.section_key.asc()).all()
+            return [row.to_dict() for row in rows]
+
+    def get_dashboard_stats_map(
+        self, section_keys: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Retrieve dashboard stats keyed by section_key.
+        """
+        rows = self.get_dashboard_stats(section_keys=section_keys)
+        return {row["section_key"]: row for row in rows}
 
     # -------------------------
     # Playback Activity
