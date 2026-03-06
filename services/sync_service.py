@@ -544,6 +544,14 @@ class SyncService:
             if not activity_result.success and activity_result.errors:
                 errors.extend(activity_result.errors)
 
+            # Step 3: Refresh dashboard stats
+            try:
+                self._refresh_dashboard_cache()
+            except Exception as exc:
+                errors.append(
+                    f"Failed to refresh dashboard stats: {str(exc)}"
+                )
+
             duration_ms = int((time.time() - start_time) * 1000)
             result = SyncResult(
                 success=(
@@ -628,6 +636,14 @@ class SyncService:
             except Exception as exc:
                 errors.append(f"Failed to refresh play stats: {str(exc)}")
 
+            # Step 4: Refresh dashboard stats
+            try:
+                self._refresh_dashboard_cache()
+            except Exception as exc:
+                errors.append(
+                    f"Failed to refresh dashboard stats: {str(exc)}"
+                )
+
             duration_ms = int((time.time() - start_time) * 1000)
             result = SyncResult(
                 success=(
@@ -677,3 +693,9 @@ class SyncService:
             )
 
             return result
+
+    def _refresh_dashboard_cache(self) -> None:
+        """
+        Refresh index dashboard stats cache from local DB data.
+        """
+        self.repository.refresh_dashboard_stats(limit=5)

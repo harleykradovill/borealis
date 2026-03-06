@@ -513,6 +513,23 @@ class Repository:
         """
         rows = self.get_dashboard_stats(section_keys=section_keys)
         return {row["section_key"]: row for row in rows}
+    
+    def refresh_dashboard_stats(self, limit: int = 5) -> Dict[str, int]:
+        """
+        Rebuild and persist all cached dashboard stat sections.
+        """
+        from services.dashboard_stats import DashboardStatsBuilder
+
+        with self._session() as session:
+            sections = DashboardStatsBuilder.build_all(
+                session=session,
+                limit=limit,
+            )
+
+        for section_key, payload in sections.items():
+            self.upsert_dashboard_stat(section_key, payload)
+
+        return {"sections_updated": len(sections)}
 
     # -------------------------
     # Playback Activity

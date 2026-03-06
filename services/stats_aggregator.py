@@ -70,6 +70,23 @@ class StatsAggregator:
                 if user.total_plays != new_total:
                     user.total_plays = new_total
 
+                watch_seconds = (
+                    session.query(
+                        func.coalesce(func.sum(Item.runtime_seconds), 0)
+                    )
+                    .join(
+                        PlaybackActivity,
+                        PlaybackActivity.item_id == Item.jellyfin_id,
+                    )
+                    .filter(
+                        PlaybackActivity.user_id == user.jellyfin_id
+                    )
+                    .scalar()
+                )
+                watch_seconds = int(watch_seconds or 0)
+                if user.total_watch_time_seconds != watch_seconds:
+                    user.total_watch_time_seconds = watch_seconds
+
                 last_activity = (
                     session.query(PlaybackActivity)
                     .filter(PlaybackActivity.user_id == user.jellyfin_id)
@@ -78,12 +95,19 @@ class StatsAggregator:
                     .first()
                 )
 
-                if last_activity and last_activity.event_name:
-                    device = StatsAggregator._extract_device_from_event_name(
-                        last_activity.event_name
-                    )
-                    if device and user.last_device != device:
-                        user.last_device = device
+                if last_activity:
+                    if user.last_seen_at != last_activity.activity_at:
+                        user.last_seen_at = last_activity.activity_at
+
+                    if last_activity.event_name:
+                        device = (
+                            StatsAggregator
+                            ._extract_device_from_event_name(
+                                last_activity.event_name
+                            )
+                        )
+                        if device and user.last_device != device:
+                            user.last_device = device
 
                 session.merge(user)
                 users_processed += 1
