@@ -274,3 +274,32 @@ class Settings(Base):
             "jf_server_version": self.jf_server_version,
             "sync_interval": self.sync_interval,
         }
+    
+class DashboardStat(Base):
+    __tablename__ = "dashboard_stats"
+
+    id = Column(Integer, primary_key=True)
+    section_key = Column(String(64), nullable=False, unique=True)
+    payload_json = Column(Text, nullable=False)
+    updated_at = Column(BigInteger, nullable=False)
+
+    __table_args__ = (
+        Index("idx_dashboard_stats_section_key", "section_key"),
+        Index("idx_dashboard_stats_updated_at", "updated_at"),
+    )
+
+    def to_dict(self) -> Dict[str, Any]:
+        import json
+
+        payload = []
+        try:
+            payload = json.loads(self.payload_json) if self.payload_json else []
+        except json.JSONDecodeError:
+            payload = []
+
+        return {
+            "id": self.id,
+            "section_key": self.section_key,
+            "payload": payload,
+            "updated_at": self.updated_at,
+        }
