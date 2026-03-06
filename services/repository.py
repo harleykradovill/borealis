@@ -492,7 +492,7 @@ class Repository:
         self, section_keys: Optional[List[str]] = None
     ) -> List[Dict[str, Any]]:
         """
-        Retrieve cached dashboard stats rows, optionally filtered by section.
+        Retrieve dashboard stats rows, optionally filtered by section.
         """
         with self._session() as session:
             query = session.query(DashboardStat)
@@ -516,7 +516,7 @@ class Repository:
     
     def refresh_dashboard_stats(self, limit: int = 5) -> Dict[str, int]:
         """
-        Rebuild and persist all cached dashboard stat sections.
+        Rebuild and persist all dashboard stat sections.
         """
         from services.dashboard_stats import DashboardStatsBuilder
 

@@ -631,6 +631,56 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 "message": f"Failed to fetch users: {str(exc)}"
             }), 500
 
+    @app.get("/api/analytics/stats/dashboard")
+    def api_analytics_stats_dashboard() -> Response:
+        """
+        Retrieve watch statistics for index dashboard cards.
+        """
+        try:
+            section_keys = [
+                "top_users_by_plays",
+                "top_items_by_plays",
+                "top_libraries_by_plays",
+                "top_users_by_watch_time",
+                "most_active_weekdays",
+                "recently_watched",
+            ]
+
+            rows_by_key = repo.get_dashboard_stats_map(
+                section_keys=section_keys
+            )
+
+            sections = {}
+            latest_updated_at = 0
+
+            for key in section_keys:
+                row = rows_by_key.get(key)
+                if row:
+                    sections[key] = row.get("payload", [])
+                    latest_updated_at = max(
+                        latest_updated_at,
+                        int(row.get("updated_at") or 0),
+                    )
+                else:
+                    sections[key] = []
+
+            return jsonify({
+                "ok": True,
+                "data": {
+                    "limit": 5,
+                    "generated_at": latest_updated_at or None,
+                    "sections": sections,
+                },
+            }), 200
+
+        except Exception as exc:
+            return jsonify({
+                "ok": False,
+                "message": (
+                    f"Failed to fetch dashboard stats: {str(exc)}"
+                ),
+            }), 500
+
     @app.get("/api/analytics/libraries")
     def api_analytics_libraries() -> Response:
         """
