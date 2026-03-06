@@ -235,11 +235,20 @@ class SyncService:
         start_time = time.time()
         errors: List[str] = []
         events_count = 0
+        total_events = 0
 
         task_id = self.repository.create_task_log(
             name="Activity Log Sync (Full)",
             task_type="sync",
             execution_type="full"
+        )
+        self.repository.update_task_log_progress(
+            task_id,
+            {
+                "phase": "starting",
+                "items_synced": 0,
+                "total_events": 0,
+            },
         )
 
         try:
@@ -255,13 +264,10 @@ class SyncService:
             latest_event_ts: Optional[int] = None
 
             while True:
-                # Fetch one page of activity log
-                activity_result = (
-                    self.jellyfin_client.get_activity_log(
-                        start_index=start_index,
-                        limit=page_size,
-                        has_user_id=True
-                    )
+                activity_result = self.jellyfin_client.get_activity_log(
+                    start_index=start_index,
+                    limit=page_size,
+                    has_user_id=True,
                 )
 
                 if not activity_result.get("ok"):
@@ -284,11 +290,14 @@ class SyncService:
 
                 items = data.get("Items", [])
                 if not items:
-                    # No more entries to fetch
                     break
 
-                # Filter for playback events only
-                from services.mappers import map_playback_events
+                reported_total = int(data.get("TotalRecordCount") or 0)
+                if reported_total > 0:
+                    total_events = reported_total
+                elif total_events <= 0:
+                    total_events = total_fetched + len(items)
+
                 playback_events = [
                     item for item in items
                     if item.get("Type") == "VideoPlaybackStopped"
@@ -297,28 +306,35 @@ class SyncService:
                 if playback_events:
                     mapped_events = map_playback_events(
                         playback_events,
-                        user_lookup=user_lookup
+                        user_lookup=user_lookup,
                     )
-                    count = (
-                        self.repository.insert_playback_events(
-                            mapped_events
-                        )
-                    )
+                    count = self.repository.insert_playback_events(mapped_events)
                     events_count += count
 
-                try:
-                    page_max = max(
-                        int(ev.get("activity_at") or 0) for ev in mapped_events
-                    )
-                    if page_max and (latest_event_ts is None or page_max > latest_event_ts):
-                        latest_event_ts = page_max
-                except Exception:
-                    pass
+                    try:
+                        page_max = max(
+                            int(ev.get("activity_at") or 0)
+                            for ev in mapped_events
+                        )
+                        if page_max and (
+                            latest_event_ts is None or page_max > latest_event_ts
+                        ):
+                            latest_event_ts = page_max
+                    except Exception:
+                        pass
 
                 total_fetched += len(items)
                 start_index += page_size
 
-                # Safety check to prevent infinite loops
+                self.repository.update_task_log_progress(
+                    task_id,
+                    {
+                        "phase": "running",
+                        "items_synced": int(events_count),
+                        "total_events": int(total_events),
+                    },
+                )
+
                 if total_fetched > 500000:
                     error_msg = (
                         "Activity log exceeded 500,000 entries, "
@@ -331,10 +347,11 @@ class SyncService:
                 self.repository.refresh_play_stats()
 
             if latest_event_ts:
-                self.settings_service.set_last_activity_log_sync(int(latest_event_ts))
+                self.settings_service.set_last_activity_log_sync(
+                    int(latest_event_ts)
+                )
             else:
-                now = int(time.time())
-                self.settings_service.set_last_activity_log_sync(now)
+                self.settings_service.set_last_activity_log_sync(int(time.time()))
 
             duration_ms = int((time.time() - start_time) * 1000)
             result = SyncResult(
@@ -346,20 +363,22 @@ class SyncService:
                 errors=errors,
             )
 
+            log_data = result.to_dict()
+            log_data["phase"] = "complete" if result.success else "failed"
+            log_data["total_events"] = int(total_events)
+
             self.repository.complete_task_log(
                 task_id=task_id,
                 result="SUCCESS" if result.success else "FAILED",
-                log_data=result.to_dict(),
+                log_data=log_data,
             )
 
             logging.info("[INFO] Full Activity Log Sync Complete")
-
             return result
 
         except Exception as exc:
             duration_ms = int((time.time() - start_time) * 1000)
-            error_msg = f"Unexpected error: {str(exc)}"
-            errors.append(error_msg)
+            errors.append(f"Unexpected error: {str(exc)}")
 
             result = SyncResult(
                 success=False,
@@ -370,10 +389,14 @@ class SyncService:
                 errors=errors,
             )
 
+            log_data = result.to_dict()
+            log_data["phase"] = "failed"
+            log_data["total_events"] = int(total_events)
+
             self.repository.complete_task_log(
                 task_id=task_id,
                 result="FAILED",
-                log_data=result.to_dict(),
+                log_data=log_data,
             )
 
             return result
@@ -530,6 +553,16 @@ class SyncService:
             task_type="sync",
             execution_type="initial"
         )
+        self.repository.update_task_log_progress(
+            task_id,
+            {
+                "phase": "starting",
+                "message": "Starting initial sync",
+                "step": "1/3",
+                "items_synced": 0,
+                "total_events": 0,
+            },
+        )
 
         try:
             # Step 1: Sync users, libraries, and items
@@ -537,12 +570,34 @@ class SyncService:
             if not full_result.success and full_result.errors:
                 errors.extend(full_result.errors)
 
+            self.repository.update_task_log_progress(
+            task_id,
+            {
+                "phase": "running",
+                "message": "Metadata sync complete, syncing activity log",
+                "step": "2/3",
+            },
+        )
+
             # Step 2: Sync activity log
             activity_result = (
                 self.sync_activity_log_full()
             )
             if not activity_result.success and activity_result.errors:
                 errors.extend(activity_result.errors)
+
+            self.repository.update_task_log_progress(
+            task_id,
+            {
+                "phase": "running",
+                "message": "Refreshing dashboard stats",
+                "step": "3/3",
+                "items_synced": int(
+                    full_result.items_synced + activity_result.items_synced
+                ),
+                "total_events": int(activity_result.items_synced),
+            },
+        )
 
             # Step 3: Refresh dashboard stats
             try:
@@ -554,30 +609,30 @@ class SyncService:
 
             duration_ms = int((time.time() - start_time) * 1000)
             result = SyncResult(
-                success=(
-                    full_result.success
-                    and activity_result.success
-                ),
+                success=(full_result.success and activity_result.success),
                 duration_ms=duration_ms,
                 users_synced=full_result.users_synced,
                 libraries_synced=full_result.libraries_synced,
                 items_synced=(
-                    full_result.items_synced
-                    + activity_result.items_synced
+                    full_result.items_synced + activity_result.items_synced
                 ),
                 errors=errors,
             )
 
+            log_data = result.to_dict()
+            log_data["phase"] = "complete" if result.success else "failed"
+            log_data["message"] = (
+                "Initial sync complete" if result.success else "Initial sync failed"
+            )
+            log_data["step"] = "3/3"
+
             self.repository.complete_task_log(
                 task_id=task_id,
-                result=(
-                    "SUCCESS" if result.success else "FAILED"
-                ),
-                log_data=result.to_dict(),
+                result="SUCCESS" if result.success else "FAILED",
+                log_data=log_data,
             )
 
             logging.info("[INFO] Initial Sync Complete")
-
             return result
 
         except Exception as exc:
@@ -594,10 +649,14 @@ class SyncService:
                 errors=errors,
             )
 
+            log_data = result.to_dict()
+            log_data["phase"] = "failed"
+            log_data["message"] = "Initial sync failed"
+
             self.repository.complete_task_log(
                 task_id=task_id,
                 result="FAILED",
-                log_data=result.to_dict(),
+                log_data=log_data,
             )
 
             return result
@@ -618,6 +677,16 @@ class SyncService:
             task_type="sync",
             execution_type="periodic"
         )
+        self.repository.update_task_log_progress(
+            task_id,
+            {
+                "phase": "starting",
+                "message": "Starting periodic sync",
+                "step": "1/4",
+                "items_synced": 0,
+                "total_events": 0,
+            },
+        )
 
         try:
             # Step 1: Sync users, libraries, and items
@@ -625,16 +694,48 @@ class SyncService:
             if not metadata_result.success and metadata_result.errors:
                 errors.extend(metadata_result.errors)
 
+            self.repository.update_task_log_progress(
+                task_id,
+                {
+                    "phase": "running",
+                    "message": "Metadata sync complete, syncing activity log",
+                    "step": "2/4",
+                    "items_synced": int(metadata_result.items_synced),
+                },
+            )
+
             # Step 2: Sync activity log incrementally
             activity_result = self.sync_activity_log_incremental()
             if not activity_result.success and activity_result.errors:
                 errors.extend(activity_result.errors)
+
+            self.repository.update_task_log_progress(
+                task_id,
+                {
+                    "phase": "running",
+                    "message": "Refreshing play stats",
+                    "step": "3/4",
+                    "items_synced": int(
+                        metadata_result.items_synced + activity_result.items_synced
+                    ),
+                    "total_events": int(activity_result.items_synced),
+                },
+            )
 
             # Step 3: Refresh play statistics
             try:
                 self.repository.refresh_play_stats()
             except Exception as exc:
                 errors.append(f"Failed to refresh play stats: {str(exc)}")
+
+            self.repository.update_task_log_progress(
+                task_id,
+                {
+                    "phase": "running",
+                    "message": "Refreshing dashboard stats",
+                    "step": "4/4",
+                },
+            )
 
             # Step 4: Refresh dashboard stats
             try:
@@ -646,30 +747,30 @@ class SyncService:
 
             duration_ms = int((time.time() - start_time) * 1000)
             result = SyncResult(
-                success=(
-                    metadata_result.success
-                    and activity_result.success
-                ),
+                success=(metadata_result.success and activity_result.success),
                 duration_ms=duration_ms,
                 users_synced=metadata_result.users_synced,
                 libraries_synced=metadata_result.libraries_synced,
                 items_synced=(
-                    metadata_result.items_synced
-                    + activity_result.items_synced
+                    metadata_result.items_synced + activity_result.items_synced
                 ),
                 errors=errors,
             )
 
+            log_data = result.to_dict()
+            log_data["phase"] = "complete" if result.success else "failed"
+            log_data["message"] = (
+                "Periodic sync complete" if result.success else "Periodic sync failed"
+            )
+            log_data["step"] = "4/4"
+
             self.repository.complete_task_log(
                 task_id=task_id,
-                result=(
-                    "SUCCESS" if result.success else "FAILED"
-                ),
-                log_data=result.to_dict(),
+                result="SUCCESS" if result.success else "FAILED",
+                log_data=log_data,
             )
 
             logging.info("[INFO] Periodic Sync Complete")
-
             return result
 
         except Exception as exc:
@@ -686,10 +787,14 @@ class SyncService:
                 errors=errors,
             )
 
+            log_data = result.to_dict()
+            log_data["phase"] = "failed"
+            log_data["message"] = "Periodic sync failed"
+
             self.repository.complete_task_log(
                 task_id=task_id,
                 result="FAILED",
-                log_data=result.to_dict(),
+                log_data=log_data,
             )
 
             return result

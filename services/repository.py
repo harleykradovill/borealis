@@ -112,6 +112,32 @@ class Repository:
                     "log_json": task.log_json,
                 }
             return None
+        
+    def update_task_log_progress(
+        self,
+        task_id: int,
+        log_data: Dict[str, Any],
+    ) -> None:
+        """
+        Merge progress fields into a RUNNING task log entry.
+        """
+        if not log_data:
+            return
+    
+        with self._session() as session:
+            task = session.query(TaskLog).filter_by(id=task_id).first()
+            if not task or task.result != "RUNNING":
+                return
+    
+            current: Dict[str, Any] = {}
+            if task.log_json:
+                try:
+                    current = json.loads(task.log_json)
+                except Exception:
+                    current = {}
+    
+            current.update(log_data)
+            task.log_json = json.dumps(current)
 
     # -------------------------
     # Users

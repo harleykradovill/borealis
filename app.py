@@ -11,7 +11,7 @@ from functools import wraps
 from flask import redirect
 
 try:
-    from flask import Flask, Response, render_template, jsonify, request, send_from_directory
+    from flask import Flask, Response, render_template, jsonify, request, send_from_directory, stream_with_context
 except Exception as exc:
     raise RuntimeError(
         "Flask is required to run the local config site. "
@@ -145,6 +145,67 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 return redirect("/setup")
             return f(*args, **kwargs)
         return decorated_function
+    
+    def _build_sync_progress_payload() -> dict:
+        """
+        Build a normalized sync-progress payload
+        """
+        task = repo.get_latest_sync_task()
+
+        if not task:
+            return {
+                "ok": True,
+                "syncing": False,
+                "phase": "idle",
+                "task_id": None,
+                "processed_events": 0,
+                "total_events": 0,
+                "message": "",
+            }
+
+        result = (task.get("result") or "").upper()
+        task_id = task.get("id")
+
+        log_data = {}
+        raw_log = task.get("log_json")
+        if raw_log:
+            try:
+                log_data = json.loads(raw_log)
+            except Exception:
+                log_data = {}
+
+        processed = int(log_data.get("items_synced") or 0)
+        total = int(log_data.get("total_events") or 0)
+
+        phase_from_log = str(log_data.get("phase") or "").strip().lower()
+        message_from_log = str(log_data.get("message") or "").strip()
+        
+        if result == "RUNNING":
+            phase = phase_from_log if phase_from_log in {"starting", "running"} else "running"
+            return {
+                "ok": True,
+                "syncing": True,
+                "phase": phase,
+                "task_id": task_id,
+                "processed_events": processed,
+                "total_events": total,
+                "message": message_from_log or "Sync in progress",
+            }
+        
+        phase = phase_from_log if phase_from_log in {"complete", "failed"} else (
+            "complete" if result == "SUCCESS" else "failed"
+        )
+        return {
+            "ok": True,
+            "syncing": False,
+            "phase": phase,
+            "task_id": task_id,
+            "processed_events": processed,
+            "total_events": total,
+            "message": message_from_log or (
+                "Sync complete" if phase == "complete" else "Sync failed"
+            ),
+        }
 
     @app.get("/assets/<path:filename>")
     def assets(filename: str) -> Response:
@@ -884,34 +945,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         Get the current progress of initial activity log sync.
         """
         try:
-            task = repo.get_latest_sync_task()
-
-            if not task or task["result"] != "RUNNING":
-                return jsonify({
-                    "ok": True,
-                    "syncing": False,
-                    "processed_events": 0,
-                    "total_events": 0
-                }), 200
-
-            import json
-            log_data = {}
-            if task.get("log_json"):
-                try:
-                    log_data = json.loads(task["log_json"])
-                except Exception:
-                    pass
-
-            processed = log_data.get("items_synced", 0)
-            total = log_data.get("total_events", 1)
-
-            return jsonify({
-                "ok": True,
-                "syncing": True,
-                "processed_events": processed,
-                "total_events": total
-            }), 200
-
+            return jsonify(_build_sync_progress_payload()), 200
         except Exception as exc:
             return jsonify({
                 "ok": False,
@@ -935,6 +969,39 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 "ok": False,
                 "message": f"Failed to fetch task logs: {str(exc)}"
             }), 500
+        
+    @app.get("/api/analytics/server/sync-progress/stream")
+    def api_analytics_server_sync_progress_stream() -> Response:
+        """
+        Stream sync-progress updates
+        """
+        def event_stream():
+            last_payload = None
+            heartbeat_every = 15
+            last_heartbeat = time.time()
+
+            while True:
+                payload = _build_sync_progress_payload()
+                payload_json = json.dumps(payload, separators=(",", ":"))
+
+                if payload_json != last_payload:
+                    yield f"event: sync_progress\ndata: {payload_json}\n\n"
+                    last_payload = payload_json
+
+                now = time.time()
+                if now - last_heartbeat >= heartbeat_every:
+                    yield "event: heartbeat\ndata: {}\n\n" # Keep browser connections alive
+                    last_heartbeat = now
+
+                time.sleep(1)
+
+        headers = {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
+        return Response(stream_with_context(event_stream()), headers=headers)
 
     @app.get("/api/analytics/activitylog")
     def api_analytics_activity_log() -> Response:
