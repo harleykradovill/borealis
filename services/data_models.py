@@ -67,7 +67,6 @@ class Library(Base):
     name = Column(String(255), nullable=False)
     type = Column(String(64), nullable=True)
     image_url = Column(String(1024), nullable=True)
-    tracked = Column(Boolean, default=False)
     total_plays = Column(Integer, default=0)
     archived = Column(Boolean, default=False)
     total_time_seconds = Column(BigInteger, default=0)
@@ -93,7 +92,6 @@ class Library(Base):
             "name": self.name,
             "type": self.type,
             "image_url": self.image_url,
-            "tracked": self.tracked,
             "total_plays": self.total_plays,
             "total_time_seconds": self.total_time_seconds,
             "total_files": self.total_files,

@@ -344,22 +344,6 @@ class Repository:
                 query = query.filter(Library.archived.is_(False))
             return [l.to_dict() for l in query.all()]
 
-    def set_library_tracked(
-        self, jellyfin_id: str, tracked: bool
-    ) -> Optional[Dict[str, Any]]:
-        """
-        Update the tracked flag for a library.
-        """
-        with self._session() as session:
-            lib = session.query(Library).filter_by(
-                jellyfin_id=jellyfin_id
-            ).first()
-            if not lib:
-                return None
-
-            lib.tracked = bool(tracked)
-            return lib.to_dict()
-
     # -------------------------
     # Items
     # -------------------------

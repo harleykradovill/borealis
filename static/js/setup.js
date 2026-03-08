@@ -42,7 +42,6 @@
     jfApiKey: "",
     serverName: "",
     serverVersion: "",
-    trackedLibraries: new Set(),
   };
 
   let currentPage = 1;
@@ -159,7 +158,6 @@
     if (!librariesList) return;
 
     librariesList.innerHTML = "";
-    state.trackedLibraries.clear();
 
     try {
       const resp = await fetch("/api/jellyfin/libraries", {
@@ -190,38 +188,13 @@
       if (librariesEmpty) librariesEmpty.hidden = true;
 
       availableLibraries.forEach((lib) => {
-        const jfId = lib.Id || lib.jellyfin_id;
         const libName = lib.Name || lib.name || "Unknown";
         const libType = lib.CollectionType || lib.type || "unknown";
 
         const item = document.createElement("div");
         item.className = "library-item";
 
-        const toggleWrap = document.createElement("label");
-        toggleWrap.className = "switch";
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.id = `lib-${jfId}`;
-        checkbox.checked = true;
-        state.trackedLibraries.add(jfId);
-
-        checkbox.addEventListener("change", () => {
-          if (checkbox.checked) {
-            state.trackedLibraries.add(jfId);
-          } else {
-            state.trackedLibraries.delete(jfId);
-          }
-        });
-
-        const slider = document.createElement("span");
-        slider.className = "slider";
-
-        toggleWrap.appendChild(checkbox);
-        toggleWrap.appendChild(slider);
-
-        const label = document.createElement("label");
-        label.htmlFor = `lib-${jfId}`;
+        const label = document.createElement("div");
 
         const nameSpan = document.createElement("span");
         nameSpan.className = "library-name";
@@ -235,7 +208,6 @@
         label.appendChild(typeSpan);
 
         item.appendChild(label);
-        item.appendChild(toggleWrap);
         librariesList.appendChild(item);
       });
     } catch (err) {
@@ -327,11 +299,6 @@
 
   if (buttons.page3Finish) {
     buttons.page3Finish.addEventListener("click", async () => {
-      if (state.trackedLibraries.size === 0) {
-        showToast("Please select at least one library to track", "error");
-        return;
-      }
-
       buttons.page3Finish.disabled = true;
       const original = buttons.page3Finish.textContent;
       buttons.page3Finish.textContent = "Saving...";

@@ -46,7 +46,7 @@ class SyncService:
     repository: Repository
     settings_service: Any
     
-    def sync_metadata(self, auto_track: bool = False) -> SyncResult:
+    def sync_metadata(self) -> SyncResult:
         """
         Perform a full sync: users → libraries → items.
         """
@@ -111,15 +111,6 @@ class SyncService:
                 libraries_count = self.repository.upsert_libraries(
                     mapped_libs
                 )
-
-                if auto_track and mapped_libs:
-                    for lib in mapped_libs:
-                        jf_id = lib.get("jellyfin_id")
-                        if jf_id:
-                            try:
-                                self.repository.set_library_tracked(jf_id, True)
-                            except Exception:
-                                pass
                 
                 # Archive libraries not in current list
                 active_lib_ids = [
@@ -129,31 +120,26 @@ class SyncService:
                     active_lib_ids
                 )
                 
-                # Phase 3: Sync items for each tracked library
-                tracked_libs = self.repository.list_libraries(
+                # Phase 3: Sync items for each library
+                libraries = self.repository.list_libraries(
                     include_archived=False
                 )
-                
-                for lib in tracked_libs:
-                    if not lib.get("tracked"):
-                        continue
-                    
+
+                for lib in libraries:
                     lib_jf_id = lib["jellyfin_id"]
                     lib_internal_id = lib["id"]
-                    
+
                     items_result = self.jellyfin_client.library_items(
                         lib_jf_id
                     )
-                    
+
                     if items_result.get("ok"):
                         items_data = items_result.get("data", {})
                         if isinstance(items_data, dict):
                             items_list = items_data.get("Items", [])
-                            total_reported = items_data.get("TotalRecordCount", None)
                         else:
                             items_list = []
-                            total_reported = None
-                        
+
                         try:
                             mapped_items = map_items(items_list, lib_internal_id)
                             count = self.repository.upsert_items(mapped_items)
@@ -566,7 +552,7 @@ class SyncService:
 
         try:
             # Step 1: Sync users, libraries, and items
-            full_result = self.sync_metadata(auto_track=True)
+            full_result = self.sync_metadata()
             if not full_result.success and full_result.errors:
                 errors.extend(full_result.errors)
 

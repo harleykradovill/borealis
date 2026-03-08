@@ -797,30 +797,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 "message": f"Failed to fetch libraries: {str(exc)}"
             }), 500
 
-    @app.post("/api/analytics/library/<string:jellyfin_id>/tracked")
-    def api_analytics_set_tracked(jellyfin_id: str) -> Response:
-        """
-        Update the tracked flag for a library.
-        """
-        payload = request.get_json(silent=True) or {}
-        tracked = payload.get("tracked", None)
-        if not isinstance(tracked, bool):
-            return jsonify({
-                "ok": False,
-                "status": 400,
-                "message": "tracked must be boolean"
-            }), 200
-
-        updated = repo.set_library_tracked(jellyfin_id, tracked)
-        if not updated:
-            return jsonify({
-                "ok": False,
-                "status": 404,
-                "message": "Library not found"
-            }), 200
-
-        return jsonify({"ok": True, "data": updated}), 200
-    
     @app.get("/api/analytics/items/added-last-30-days")
     def api_analytics_items_added_last_30_days() -> Response:
         """
@@ -891,10 +867,8 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         """
         Trigger a manual sync operation.
         """
-        payload = request.get_json(silent=True) or {}
-        auto_track = bool(payload.get("auto_track", False))
 
-        result = sync.sync_metadata(auto_track=auto_track)
+        result = sync.sync_metadata()
 
         return jsonify({
             "ok": result.success,

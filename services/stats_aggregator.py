@@ -275,7 +275,6 @@ class StatsAggregator:
                 "name": lib.name,
                 "type": lib.type,
                 "image_url": lib.image_url,
-                "tracked": lib.tracked,
                 "total_plays": lib.total_plays,
                 "total_time_seconds": lib.total_time_seconds,
                 "total_files": lib.total_files,

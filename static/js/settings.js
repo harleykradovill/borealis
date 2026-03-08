@@ -416,47 +416,7 @@ function maskKey(key) {
       const itemCount = typeof lib.item_count === "number" ? lib.item_count : 0;
       name.textContent = `${lib.name} (${itemCount} items)`;
 
-      const tracked = document.createElement("span");
-      tracked.textContent = lib.tracked ? "Tracked" : "Not tracked";
-
-      const toggleWrap = document.createElement("label");
-      toggleWrap.className = "switch";
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = !!lib.tracked;
-
-      const slider = document.createElement("span");
-      slider.className = "slider";
-
-      toggleWrap.appendChild(checkbox);
-      toggleWrap.appendChild(slider);
-
-      checkbox.addEventListener("change", async () => {
-        checkbox.disabled = true;
-        const desired = checkbox.checked;
-        const path = `/api/analytics/library/${encodeURIComponent(
-          lib.jellyfin_id,
-        )}/tracked`;
-        const result = await postJson(path, { tracked: desired });
-        if (result.ok && result.data) {
-          lib.tracked = !!result.data.tracked;
-          tracked.textContent = lib.tracked ? "Tracked" : "Not tracked";
-          showToast(
-            `${lib.name}: tracking ${lib.tracked ? "enabled" : "disabled"}`,
-            "success",
-          );
-        } else {
-          checkbox.checked = !!lib.tracked;
-          const msg = result.message || "Failed to update tracking";
-          showToast(`${lib.name}: ${msg}`, "error");
-        }
-        checkbox.disabled = false;
-      });
-
       li.appendChild(name);
-      li.appendChild(tracked);
-      li.appendChild(toggleWrap);
       list.appendChild(li);
     });
   }
