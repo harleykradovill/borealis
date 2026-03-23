@@ -181,7 +181,6 @@
 .statistics-card {
   display: grid;
   grid-template-columns: 120px 1fr auto;
-  gap: 1rem;
   padding: 1rem;
   background: var(--surface);
   border: 1px solid var(--border);
