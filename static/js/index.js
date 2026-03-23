@@ -315,6 +315,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const ipAddr = session.RemoteEndPoint || "-";
 
       const nowPlayingItem = session.NowPlayingItem || {};
+      const itemId = nowPlayingItem.Id || "";
+
+      const primaryTag =
+        nowPlayingItem.PrimaryImageTag ||
+        nowPlayingItem.ImageTags?.Primary ||
+        "";
+
+      if (itemId) {
+        const imageUrl = primaryTag
+          ? `/api/jellyfin/items/${encodeURIComponent(itemId)}/images/primary?tag=${encodeURIComponent(primaryTag)}`
+          : `/api/jellyfin/items/${encodeURIComponent(itemId)}/images/primary`;
+
+        card.style.setProperty("--session-bg-image", `url("${imageUrl}")`);
+        card.classList.add("session-card-has-bg");
+      }
+
       const itemName = nowPlayingItem.Name || "Unknown Item";
 
       const playState = session.PlayState || {};

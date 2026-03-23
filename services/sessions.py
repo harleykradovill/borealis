@@ -96,7 +96,7 @@ class SessionsService:
             "Id", "UserName", "Client", "DeviceName", "RemoteEndPoint",
             "PlayState", "NowPlayingItem", "TranscodingInfo"
         }
-        item_keys = {"Name", "RunTimeTicks", "Id", "Type"}
+        item_keys = {"Name", "RunTimeTicks", "Id", "Type", "ImageTags"}
 
         sanitized = []
         for s in sessions:
@@ -104,9 +104,11 @@ class SessionsService:
 
             item = clean.get("NowPlayingItem")
             if isinstance(item, dict):
-                clean["NowPlayingItem"] = {
-                    k: item[k] for k in item_keys if k in item
-                }
+                image_tags = item.get("ImageTags") or {}
+                clean_item = {k: item[k] for k in item_keys if k in item}
+                if image_tags.get("Primary"):
+                    clean_item["PrimaryImageTag"] = image_tags["Primary"]
+                clean["NowPlayingItem"] = clean_item
 
             sanitized.append(clean)
         return sanitized

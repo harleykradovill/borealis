@@ -912,6 +912,49 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 "ok": False,
                 "message": f"Failed to fetch item stats: {str(exc)}"
             }), 500
+        
+    @app.get("/api/jellyfin/items/<item_id>/images/primary")
+    def api_jellyfin_item_primary_image(item_id: str) -> Response:
+        """
+        Proxy Jellyfin primary item image to the frontend.
+        """
+        from urllib.request import Request, urlopen
+        from urllib.error import HTTPError, URLError
+    
+        conn = jf._connection()
+        if not conn:
+            return Response(status=404)
+    
+        scheme, host, port, token = conn
+        tag = (request.args.get("tag") or "").strip()
+    
+        path = f"/Items/{item_id}/Images/Primary"
+        if tag:
+            path = f"{path}?tag={tag}"
+    
+        url = jf._build_url(scheme, host, port, path)
+    
+        req = Request(url, method="GET")
+        req.add_header("X-Emby-Token", token)
+        req.add_header("Accept", "image/*")
+    
+        try:
+            with urlopen(req, timeout=5.0) as resp:
+                body = resp.read()
+                status = getattr(resp, "status", 200)
+                content_type = resp.headers.get("Content-Type", "image/jpeg")
+                return Response(
+                    body,
+                    status=status,
+                    mimetype=content_type,
+                    headers={"Cache-Control": "public, max-age=300"},
+                )
+        except HTTPError as he:
+            return Response(status=he.code)
+        except URLError:
+            return Response(status=502)
+        except Exception:
+            return Response(status=500)
 
     @app.get("/api/analytics/server/sync-progress")
     def api_analytics_server_sync_progress() -> Response:

@@ -79,6 +79,9 @@
 }
 
 .session-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -86,6 +89,40 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
+}
+
+.session-card::before,
+.session-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.session-card::before {
+  background-image: var(--session-bg-image);
+  background-size: cover;
+  background-position: center;
+  filter: blur(5px);
+  transform: scale(1.08);
+  z-index: 0;
+}
+
+.session-card::after {
+  background: #191e27cc;
+  z-index: 1;
+}
+
+.session-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+.session-card.session-card-has-bg::before,
+.session-card.session-card-has-bg::after {
+  opacity: 1;
 }
 
 .session-card-attr {
