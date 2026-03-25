@@ -90,7 +90,8 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     sessions_svc = SessionsService(
         jellyfin_client=jf,
-        sync_interval=5
+        sync_interval=5,
+        respository=repo,
     )
     app.sessions_service = sessions_svc
     

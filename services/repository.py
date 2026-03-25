@@ -419,6 +419,49 @@ class Repository:
                 .update({"archived": True}, synchronize_session=False)
             )
 
+    def get_series_name_for_episode(self, episode_jellyfin_id: str) -> Optional[str]:
+        """
+        Resolve Episode -> Season -> Series and return the series name.
+        """
+        if not episode_jellyfin_id:
+            return None
+    
+        with self._session() as session:
+            episode = (
+                session.query(Item)
+                .filter(Item.jellyfin_id == episode_jellyfin_id)
+                .first()
+            )
+            if not episode:
+                return None
+    
+            if (episode.type or "").lower() != "episode":
+                return None
+    
+            if not episode.parent_id:
+                return None
+    
+            season = (
+                session.query(Item)
+                .filter(Item.jellyfin_id == episode.parent_id)
+                .first()
+            )
+            if not season or not season.parent_id:
+                return None
+    
+            series = (
+                session.query(Item)
+                .filter(Item.jellyfin_id == season.parent_id)
+                .first()
+            )
+            if not series:
+                return None
+    
+            if (series.type or "").lower() != "series":
+                return None
+    
+            return series.name
+
     # -------------------------
     # Stats & Activity
     # -------------------------

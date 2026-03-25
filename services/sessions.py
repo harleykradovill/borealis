@@ -16,7 +16,8 @@ class SessionsService:
     def __init__(
         self,
         jellyfin_client: Any,
-        sync_interval: int = 5
+        sync_interval: int = 5,
+        respository: Optional[Any] = None,
     ) -> None:
         """
         Initialize sessions service.
@@ -26,6 +27,7 @@ class SessionsService:
         """
         self._client = jellyfin_client
         self._sync_interval = sync_interval
+        self._repository = respository
         self._thread: Optional[Thread] = None
         self._stop_event = Event()
         self._last_sessions: List[Dict[str, Any]] = []
@@ -110,6 +112,14 @@ class SessionsService:
                     clean_item["PrimaryImageTag"] = image_tags["Primary"]
                 clean["NowPlayingItem"] = clean_item
 
+                episode_name = (clean_item.get("Name") or "").strip()
+                series_name = self._resolve_episode_series_name(clean_item)
+                
+                if series_name and episode_name:
+                    clean_item["Name"] = f"{series_name} - {episode_name}"
+                elif series_name:
+                    clean_item["Name"] = series_name
+
             sanitized.append(clean)
         return sanitized
 
@@ -121,3 +131,26 @@ class SessionsService:
         if result.get("ok"):
             raw_data = result.get("data", [])
             self._cached_sessions = self._sanitize_sessions(raw_data)
+
+    def _resolve_episode_series_name(
+        self,
+        now_playing_item: Dict[str, Any]
+    ) -> Optional[str]:
+        if not self._repository:
+            return None
+
+        item_type = (now_playing_item.get("Type") or "").lower()
+        if item_type != "episode":
+            return None
+
+        item_id = now_playing_item.get("Id")
+        if not item_id:
+            return None
+
+        try:
+            return self._repository.get_series_name_for_episode(item_id)
+        except Exception as exc:
+            logger.warning(
+                f"[WARN] Failed to resolve episode series name for {item_id}: {exc}"
+            )
+            return None
