@@ -217,7 +217,7 @@
 
 .statistics-card {
   display: grid;
-  grid-template-columns: 120px 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   padding: 1rem;
   background: var(--surface);
   border: 1px solid var(--border);
