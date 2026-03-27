@@ -186,28 +186,6 @@ body {
   font-size: 1rem;
 }
 
-.icon-btn {
-  appearance: none;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  line-height: 1;
-}
-
-.icon-btn:hover {
-  color: var(--text-muted);
-}
-
-.icon-btn:focus {
-  outline: none;
-  color: var(--focus);
-  border-radius: 4px;
-  box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
-}
-
 .btn-danger {
   background: var(--negative);
   color: var(--text);

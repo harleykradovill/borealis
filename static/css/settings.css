@@ -48,7 +48,7 @@
   grid-column: 2 / -1;
 }
 
-.settings-placeholder .placeholder-title {
+.settings-placeholder {
   margin: 0 0 0.25rem 0;
   font-size: 1.25rem;
   color: var(--accent);
@@ -165,13 +165,14 @@
 .jf-server-key {
   font-size: 0.9rem;
   color: var(--text-muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
   letter-spacing: 0.15px;
 }
 
 #tasklog-list {
-  max-height: calc(20rem);
+  max-height: 20rem;
   overflow-y: auto;
   padding-right: 0.35rem;
 }

@@ -34,7 +34,6 @@
   display: flex;
   align-items: flex-end;
   padding-left: 60px;
-  gap: 0;
 }
 
 .matrix-month-label {
@@ -223,14 +222,6 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   align-items: flex-start;
-}
-
-.statistics-card-image {
-  width: 120px;
-  height: 180px;
-  border-radius: 12px;
-  object-fit: cover;
-  flex-shrink: 0;
 }
 
 .statistics-card-content {
