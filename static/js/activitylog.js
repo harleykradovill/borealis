@@ -24,6 +24,12 @@
   let allUsers = [];
   let selectedUserIds = null;
 
+  /**
+   * Safe toast wrapper.
+   * @param {any} msg Message or Error to display in the toast
+   * @param {string} kind Toast type
+   * @returns {void}
+   */
   function safeShowToast(msg, kind = "error") {
     if (typeof showToast === "function") {
       showToast(msg, kind);
@@ -32,15 +38,29 @@
     }
   }
 
+  /**
+   * Parse page from URL hash.
+   * @returns {number} Parsed page number (at least 1)
+   */
   function parseHashPage() {
     const match = location.hash.match(/page=(\d+)/);
     return match ? Math.max(1, Number(match[1])) : 1;
   }
 
+  /**
+   * Go to the given page.
+   * @param {number | string} page Page number to navigate to
+   * @returns {void}
+   */
   function gotoPage(page) {
     location.hash = `page=${Math.max(1, Number(page) || 1)}`;
   }
 
+  /**
+   * Disable pagnation navigation.
+   * @param {boolean} disabled True to disable controls, false to enable
+   * @returns {void}
+   */
   function setNavigationDisabled(disabled) {
     [firstBtn, prevBtn, nextBtn, lastBtn].forEach((btn) => {
       if (btn) btn.disabled = disabled;
@@ -138,20 +158,50 @@
 
   function syncUsersFromPayload(data) {
     const users = Array.isArray(data.users) ? data.users : [];
-    allUsers = users
-      .map((u) => ({
-        user_id: String(u?.user_id || "").trim(),
-        username_denorm: u?.username_denorm || "",
-      }))
-      .filter((u) => u.user_id);
+    const byUserId = new Map();
+
+    for (const raw of users) {
+      const userId = String(raw?.user_id || "").trim();
+      if (!userId) continue;
+
+      const username = String(raw?.username_denorm || "").trim();
+      const existing = byUserId.get(userId);
+
+      if (!existing) {
+        byUserId.set(userId, {
+          user_id: userId,
+          username_denorm: username,
+        });
+        continue;
+      }
+
+      if (!existing.username_denorm && username) {
+        existing.username_denorm = username;
+      }
+    }
+
+    allUsers = Array.from(byUserId.values()).sort((a, b) => {
+      const left = (a.username_denorm || a.user_id).toLowerCase();
+      const right = (b.username_denorm || b.user_id).toLowerCase();
+      return left.localeCompare(right);
+    });
 
     if (!(selectedUserIds instanceof Set)) {
       selectedUserIds = new Set(allUsers.map((u) => u.user_id));
+    } else {
+      const validUserIds = new Set(allUsers.map((u) => u.user_id));
+      selectedUserIds = new Set(
+        Array.from(selectedUserIds).filter((id) => validUserIds.has(id)),
+      );
     }
 
     renderFilterOptions();
   }
 
+  /**
+   * Render empty state.
+   * @returns {void}
+   */
   function renderEmpty() {
     container.hidden = true;
     empty.hidden = false;
@@ -172,6 +222,11 @@
     setNavigationDisabled(true);
   }
 
+  /**
+   * Render table and pagnation.
+   * @param {*} data
+   * @returns
+   */
   function render(data) {
     syncUsersFromPayload(data);
 
@@ -195,10 +250,14 @@
 
     for (const it of items) {
       const tr = document.createElement("tr");
+      const currentNameById = new Map(
+        allUsers.map((u) => [u.user_id, u.username_denorm || u.user_id]),
+      );
 
       const userTd = document.createElement("td");
       userTd.style.padding = "0.5rem";
-      userTd.textContent = it.username_denorm || it.user_id || "(unknown)";
+      userTd.textContent =
+        currentNameById.get(it.user_id) || it.username_denorm || "Deleted User";
       tr.appendChild(userTd);
 
       const eventTd = document.createElement("td");
@@ -226,6 +285,12 @@
     renderPaginationControls(page, totalPages);
   }
 
+  /**
+   * Render pagnation buttons.
+   * @param {number} current Current page number
+   * @param {number} totalPages Total number of available pages
+   * @returns {void}
+   */
   function renderPaginationControls(current, totalPages) {
     firstBtn.disabled = current <= 1;
     prevBtn.disabled = current <= 1;
@@ -257,6 +322,11 @@
     }
   }
 
+  /**
+   * Load a page of PlaybackActivity from the database.
+   * @param {number | string} page Page number to load
+   * @returns {void}
+   */
   async function loadPage(page) {
     const selectedIds = getSelectedUserIdsArray();
 

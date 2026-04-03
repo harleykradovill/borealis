@@ -48,11 +48,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 1.5rem;
+  height: 1.5rem;
   padding: 0;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 99px;
   background: var(--surface);
   cursor: pointer;
 }
@@ -78,17 +78,15 @@
 
 .activitylog-filter-menu {
   position: absolute;
-  top: 3.05rem;
-  left: 0.5rem;
   min-width: 220px;
-  max-width: 280px;
+  max-width: 400px;
   max-height: 320px;
   overflow: auto;
-  padding: 0.6rem;
+  padding: 0.8rem;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--surface);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 1);
   z-index: 50;
 }
 
