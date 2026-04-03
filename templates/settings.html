@@ -76,29 +76,50 @@
 
             <div id="general" class="settings-content" role="tabpanel">
               <form class="settings-form">
-                <div class="form-field">
-                  <label for="hour-format">Hour Format</label>
-                  <select id="hour-format" name="hour_format">
-                    <option value="12">12 Hours</option>
-                    <option value="24">24 Hours</option>
-                  </select>
-                </div>
+                <section
+                  class="settings-group"
+                  aria-labelledby="display-settings-heading"
+                >
+                  <h3
+                    id="display-settings-heading"
+                    class="settings-group-title"
+                  >
+                    Display
+                  </h3>
 
-                <div class="form-field">
-                  <label for="language">Language</label>
-                  <select id="language" name="language">
-                    <option value="en">English</option>
-                  </select>
-                </div>
+                  <div class="form-field">
+                    <label for="hour-format">Hour Format</label>
+                    <select id="hour-format" name="hour_format">
+                      <option value="12">12 Hours</option>
+                      <option value="24">24 Hours</option>
+                    </select>
+                  </div>
 
-                <div class="form-field">
-                  <label for="sync-interval">Sync Interval</label>
-                  <select id="sync-interval" name="sync_interval">
-                    <option value="1800">30 Minutes</option>
-                    <option value="3600">1 Hour</option>
-                    <option value="43200">12 Hours</option>
-                  </select>
-                </div>
+                  <div class="form-field">
+                    <label for="language">Language</label>
+                    <select id="language" name="language">
+                      <option value="en">English</option>
+                    </select>
+                  </div>
+                </section>
+
+                <section
+                  class="settings-group"
+                  aria-labelledby="sync-settings-heading"
+                >
+                  <h3 id="sync-settings-heading" class="settings-group-title">
+                    Sync
+                  </h3>
+
+                  <div class="form-field">
+                    <label for="sync-interval">Sync Interval</label>
+                    <select id="sync-interval" name="sync_interval">
+                      <option value="1800">30 Minutes</option>
+                      <option value="3600">1 Hour</option>
+                      <option value="43200">12 Hours</option>
+                    </select>
+                  </div>
+                </section>
               </form>
             </div>
 
