@@ -641,19 +641,42 @@ class Repository:
             return processed
 
     def get_activity_logs(
-        self, page: int = 1, per_page: int = 50
+        self,
+        page: int = 1,
+        per_page: int = 50,
+        user_ids: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Return paginated activity logs ordered by newest first.
+        Optionally filter by user IDs.
         """
         page = max(1, int(page or 1))
         per_page = max(1, min(1000, int(per_page or 50)))
         offset = (page - 1) * per_page
 
+        selected_user_ids = []
+        if user_ids:
+            selected_user_ids = [
+                user_id.strip()
+                for user_id in user_ids
+                if isinstance(user_id, str) and user_id.strip()
+            ]
+
         with self._session() as session:
-            total = session.query(func.count(PlaybackActivity.id)).scalar() or 0
+            base_query = session.query(PlaybackActivity)
+
+            if selected_user_ids:
+                base_query = base_query.filter(
+                    PlaybackActivity.user_id.in_(selected_user_ids)
+                )
+
+            total = (
+                base_query.with_entities(func.count(PlaybackActivity.id)).scalar()
+                or 0
+            )
+
             rows = (
-                session.query(PlaybackActivity)
+                base_query
                 .order_by(
                     PlaybackActivity.activity_at.desc(),
                     PlaybackActivity.id.desc(),
@@ -663,9 +686,38 @@ class Repository:
                 .all()
             )
 
+            user_rows = (
+                session.query(
+                    PlaybackActivity.user_id,
+                    PlaybackActivity.username_denorm,
+                )
+                .filter(PlaybackActivity.user_id.isnot(None))
+                .distinct()
+                .order_by(
+                    func.lower(
+                        func.coalesce(
+                            PlaybackActivity.username_denorm,
+                            PlaybackActivity.user_id,
+                        )
+                    ).asc()
+                )
+                .all()
+            )
+
+            users = [
+                {
+                    "user_id": user_id,
+                    "username_denorm": username_denorm,
+                }
+                for user_id, username_denorm in user_rows
+                if user_id
+            ]
+
             return {
                 "ok": True,
                 "items": [r.to_dict() for r in rows],
+                "users": users,
+                "selected_user_ids": selected_user_ids,
                 "page": page,
                 "per_page": per_page,
                 "total": int(total),

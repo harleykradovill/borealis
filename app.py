@@ -1029,11 +1029,22 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         try:
             page = request.args.get("page", 1, type=int) or 1
             per_page = request.args.get("per_page", 25, type=int) or 25
-
+            user_ids_raw = request.args.get("user_ids", "", type=str) or ""
+    
             page = max(1, int(page))
             per_page = max(1, min(1000, int(per_page)))
-
-            res = repo.get_activity_logs(page=page, per_page=per_page)
+    
+            user_ids = [
+                user_id.strip()
+                for user_id in user_ids_raw.split(",")
+                if user_id and user_id.strip()
+            ]
+    
+            res = repo.get_activity_logs(
+                page=page,
+                per_page=per_page,
+                user_ids=user_ids or None,
+            )
             return jsonify({"ok": True, "data": res}), 200
         except Exception as exc:
             return jsonify({

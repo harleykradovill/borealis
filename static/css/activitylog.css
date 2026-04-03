@@ -37,3 +37,81 @@
   background-color: var(--white);
   border-radius: 12px;
 }
+
+.activitylog-user-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.activitylog-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.activitylog-filter-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.activitylog-filter-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.activitylog-filter-icon {
+  width: 14px;
+  height: 14px;
+  display: block;
+}
+
+#activitylog-container {
+  position: relative;
+}
+
+.activitylog-filter-menu {
+  position: absolute;
+  top: 3.05rem;
+  left: 0.5rem;
+  min-width: 220px;
+  max-width: 280px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  z-index: 50;
+}
+
+.activitylog-filter-title {
+  margin-bottom: 0.45rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.activitylog-filter-options {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.activitylog-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text);
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.activitylog-filter-option input[type="checkbox"] {
+  margin: 0;
+}

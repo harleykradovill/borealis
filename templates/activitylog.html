@@ -44,13 +44,46 @@
               >
                 <thead>
                   <tr>
-                    <th style="text-align: left; padding: 0.5rem">User</th>
+                    <th style="text-align: left; padding: 0.5rem">
+                      <span class="activitylog-user-heading">
+                        <span>User</span>
+                        <button
+                          id="activitylog-user-filter-btn"
+                          class="activitylog-filter-btn"
+                          type="button"
+                          aria-label="Filter by user"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                          aria-controls="activitylog-user-filter-menu"
+                        >
+                          <img
+                            src="../assets/icons/filter.png"
+                            alt=""
+                            class="activitylog-filter-icon"
+                          />
+                        </button>
+                      </span>
+                    </th>
                     <th style="text-align: left; padding: 0.5rem">Event</th>
                     <th style="text-align: right; padding: 0.5rem">Date</th>
                   </tr>
                 </thead>
                 <tbody id="activitylog-tbody"></tbody>
               </table>
+            </div>
+
+            <div
+              id="activitylog-user-filter-menu"
+              class="activitylog-filter-menu"
+              hidden
+              role="dialog"
+              aria-label="Filter activity logs by user"
+            >
+              <div class="activitylog-filter-title">Users</div>
+              <div
+                id="activitylog-user-filter-options"
+                class="activitylog-filter-options"
+              ></div>
             </div>
 
             <nav
