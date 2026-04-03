@@ -169,6 +169,9 @@ function maskKey(key) {
     hour_format: document.getElementById("hour-format"),
     language: document.getElementById("language"),
     sync_interval: document.getElementById("sync-interval"),
+    manual_periodic_sync_btn: document.getElementById(
+      "manual-periodic-sync-btn",
+    ),
   };
 
   const lastKnown = {
@@ -284,6 +287,70 @@ function maskKey(key) {
     }
   }
 
+  let manualSyncPollTimer = null;
+
+  function setManualSyncButtonState(syncing) {
+    const btn = fields.manual_periodic_sync_btn;
+    if (!btn) return;
+
+    if (syncing) {
+      btn.disabled = true;
+      btn.textContent = "Sync Running...";
+      return;
+    }
+
+    btn.disabled = false;
+    btn.textContent = "Sync Now";
+  }
+
+  async function refreshManualSyncButtonState() {
+    const result = await fetchJson("/api/analytics/server/sync-progress");
+    if (!result || !result.ok) return;
+
+    const syncing =
+      result.syncing === true || (result.data && result.data.syncing === true);
+
+    setManualSyncButtonState(!!syncing);
+  }
+
+  function startManualSyncButtonPolling() {
+    if (manualSyncPollTimer) return;
+    manualSyncPollTimer = setInterval(() => {
+      refreshManualSyncButtonState().catch(() => {});
+    }, 3000);
+  }
+
+  function bindManualPeriodicSync() {
+    const btn = fields.manual_periodic_sync_btn;
+    if (!btn) return;
+
+    refreshManualSyncButtonState().catch(() => {});
+    startManualSyncButtonPolling();
+
+    btn.addEventListener("click", async () => {
+      if (btn.disabled) return;
+
+      btn.disabled = true;
+      btn.textContent = "Starting...";
+
+      try {
+        const result = await postJson("/api/sync/periodic", {}, "POST");
+        if (!result || !result.ok) {
+          showToast(result?.message || "Failed to start manual sync", "error");
+          await refreshManualSyncButtonState();
+          return;
+        }
+      } catch (err) {
+        showToast("Failed to start manual sync", "error");
+        console.error(err);
+      } finally {
+        setTimeout(() => {
+          refreshManualSyncButtonState().catch(() => {});
+        }, 300);
+      }
+    });
+  }
+
   function activate(id) {
     tabs.forEach((t) => {
       const isActive = t.getAttribute("href") === `#${id}`;
@@ -312,7 +379,10 @@ function maskKey(key) {
 
   window.addEventListener("hashchange", fromHash);
   fromHash();
-  loadSettings().then(bindAutosave);
+  loadSettings().then(() => {
+    bindAutosave();
+    bindManualPeriodicSync();
+  });
 })();
 
 (function () {

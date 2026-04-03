@@ -668,6 +668,33 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 "ok": False,
                 "message": f"Error syncing libraries: {str(exc)}"
             }), 500
+        
+    @app.post("/api/sync/periodic")
+    def api_sync_periodic() -> Response:
+        """
+        Trigger the same sync path used by interval scheduling and reset timer.
+        """
+        sched = getattr(app, "sync_scheduler", None)
+        if sched and hasattr(sched, "trigger_periodic_now"):
+            sched.trigger_periodic_now()
+            return jsonify({
+                "ok": True,
+                "message": "Periodic sync started; timer reset."
+            }), 200
+    
+        import threading
+    
+        def run_sync():
+            try:
+                sync.sync_periodic()
+            except Exception:
+                logging.exception("[ERROR] Manual periodic sync failed")
+    
+        threading.Thread(target=run_sync, daemon=True).start()
+        return jsonify({
+            "ok": True,
+            "message": "Periodic sync started."
+        }), 200
 
     @app.get("/api/analytics/users")
     def api_analytics_users() -> Response:
