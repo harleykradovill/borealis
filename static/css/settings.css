@@ -23,13 +23,13 @@
 .settings-tab {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   width: 100%;
   padding: 0.5rem 0.75rem;
   border-radius: 12px;
   text-decoration: none;
   color: var(--text);
   background: transparent;
-  border: 1px solid transparent;
 }
 
 .settings-tab:hover {
@@ -49,12 +49,6 @@
 }
 
 .settings-placeholder {
-  margin: 0 0 0.25rem 0;
-  font-size: 1.25rem;
-  color: var(--accent);
-}
-
-.settings-placeholder {
   margin: 0;
   color: var(--text-muted);
   font-size: 0.95rem;
@@ -62,7 +56,6 @@
 
 .settings-form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
 }
@@ -143,14 +136,6 @@
   padding: 0.6rem 0.8rem;
 }
 
-.libraries-list > li span:first-child {
-  color: var(--text);
-}
-
-.libraries-list > li span:nth-child(2) {
-  color: var(--text-muted);
-}
-
 /* Server Container */
 .jf-server-container {
   border: 1px solid var(--border);
@@ -210,8 +195,7 @@
   background: var(--bg);
 }
 
-#tasklog-list > li.task-log-item.success,
-#tasklog-list > li.task-log-item--success {
+#tasklog-list > li.task-log-item.success {
   background-image: linear-gradient(
     90deg,
     var(--bg) 0%,
@@ -219,8 +203,7 @@
   );
 }
 
-#tasklog-list > li.task-log-item.failed,
-#tasklog-list > li.task-log-item--failed {
+#tasklog-list > li.task-log-item.failed {
   background-image: linear-gradient(
     90deg,
     var(--bg) 0%,

@@ -456,60 +456,6 @@ function maskKey(key) {
 })();
 
 (function () {
-  const panel = document.getElementById("libraries");
-  const list = document.getElementById("libraries-list");
-  const empty = document.getElementById("libraries-empty");
-  const librariesTab = document.getElementById("libraries-tab");
-
-  async function loadLibraries() {
-    const result = await fetchJson("/api/analytics/stats/libraries");
-    if (!result.ok) {
-      showToast(result.message || "Failed to load libraries", "error");
-      if (empty) empty.hidden = false;
-      if (list) list.hidden = true;
-      return;
-    }
-    const libs = Array.isArray(result.data) ? result.data : [];
-    renderLibraries(libs);
-  }
-
-  function renderLibraries(libs) {
-    if (!list || !empty) return;
-    list.innerHTML = "";
-    const hasItems = libs.length > 0;
-    empty.hidden = hasItems;
-
-    libs.forEach((lib) => {
-      const li = document.createElement("li");
-
-      const name = document.createElement("span");
-      const itemCount = typeof lib.item_count === "number" ? lib.item_count : 0;
-      name.textContent = `${lib.name} (${itemCount} items)`;
-
-      li.appendChild(name);
-      list.appendChild(li);
-    });
-  }
-
-  function loadIfVisible() {
-    if (panel && !panel.hidden) {
-      loadLibraries();
-    }
-  }
-
-  if (location.hash === "#libraries") {
-    setTimeout(loadIfVisible, 0);
-  }
-
-  if (librariesTab) {
-    librariesTab.addEventListener("click", () => {
-      setTimeout(loadIfVisible, 0);
-    });
-  }
-  window.addEventListener("hashchange", loadIfVisible);
-})();
-
-(function () {
   const noServerDiv = document.getElementById("jf-no-server");
   const serverAddedDiv = document.getElementById("jf-server-added");
   const removeServerBtn = document.getElementById("jf-remove-server-btn");
