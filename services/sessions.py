@@ -40,7 +40,6 @@ class SessionsService:
         self._stop_event.clear()
         self._thread = Thread(target=self._sync_loop, daemon=True)
         self._thread.start()
-        logger.info("[INFO] Sessions service started")
 
     def stop(self) -> None:
         """Stop background sync thread."""

@@ -43,7 +43,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     logging.info("-=-=-=-=-=-=-=-=-=-=-=-=-")
     logging.info("         Borealis        ")
     logging.info("-=-=-=-=-=-=-=-=-=-=-=-=-")
-    logging.info("Starting Up")
 
     if test_config:
         app.config.update(test_config)
