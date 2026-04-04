@@ -291,6 +291,27 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 sessions_svc.start()
 
         return jsonify(updated), 200
+    
+    @app.get("/api/settings/sync-status")
+    def get_sync_status() -> Response:
+        sched = getattr(app, "sync_scheduler", None)
+        sched_status = (
+            sched.get_status()
+            if sched and hasattr(sched, "get_status")
+            else {}
+        )
+    
+        progress = _build_sync_progress_payload()
+        syncing = bool(progress.get("syncing")) or bool(
+            sched_status.get("is_running")
+        )
+    
+        return jsonify({
+            "ok": True,
+            "syncing": syncing,
+            "next_scheduled_sync_at": sched_status.get("next_run_at"),
+            "interval_seconds": sched_status.get("interval_seconds"),
+        }), 200
 
     @app.get("/api/test-connection")
     def test_connection() -> Response:

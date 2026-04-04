@@ -131,3 +131,21 @@ class SyncScheduler:
 
         self._wake_event.set()
         logging.info("[INFO] Sync interval updated to %s seconds", sec)
+
+    def trigger_periodic_now(self) -> None:
+        with self._state_lock:
+            self._pending_manual_run = True
+            self._next_run_at = int(time.time())
+        self._wake_event.set()
+        logging.info("[INFO] Manual periodic sync requested")
+
+    def get_status(self) -> dict:
+        with self._state_lock:
+            return {
+                "is_running": self._is_running,
+                "interval_seconds": int(self.interval_seconds),
+                "last_started_at": self._last_started_at,
+                "last_finished_at": self._last_finished_at,
+                "next_run_at": self._next_run_at,
+                "pending_manual_run": self._pending_manual_run,
+            }

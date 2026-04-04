@@ -214,3 +214,57 @@
 #tasklog-list > li .task-log-result {
   color: var(--text);
 }
+
+.sync-status-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.sync-status-grid {
+  min-width: 0;
+}
+
+.sync-stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--surface);
+  border: 0;
+  border-radius: 10px;
+  padding: 0.75rem 0.85rem;
+  min-height: 0;
+}
+
+.sync-stat-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.sync-stat-value {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.sync-stat-sub {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin-top: 0.2rem;
+}
+
+#manual-periodic-sync-btn {
+  align-self: stretch;
+  min-width: 10rem;
+  padding-inline: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+}

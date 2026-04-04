@@ -172,6 +172,8 @@ function maskKey(key) {
     manual_periodic_sync_btn: document.getElementById(
       "manual-periodic-sync-btn",
     ),
+    sync_next_at: document.getElementById("sync-next-at"),
+    sync_next_eta: document.getElementById("sync-next-eta"),
   };
 
   const lastKnown = {
@@ -179,6 +181,73 @@ function maskKey(key) {
     language: null,
     sync_interval: null,
   };
+
+  let syncStatusTimer = null;
+
+  function formatRelativeTime(ts, emptyLabel) {
+    if (!ts) return emptyLabel;
+
+    var targetSec = Number(ts);
+    if (!Number.isFinite(targetSec)) return emptyLabel;
+
+    var nowSec = Math.floor(Date.now() / 1000);
+    var diff = targetSec - nowSec;
+    var absDiff = Math.abs(diff);
+
+    if (absDiff < 10) {
+      return diff >= 0 ? "in a few seconds" : "just now";
+    }
+
+    var value = 0;
+    var unit = "";
+
+    if (absDiff < 3600) {
+      value = Math.floor(absDiff / 60) || 1;
+      unit = value === 1 ? "minute" : "minutes";
+    } else if (absDiff < 86400) {
+      value = Math.floor(absDiff / 3600);
+      unit = value === 1 ? "hour" : "hours";
+    } else {
+      value = Math.floor(absDiff / 86400);
+      unit = value === 1 ? "day" : "days";
+    }
+
+    if (diff >= 0) {
+      return "in " + value + " " + unit;
+    }
+    return value + " " + unit + " ago";
+  }
+
+  function renderSyncStatus(payload) {
+    if (!payload) return;
+
+    var nextAt = payload.next_scheduled_sync_at;
+    if (fields.sync_next_at) {
+      fields.sync_next_at.textContent = nextAt
+        ? formatRelativeTime(nextAt, "Not scheduled")
+        : "Not scheduled";
+    }
+
+    if (fields.sync_next_eta) {
+      fields.sync_next_eta.textContent = "";
+    }
+  }
+
+  async function refreshSyncStatus() {
+    var result = await fetchJson("/api/settings/sync-status");
+    if (!result || !result.ok) return;
+    var payload =
+      result.data && typeof result.data === "object" ? result.data : result;
+    renderSyncStatus(payload);
+  }
+
+  function startSyncStatusPolling() {
+    refreshSyncStatus().catch(function () {});
+    if (syncStatusTimer) clearInterval(syncStatusTimer);
+    syncStatusTimer = setInterval(function () {
+      refreshSyncStatus().catch(function () {});
+    }, 60000);
+  }
 
   async function loadSettings() {
     try {
@@ -347,6 +416,7 @@ function maskKey(key) {
         setTimeout(() => {
           refreshManualSyncButtonState().catch(() => {});
         }, 300);
+        refreshSyncStatus().catch(function () {});
       }
     });
   }
@@ -382,6 +452,7 @@ function maskKey(key) {
   loadSettings().then(() => {
     bindAutosave();
     bindManualPeriodicSync();
+    startSyncStatusPolling();
   });
 })();
 

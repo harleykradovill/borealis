@@ -111,7 +111,21 @@
                     </select>
                   </div>
 
-                  <div class="form-field">
+                  <div
+                    class="sync-status-card"
+                    id="sync-status-card"
+                    aria-live="polite"
+                  >
+                    <div class="sync-status-grid">
+                      <div class="sync-stat">
+                        <div class="sync-stat-label">Next Scheduled</div>
+                        <div class="sync-stat-value" id="sync-next-at">
+                          Not scheduled
+                        </div>
+                        <div class="sync-stat-sub" id="sync-next-eta"></div>
+                      </div>
+                    </div>
+
                     <button
                       id="manual-periodic-sync-btn"
                       class="btn"
