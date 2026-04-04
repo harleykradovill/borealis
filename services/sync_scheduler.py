@@ -27,6 +27,10 @@ class SyncScheduler:
         self._thread: threading.Thread | None = None
         self._state_lock = threading.Lock()
         self._pending_manual_run = False
+        self._is_running = False
+        self._last_started_at: int | None = None
+        self._last_finished_at: int | None = None
+        self._next_run_at: int | None = None
 
     def start(self) -> None:
         if self._thread and self._thread.is_alive():
@@ -54,38 +58,59 @@ class SyncScheduler:
             "[INFO] SyncScheduler loop starting (interval=%s seconds)",
             self.interval_seconds,
         )
-    
+
         run_immediately = True
-    
+
         while not self._stop_event.is_set():
             should_run = False
-    
+
             if run_immediately:
                 should_run = True
                 run_immediately = False
+                with self._state_lock:
+                    self._next_run_at = int(time.time())
             else:
+                with self._state_lock:
+                    self._next_run_at = int(time.time()) + self.interval_seconds
+
                 woke_early = self._wake_event.wait(self.interval_seconds)
                 self._wake_event.clear()
-    
+
                 if self._stop_event.is_set():
                     break
-                
+
                 if woke_early:
                     with self._state_lock:
                         if self._pending_manual_run:
                             should_run = True
                             self._pending_manual_run = False
+                            self._next_run_at = int(time.time())
                 else:
                     should_run = True
-    
+                    with self._state_lock:
+                        self._next_run_at = int(time.time())
+
             if not should_run:
                 continue
-            
+
+            started_at = int(time.time())
+            with self._state_lock:
+                self._is_running = True
+                self._last_started_at = started_at
+                self._next_run_at = None
+
             try:
                 self.sync_service.sync_periodic()
             except Exception:
                 logging.error("[ERROR] Periodic sync failed")
                 traceback.print_exc()
+            finally:
+                finished_at = int(time.time())
+                with self._state_lock:
+                    self._is_running = False
+                    self._last_finished_at = finished_at
+                    if not self._stop_event.is_set():
+                        self._next_run_at = finished_at + self.interval_seconds
 
     def set_interval(self, seconds: int) -> None:
         """
@@ -100,11 +125,9 @@ class SyncScheduler:
             return
 
         self.interval_seconds = sec
+        with self._state_lock:
+            if not self._is_running:
+                self._next_run_at = int(time.time()) + sec
+
         self._wake_event.set()
         logging.info("[INFO] Sync interval updated to %s seconds", sec)
-
-    def trigger_periodic_now(self) -> None:
-        with self._state_lock:
-            self._pending_manual_run = True
-        self._wake_event.set()
-        logging.info("[INFO] Manual periodic sync requested")
