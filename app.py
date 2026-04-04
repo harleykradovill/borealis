@@ -312,85 +312,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             "interval_seconds": sched_status.get("interval_seconds"),
         }), 200
 
-    @app.get("/api/test-connection")
-    def test_connection() -> Response:
-        """
-        Test Jellyfin connectivity using persisted settings.
-        """
-        from urllib.request import Request, urlopen
-        from urllib.error import URLError, HTTPError
-
-        settings = svc.get()
-        host = (settings.get("jf_host") or "").strip()
-        port = (settings.get("jf_port") or "").strip()
-        token = (settings.get("jf_api_key") or "").strip()
-
-        if not host or not port or not token:
-            return jsonify({
-                "ok": False,
-                "status": 400,
-                "message": "Missing host, port, or API key in settings."
-            }), 200
-
-        if not port.isdigit():
-            return jsonify({
-                "ok": False,
-                "status": 400,
-                "message": "Stored port must be numeric."
-            }), 200
-
-        scheme = "http"
-        if host.startswith(("http://", "https://")):
-            if host.startswith("https://"):
-                scheme = "https"
-                host = host.removeprefix("https://")
-            elif host.startswith("http://"):
-                scheme = "http"
-                host = host.removeprefix("http://")
-
-        url = f"{scheme}://{host}:{port}/System/Info"
-
-        req = Request(url, method="GET")
-        req.add_header("X-Emby-Token", token)
-        req.add_header("Accept", "application/json")
-
-        try:
-            with urlopen(req, timeout=3.0) as resp:
-                status = getattr(resp, "status", 200)
-                if 200 <= status < 300:
-                    return jsonify({
-                        "ok": True,
-                        "status": status,
-                        "message": "Connection successful."
-                    }), 200
-                return jsonify({
-                    "ok": False,
-                    "status": status,
-                    "message": f"Jellyfin returned status {status}."
-                }), 200
-        except HTTPError as he:
-            return jsonify({
-                "ok": False,
-                "status": he.code,
-                "message": (
-                    f"HTTP error from Jellyfin ({he.code}): "
-                    f"{he.reason or 'Unknown'}"
-                )
-            }), 200
-        except URLError as ue:
-            reason = getattr(ue, "reason", "Unknown")
-            return jsonify({
-                "ok": False,
-                "status": 0,
-                "message": f"Network error: {reason}"
-            }), 200
-        except Exception as exc:
-            return jsonify({
-                "ok": False,
-                "status": 0,
-                "message": f"Unexpected error: {str(exc)}"
-            }), 200
-
     @app.post("/api/test-connection-with-credentials")
     def test_connection_with_credentials() -> Response:
         """
@@ -509,28 +430,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     def settings() -> Response:
         return render_template("settings.html"), 200
 
-    @app.get("/api/jellyfin/system-info")
-    def api_jf_system_info() -> Response:
-        result = jf.system_info()
-        return jsonify(result), 200
-
-    @app.get("/api/jellyfin/users")
-    def api_jf_users() -> Response:
-        """
-        Fetches users and upserts to repository.
-        """
-        result = jf.users()
-        if result and result.get("ok") and isinstance(
-            result.get("data"), list
-        ):
-            try:
-                from services.mappers import map_users
-                mapped = map_users(result["data"])
-                repo.upsert_users(mapped)
-            except Exception:
-                pass
-        return jsonify(result), 200
-
     @app.get("/api/jellyfin/libraries")
     @app.post("/api/jellyfin/libraries")
     def api_jf_libraries() -> Response:
@@ -637,57 +536,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                     pass
 
         return jsonify(result), 200
-
-    @app.post("/api/sync/libraries-only")
-    def api_sync_libraries_only() -> Response:
-        """
-        Sync only library metadata without fetching item counts.
-        Used during initial setup for faster library discovery.
-        """
-        try:
-            result = jf.libraries()
-
-            data = result.get("data")
-            if not result.get("ok"):
-                return jsonify({
-                    "ok": False,
-                    "message": "Failed to fetch libraries from Jellyfin"
-                }), 200
-
-            if isinstance(data, dict) and isinstance(
-                data.get("Items"), list
-            ):
-                flat = data["Items"]
-            elif isinstance(data, list):
-                flat = data
-            else:
-                flat = []
-
-            def _is_media_library(lib: dict) -> bool:
-                t = (lib.get("CollectionType") or lib.get("Type") or "")
-                t_norm = str(t).strip().lower()
-                if not t_norm:
-                    return False
-                return any(k in t_norm for k in ("movies", "tvshows"))
-
-            filtered = [l for l in flat if _is_media_library(l)]
-
-            try:
-                from services.mappers import map_libraries
-                mapped = map_libraries(filtered)
-                repo.upsert_libraries(mapped)
-            except Exception:
-                pass
-
-            return jsonify({
-                "ok": True,
-                "data": filtered
-            }), 200
-        except Exception as exc:
-            return jsonify({
-                "ok": False,
-                "message": f"Error syncing libraries: {str(exc)}"
-            }), 500
         
     @app.post("/api/sync/periodic")
     def api_sync_periodic() -> Response:
@@ -715,13 +563,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             "ok": True,
             "message": "Periodic sync started."
         }), 200
-
-    @app.get("/api/analytics/users")
-    def api_analytics_users() -> Response:
-        """
-        Retrieve all users from repository.
-        """
-        return jsonify({"ok": True, "data": repo.list_users()}), 200
     
     @app.get("/api/analytics/stats/users")
     def api_analytics_stats_users() -> Response:
@@ -790,61 +631,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 ),
             }), 500
 
-    @app.get("/api/analytics/libraries")
-    def api_analytics_libraries() -> Response:
-        """
-        Retrieve all libraries from repository.
-        """
-        settings = svc.get()
-
-        if not (
-            settings.get("jf_host")
-            and settings.get("jf_port")
-            and settings.get("jf_api_key")
-        ):
-            return jsonify({
-                "ok": True,
-                "data": []
-            }), 200
-
-        try:
-            libraries = repo.list_libraries(include_archived=False)
-
-            for lib in libraries:
-                jf_id = lib.get("jellyfin_id")
-                if not jf_id:
-                    lib["item_count"] = 0
-                    continue
-
-                t = (lib.get("type") or "").strip().lower()
-                if "tvshows" in t:
-                    items_res = jf.library_items(jf_id)
-                    if items_res.get("ok"):
-                        items = items_res.get("data", {}).get("Items", []) or []
-                        series = sum(1 for it in items if (it.get("Type") or "").lower() == "series")
-                        episodes = sum(1 for it in items if (it.get("Type") or "").lower() == "episode")
-                        lib["series_count"] = series
-                        lib["episode_count"] = episodes
-                        lib["item_count"] = series + episodes
-                    else:
-                        lib["series_count"] = 0
-                        lib["episode_count"] = 0
-                        lib["item_count"] = 0
-                else:
-                    stats = jf.library_stats(jf_id)
-                    lib["item_count"] = stats.get("item_count", 0) if stats.get("ok") else 0
-
-            return jsonify({
-                "ok": True,
-                "data": libraries
-            }), 200
-
-        except Exception as exc:
-            return jsonify({
-                "ok": False,
-                "message": f"Failed to fetch libraries: {str(exc)}"
-            }), 500
-
     @app.get("/api/analytics/items/added-last-30-days")
     def api_analytics_items_added_last_30_days() -> Response:
         """
@@ -910,19 +696,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 "message": f"Failed to build items-added data: {str(exc)}"
             }), 500
 
-    @app.post("/api/sync")
-    def api_sync() -> Response:
-        """
-        Trigger a manual sync operation.
-        """
-
-        result = sync.sync_metadata()
-
-        return jsonify({
-            "ok": result.success,
-            "data": result.to_dict()
-        }), 200
-
     @app.get("/api/analytics/stats/libraries")
     def api_analytics_stats_libraries() -> Response:
         """
@@ -938,27 +711,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             return jsonify({
                 "ok": False,
                 "message": f"Failed to fetch library stats: {str(exc)}"
-            }), 500
-
-    @app.get("/api/analytics/stats/items")
-    def api_analytics_stats_items() -> Response:
-        """
-        Retrieve the most played items across all libraries.
-        """
-        try:
-            limit = request.args.get("limit", 10, type=int)
-            if limit < 1 or limit > 100:
-                limit = 10
-
-            items = repo.get_top_items_by_plays(limit=limit)
-            return jsonify({
-                "ok": True,
-                "data": items
-            }), 200
-        except Exception as exc:
-            return jsonify({
-                "ok": False,
-                "message": f"Failed to fetch item stats: {str(exc)}"
             }), 500
         
     @app.get("/api/jellyfin/items/<item_id>/images/primary")
