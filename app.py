@@ -9,6 +9,8 @@ from typing import Optional, Dict
 import time
 from functools import wraps
 from flask import redirect
+from api.settings import create_settings_blueprint
+from api.analytics import create_analytics_blueprint
 
 try:
     from flask import Flask, Response, render_template, jsonify, request, send_from_directory, stream_with_context
@@ -26,7 +28,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     logging.basicConfig(level=logging.INFO)
     logging.getLogger().setLevel(logging.INFO)
     logging.getLogger('werkzeug').setLevel(logging.CRITICAL) # Disable annoying flask logs
-
 
     app = Flask(
         __name__,
@@ -84,6 +85,11 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     )
 
     app.sync_scheduler = sync_scheduler
+
+    ## Blueprints
+
+    app.register_blueprint(create_settings_blueprint(svc=svc, repo=repo, sync=sync))
+    app.register_blueprint(create_analytics_blueprint(svc=svc, repo=repo, sync=sync))
 
     from services.sessions import SessionsService
 
@@ -146,6 +152,16 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             return f(*args, **kwargs)
         return decorated_function
     
+
+    @app.get("/assets/<path:filename>")
+    def assets(filename: str) -> Response:
+        if filename.startswith("js/"):
+            return send_from_directory(
+                "static/js",
+                filename.removeprefix("js/")
+            )
+        return send_from_directory("assets", filename)
+    
     def _build_sync_progress_payload() -> dict:
         """
         Build a normalized sync-progress payload
@@ -206,200 +222,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 "Sync complete" if phase == "complete" else "Sync failed"
             ),
         }
-
-    @app.get("/assets/<path:filename>")
-    def assets(filename: str) -> Response:
-        if filename.startswith("js/"):
-            return send_from_directory(
-                "static/js",
-                filename.removeprefix("js/")
-            )
-        return send_from_directory("assets", filename)
-
-    @app.get("/api/settings")
-    def get_settings() -> Response:
-        data = svc.get()
-
-        def _mask_key(k):
-            if not k:
-                return None
-            try:
-                if len(k) <= 8:
-                    return "*" * max(4, len(k))
-                return f"{k[:4]}…{k[-4:]}"
-            except Exception:
-                return None
-
-        data["jf_api_key"] = _mask_key(data.get("jf_api_key"))
-        return jsonify(data), 200
-
-    @app.put("/api/settings")
-    def update_settings() -> Response:
-        payload = request.get_json(silent=True) or {}
-
-        current_settings = svc.get()
-        had_server = (
-            current_settings.get("jf_host")
-            and current_settings.get("jf_port")
-            and current_settings.get("jf_api_key")
-        )
-
-        updated = svc.update(payload)
-
-        has_server = (
-            updated.get("jf_host")
-            and updated.get("jf_port")
-            and updated.get("jf_api_key")
-        )
-
-        try:
-            new_interval = updated.get("sync_interval")
-            sched = getattr(app, "sync_scheduler", None)
-            if sched and new_interval:
-                if hasattr(sched, "set_interval"):
-                    sched.set_interval(int(new_interval))
-                elif hasattr(sched, "interval_seconds"):
-                    sched.interval_seconds = int(new_interval)
-        except Exception:
-            logging.exception("[ERROR] Failed to apply sync_interval to scheduler")
-
-        if not had_server and has_server:
-            ts = int(time.time())
-            svc.set_last_activity_log_sync(ts)
-
-            import threading
-
-            def run_initial_sync():
-                try:
-                    sync.sync_initial()
-                except Exception as exc:
-                    logging.error(
-                        "[ERROR] Initial sync failed: %s",
-                        exc,
-                        exc_info=True
-                    )
-
-            sync_thread = threading.Thread(
-                target=run_initial_sync,
-                daemon=True
-            )
-            sync_thread.start()
-
-            sessions_svc = getattr(app, "sessions_service", None)
-            if sessions_svc and not app.config.get("DEBUG"):
-                sessions_svc.start()
-
-        return jsonify(updated), 200
-    
-    @app.get("/api/settings/sync-status")
-    def get_sync_status() -> Response:
-        sched = getattr(app, "sync_scheduler", None)
-        sched_status = (
-            sched.get_status()
-            if sched and hasattr(sched, "get_status")
-            else {}
-        )
-    
-        progress = _build_sync_progress_payload()
-        syncing = bool(progress.get("syncing")) or bool(
-            sched_status.get("is_running")
-        )
-    
-        return jsonify({
-            "ok": True,
-            "syncing": syncing,
-            "next_scheduled_sync_at": sched_status.get("next_run_at"),
-            "interval_seconds": sched_status.get("interval_seconds"),
-        }), 200
-
-    @app.post("/api/test-connection-with-credentials")
-    def test_connection_with_credentials() -> Response:
-        """
-        Test Jellyfin connectivity with provided credentials.
-        """
-        from urllib.request import Request, urlopen
-        from urllib.error import URLError, HTTPError
-
-        payload = request.get_json(silent=True) or {}
-        host = (payload.get("jf_host") or "").strip()
-        port = (payload.get("jf_port") or "").strip()
-        token = (payload.get("jf_api_key") or "").strip()
-
-        if not host or not port or not token:
-            return jsonify({
-                "ok": False,
-                "status": 400,
-                "message": (
-                    "Missing host, port, or API key."
-                )
-            }), 200
-
-        if not port.isdigit():
-            return jsonify({
-                "ok": False,
-                "status": 400,
-                "message": "Port must be numeric."
-            }), 200
-
-        # Parse host to handle http:// or https:// prefixes
-        scheme = "http"
-        if host.startswith(("http://", "https://")):
-            if host.startswith("https://"):
-                scheme = "https"
-                host = host.removeprefix("https://")
-            elif host.startswith("http://"):
-                scheme = "http"
-                host = host.removeprefix("http://")
-
-        url = f"{scheme}://{host}:{port}/System/Info"
-
-        req = Request(url, method="GET")
-        req.add_header("X-Emby-Token", token)
-        req.add_header("Accept", "application/json")
-
-        try:
-            with urlopen(req, timeout=3.0) as resp:
-                status = getattr(resp, "status", 200)
-                if 200 <= status < 300:
-                    response_data = json.loads(resp.read().decode('utf-8'))
-                    server_name = response_data.get("ServerName", "")
-                    server_version = response_data.get("Version", "")
-                    return jsonify({
-                        "ok": True,
-                        "status": status,
-                        "message": "Connection successful.",
-                        "server_name": server_name,
-                        "server_version": server_version
-                    }), 200
-                return jsonify({
-                    "ok": False,
-                    "status": status,
-                    "message": (
-                        f"Jellyfin returned status {status}."
-                    )
-                }), 200
-        except HTTPError as he:
-            return jsonify({
-                "ok": False,
-                "status": he.code,
-                "message": (
-                    f"HTTP error from Jellyfin ({he.code}): "
-                    f"{he.reason or 'Unknown'}"
-                )
-            }), 200
-        except URLError as ue:
-            reason = getattr(ue, "reason", "Unknown")
-            return jsonify({
-                "ok": False,
-                "status": 0,
-                "message": f"Network error: {reason}"
-            }), 200
-        except Exception as exc:
-            return jsonify({
-                "ok": False,
-                "status": 0,
-                "message": f"Unexpected error: {str(exc)}"
-            }), 200
 
     @app.get("/")
     @require_server
@@ -755,19 +577,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             return Response(status=502)
         except Exception:
             return Response(status=500)
-
-    @app.get("/api/analytics/server/sync-progress")
-    def api_analytics_server_sync_progress() -> Response:
-        """
-        Get the current progress of initial activity log sync.
-        """
-        try:
-            return jsonify(_build_sync_progress_payload()), 200
-        except Exception as exc:
-            return jsonify({
-                "ok": False,
-                "message": f"Failed to fetch sync progress: {str(exc)}"
-            }), 500
 
     @app.get("/api/analytics/task-logs")
     def api_analytics_task_logs() -> Response:
