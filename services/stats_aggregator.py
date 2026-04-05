@@ -147,7 +147,11 @@ class StatsAggregator:
                 .first()
             )
 
-            last_played_name: Optional[str] = last[1].name if last else None
+            last_played_name: Optional[str] = (
+                StatsAggregator._series_or_item_name(session, last[1])
+                if last
+                else None
+            )
 
             changed = False
             if lib.total_files != total_files:
@@ -303,3 +307,49 @@ class StatsAggregator:
             return device if device else None
 
         return None
+    
+    @staticmethod
+    def _series_name_for_episode(
+        session: Session,
+        episode: Item,
+    ) -> Optional[str]:
+        if not episode or (episode.type or "").lower() != "episode":
+            return None
+    
+        if not episode.parent_id:
+            return None
+    
+        season = (
+            session.query(Item)
+            .filter(Item.jellyfin_id == episode.parent_id)
+            .first()
+        )
+        if not season or not season.parent_id:
+            return None
+    
+        series = (
+            session.query(Item)
+            .filter(Item.jellyfin_id == season.parent_id)
+            .first()
+        )
+        if not series:
+            return None
+    
+        if (series.type or "").lower() != "series":
+            return None
+    
+        return series.name
+    
+    
+    @staticmethod
+    def _series_or_item_name(
+        session: Session,
+        item: Item,
+    ) -> Optional[str]:
+        if not item:
+            return None
+    
+        if (item.type or "").lower() == "episode":
+            return StatsAggregator._series_name_for_episode(session, item) or item.name
+    
+        return item.name
