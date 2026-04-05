@@ -147,7 +147,7 @@ class SessionsService:
             return None
 
         try:
-            return self._repository.get_series_name_for_episode(item_id)
+            return self._repository.get_series_or_item_name(item_id)
         except Exception as exc:
             logger.warning(
                 f"[WARN] Failed to resolve episode series name for {item_id}: {exc}"

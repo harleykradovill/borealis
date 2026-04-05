@@ -199,7 +199,7 @@
 
 .statistics-group {
   max-width: 1500px;
-  margin: 2rem auto;
+  margin: 1.5rem auto;
 }
 
 .statistics-group h2 {
@@ -210,7 +210,7 @@
 .statistics-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  gap: 1rem;
   width: 100%;
 }
 

@@ -447,15 +447,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const LIMIT = 5;
 
   function fmtHours(seconds) {
-    const sec = Number(seconds || 0);
+    if (seconds === null || seconds === undefined || seconds === "") return "";
+    const sec = Number(seconds);
+    if (!Number.isFinite(sec)) return "";
     return `${Math.round(sec / 3600)}h`;
   }
 
   function fmtDate(tsSec) {
-    const ts = Number(tsSec || 0);
-    if (!ts) return "-";
+    const ts = Number(tsSec);
+    if (!Number.isFinite(ts) || ts <= 0) return "";
     const d = new Date(ts * 1000);
-    if (Number.isNaN(d.getTime())) return "-";
+    if (Number.isNaN(d.getTime())) return "";
     return d.toLocaleDateString();
   }
 
@@ -490,31 +492,40 @@ document.addEventListener("DOMContentLoaded", () => {
         "stat-top-users-names",
         "stat-top-users-values",
         sections.top_users_by_plays,
-        (r) => r?.name || "-",
-        (r) => String(Number(r?.plays || 0)),
+        (r) => r?.name ?? "",
+        (r) =>
+          r?.plays === null || r?.plays === undefined
+            ? ""
+            : String(Number(r.plays)),
       );
 
       renderRows(
         "stat-top-items-names",
         "stat-top-items-values",
         sections.top_items_by_plays,
-        (r) => r?.name || "-",
-        (r) => String(Number(r?.plays || 0)),
+        (r) => r?.name ?? "",
+        (r) =>
+          r?.plays === null || r?.plays === undefined
+            ? ""
+            : String(Number(r.plays)),
       );
 
       renderRows(
         "stat-top-libraries-names",
         "stat-top-libraries-values",
         sections.top_libraries_by_plays,
-        (r) => r?.name || "-",
-        (r) => String(Number(r?.plays || 0)),
+        (r) => r?.name ?? "",
+        (r) =>
+          r?.plays === null || r?.plays === undefined
+            ? ""
+            : String(Number(r.plays)),
       );
 
       renderRows(
         "stat-watch-time-names",
         "stat-watch-time-values",
         sections.top_users_by_watch_time,
-        (r) => r?.name || "-",
+        (r) => r?.name ?? "",
         (r) => fmtHours(r?.watch_seconds),
       );
 
@@ -522,15 +533,18 @@ document.addEventListener("DOMContentLoaded", () => {
         "stat-active-day-names",
         "stat-active-day-values",
         sections.most_active_weekdays,
-        (r) => r?.weekday || "-",
-        (r) => String(Number(r?.plays || 0)),
+        (r) => r?.weekday ?? "",
+        (r) =>
+          r?.plays === null || r?.plays === undefined
+            ? ""
+            : String(Number(r.plays)),
       );
 
       renderRows(
         "stat-recent-names",
         "stat-recent-values",
         sections.recently_watched,
-        (r) => r?.name || "-",
+        (r) => r?.name ?? "",
         (r) => fmtDate(r?.last_watched_at),
       );
     } catch (err) {

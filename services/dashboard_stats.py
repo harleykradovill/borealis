@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Callable
 
 from sqlalchemy import func, Integer
 from sqlalchemy.orm import Session
@@ -58,7 +58,9 @@ def _sqlite_weekday_expr():
 class DashboardStatsBuilder:
     @staticmethod
     def build_all(
-        session: Session, limit: int = 5
+        session: Session,
+        limit: int = 5,
+        name_resolver: Optional[Callable[[str], Optional[str]]] = None,
     ) -> Dict[str, List[Dict[str, Any]]]:
         n = max(1, int(limit or 5))
         return {
@@ -78,7 +80,9 @@ class DashboardStatsBuilder:
                 session, n
             ),
             SECTION_RECENTLY_WATCHED: DashboardStatsBuilder.recently_watched(
-                session, n
+                session,
+                n,
+                name_resolver=name_resolver,
             ),
         }
 
@@ -196,9 +200,11 @@ class DashboardStatsBuilder:
 
     @staticmethod
     def recently_watched(
-        session: Session, limit: int
+        session: Session,
+        limit: int,
+        name_resolver: Optional[Callable[[str], Optional[str]]] = None,
     ) -> List[Dict[str, Any]]:
-        raw = ( # Pull extra rows, then dedupe by item_id to avoid repeats of one title.
+        raw = (
             session.query(PlaybackActivity, Item, User)
             .join(Item, PlaybackActivity.item_id == Item.jellyfin_id)
             .outerjoin(User, PlaybackActivity.user_id == User.jellyfin_id)
@@ -222,7 +228,11 @@ class DashboardStatsBuilder:
             out.append(
                 {
                     "item_id": item.jellyfin_id,
-                    "name": item.name,
+                    "name": (
+                        name_resolver(item.jellyfin_id)
+                        if name_resolver
+                        else item.name
+                    ) or item.name,
                     "user_id": activity.user_id,
                     "user_name": (
                         user.name

@@ -248,7 +248,13 @@ class Repository:
                     PlaybackActivity.activity_at.desc()
                 ).first()
     
-                item_name = last_activity[1].name if last_activity else None
+                item_name = None
+                if last_activity:
+                    last_item_id = last_activity[1].jellyfin_id
+                    item_name = self._series_or_item_name_in_session(
+                        session,
+                        last_item_id,
+                    )
                 last_activity_ts = (
                     last_activity[0].activity_at if last_activity else None
                 )
@@ -419,48 +425,92 @@ class Repository:
                 .update({"archived": True}, synchronize_session=False)
             )
 
-    def get_series_name_for_episode(self, episode_jellyfin_id: str) -> Optional[str]:
+    def _series_name_for_episode_in_session(self, session: Session, episode_jellyfin_id: str) -> Optional[str]:
         """
         Resolve Episode -> Season -> Series and return the series name.
         """
         if not episode_jellyfin_id:
             return None
+
+        episode = (
+            session.query(Item)
+            .filter(Item.jellyfin_id == episode_jellyfin_id)
+            .first()
+        )
+        if not episode:
+            return None
+
+        if (episode.type or "").lower() != "episode":
+            return None
+
+        if not episode.parent_id:
+            return None
+
+        season = (
+            session.query(Item)
+            .filter(Item.jellyfin_id == episode.parent_id)
+            .first()
+        )
+        if not season or not season.parent_id:
+            return None
+
+        series = (
+            session.query(Item)
+            .filter(Item.jellyfin_id == season.parent_id)
+            .first()
+        )
+        if not series:
+            return None
+
+        if (series.type or "").lower() != "series":
+            return None
+
+        return series.name
     
+    def _series_or_item_name_in_session(
+        self,
+        session: Session,
+        item_jellyfin_id: str,
+    ) -> Optional[str]:
+        if not item_jellyfin_id:
+            return None
+
+        item = (
+            session.query(Item)
+            .filter(Item.jellyfin_id == item_jellyfin_id)
+            .first()
+        )
+        if not item:
+            return None
+
+        if (item.type or "").lower() == "episode":
+            return (
+                self._series_name_for_episode_in_session(
+                    session, item_jellyfin_id
+                )
+                or item.name
+            )
+
+        return item.name
+    
+    def get_series_name_for_episode(
+        self,
+        episode_jellyfin_id: str,
+    ) -> Optional[str]:
         with self._session() as session:
-            episode = (
-                session.query(Item)
-                .filter(Item.jellyfin_id == episode_jellyfin_id)
-                .first()
+            return self._series_name_for_episode_in_session(
+                session, episode_jellyfin_id
             )
-            if not episode:
-                return None
-    
-            if (episode.type or "").lower() != "episode":
-                return None
-    
-            if not episode.parent_id:
-                return None
-    
-            season = (
-                session.query(Item)
-                .filter(Item.jellyfin_id == episode.parent_id)
-                .first()
+
+
+    def get_series_or_item_name(
+        self,
+        item_jellyfin_id: str,
+    ) -> Optional[str]:
+        with self._session() as session:
+            return self._series_or_item_name_in_session(
+                session, item_jellyfin_id
             )
-            if not season or not season.parent_id:
-                return None
-    
-            series = (
-                session.query(Item)
-                .filter(Item.jellyfin_id == season.parent_id)
-                .first()
-            )
-            if not series:
-                return None
-    
-            if (series.type or "").lower() != "series":
-                return None
-    
-            return series.name
 
     # -------------------------
     # Stats & Activity
@@ -577,6 +627,9 @@ class Repository:
             sections = DashboardStatsBuilder.build_all(
                 session=session,
                 limit=limit,
+                name_resolver=lambda item_id: (
+                    self._series_or_item_name_in_session(session, item_id)
+                ),
             )
 
         for section_key, payload in sections.items():
