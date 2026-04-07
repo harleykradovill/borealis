@@ -16,10 +16,104 @@ from services.data_models import (
     PlaybackActivity,
 )
 
+def _playback_event_kind(event_name: Optional[str]) -> str:
+    """
+    Classify playback events using encoded event_name.
+    """
+    if not event_name:
+        return "stop"
+    if event_name.startswith("VideoPlaybackStopped||"):
+        return "stop"
+    if event_name.startswith("VideoPlayback||"):
+        return "start"
+    return "stop"
+
+
+def _calculate_watch_seconds(
+    session: Session,
+) -> tuple[Dict[str, int], Dict[str, int]]:
+    """
+    Pair start/stop playback rows and return:
+    - watch seconds by user_id
+    - watch seconds by item_id
+    """
+    rows = (
+        session.query(
+            PlaybackActivity.user_id,
+            PlaybackActivity.item_id,
+            PlaybackActivity.activity_at,
+            PlaybackActivity.event_name,
+            Item.runtime_seconds,
+            PlaybackActivity.id,
+        )
+        .outerjoin(Item, PlaybackActivity.item_id == Item.jellyfin_id)
+        .filter(
+            PlaybackActivity.user_id.isnot(None),
+            PlaybackActivity.item_id.isnot(None),
+            PlaybackActivity.activity_at.isnot(None),
+        )
+        .order_by(
+            PlaybackActivity.user_id.asc(),
+            PlaybackActivity.item_id.asc(),
+            PlaybackActivity.activity_at.asc(),
+            PlaybackActivity.id.asc(),
+        )
+        .all()
+    )
+
+    open_starts: Dict[tuple[str, str], List[int]] = {}
+    by_user: Dict[str, int] = {}
+    by_item: Dict[str, int] = {}
+
+    for user_id, item_id, activity_at, event_name, runtime_seconds, _ in rows:
+        user_id = str(user_id)
+        item_id = str(item_id)
+        ts = int(activity_at or 0)
+        if ts <= 0:
+            continue
+
+        kind = _playback_event_kind(event_name)
+        key = (user_id, item_id)
+
+        if kind == "start":
+            open_starts.setdefault(key, []).append(ts)
+            continue
+        
+        starts = open_starts.get(key)
+        start_ts = starts.pop() if starts else None
+        if not starts:
+            open_starts.pop(key, None)
+
+        if start_ts is None:
+            continue
+
+        if ts > 1_000_000_000_000: # Normalize possible ms timestamps to seconds.
+            ts //= 1000
+        if start_ts > 1_000_000_000_000:
+            start_ts //= 1000
+
+        duration = ts - int(start_ts)
+        if duration <= 0:
+            continue
+
+        if duration > 12 * 60 * 60: # Ignore impossible sessions.
+            continue
+
+        cap = int(runtime_seconds or 0)
+        if cap > 0:
+            duration = min(duration, cap)
+
+        if duration <= 0:
+            continue
+
+        by_user[user_id] = by_user.get(user_id, 0) + duration
+        by_item[item_id] = by_item.get(item_id, 0) + duration
+
+    return by_user, by_item
+
 def _stop_playback_filter():
     """
     Include legacy rows (no typed prefix) and typed stop rows.
-    Exclude typed start rows.
     """
     return or_(
         PlaybackActivity.event_name.is_(None),
@@ -70,6 +164,10 @@ class StatsAggregator:
             .all()
         )
 
+        watch_seconds_by_user, watch_seconds_by_item = _calculate_watch_seconds(
+            session
+        )
+
         users_processed = 0
         if user_counts:
             users = (
@@ -82,21 +180,9 @@ class StatsAggregator:
                 if user.total_plays != new_total:
                     user.total_plays = new_total
 
-                watch_seconds = (
-                    session.query(
-                        func.coalesce(func.sum(Item.runtime_seconds), 0)
-                    )
-                    .join(
-                        PlaybackActivity,
-                        PlaybackActivity.item_id == Item.jellyfin_id,
-                    )
-                    .filter(
-                        PlaybackActivity.user_id == user.jellyfin_id,
-                        _stop_playback_filter(),
-                    )
-                    .scalar()
+                watch_seconds = int(
+                    watch_seconds_by_user.get(user.jellyfin_id, 0)
                 )
-                watch_seconds = int(watch_seconds or 0)
                 if user.total_watch_time_seconds != watch_seconds:
                     user.total_watch_time_seconds = watch_seconds
 
@@ -138,7 +224,6 @@ class StatsAggregator:
                     func.count(Item.id),
                     func.coalesce(func.sum(Item.runtime_seconds), 0),
                     func.coalesce(func.sum(Item.size_bytes), 0),
-                    func.coalesce(func.sum(Item.runtime_seconds * Item.play_count), 0),
                     func.coalesce(func.sum(Item.play_count), 0),
                 )
                 .filter(
@@ -151,8 +236,20 @@ class StatsAggregator:
             total_files = int(agg[0])
             total_time_seconds = int(agg[1])
             size_bytes = int(agg[2])
-            total_playback_seconds = int(agg[3])
-            total_plays = int(agg[4])
+            total_plays = int(agg[3])
+
+            library_item_ids = [
+                row[0]
+                for row in session.query(Item.jellyfin_id)
+                .filter(
+                    Item.library_id == lib.id,
+                    Item.archived.is_(False),
+                )
+                .all()
+            ]
+            total_playback_seconds = int(
+                sum(watch_seconds_by_item.get(item_id, 0) for item_id in library_item_ids)
+            )
 
             last = (
                 session.query(PlaybackActivity, Item)

@@ -219,15 +219,15 @@ class Repository:
                 User.archived.is_(False) if not include_archived
                 else True
             ).all()
+
+            stop_playback_filter = or_(
+                PlaybackActivity.event_name.is_(None),
+                ~PlaybackActivity.event_name.like("VideoPlayback||%"),
+                PlaybackActivity.event_name.like("VideoPlaybackStopped||%"),
+            )
     
             results = []
             for user in users:
-                stop_playback_filter = or_(
-                    PlaybackActivity.event_name.is_(None),
-                    ~PlaybackActivity.event_name.like("VideoPlayback||%"),
-                    PlaybackActivity.event_name.like("VideoPlaybackStopped||%"),
-                )
-
                 total_plays = session.query(
                     func.count(PlaybackActivity.id)
                 ).filter(
@@ -235,15 +235,7 @@ class Repository:
                     stop_playback_filter,
                 ).scalar() or 0
     
-                total_seconds = session.query(
-                    func.sum(Item.runtime_seconds)
-                ).join(
-                    PlaybackActivity,
-                    PlaybackActivity.item_id == Item.jellyfin_id
-                ).filter(
-                    PlaybackActivity.user_id == user.jellyfin_id,
-                    stop_playback_filter,
-                ).scalar() or 0
+                total_seconds = int(user.total_watch_time_seconds or 0)
     
                 last_activity = session.query(
                     PlaybackActivity, Item
