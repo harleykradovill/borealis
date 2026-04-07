@@ -4,15 +4,18 @@ Flask instance used to server the Borealis site.
 """
 
 import logging
+import atexit
 from typing import Optional, Dict
 from functools import wraps
 from flask import redirect
 from api.settings import create_settings_blueprint
 from api.analytics import create_analytics_blueprint
 
+logger = logging.getLogger(__name__)
+
 try:
     from flask import Flask, Response, render_template, jsonify, request, send_from_directory
-except Exception as exc:
+except ImportError as exc:
     raise RuntimeError(
         "Flask is required to run the local config site. "
         "Install with: pip install Flask"
@@ -23,9 +26,11 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     """
     Create and configure the Borealis Flask application.
     """
-    logging.basicConfig(level=logging.INFO)
-    logging.getLogger().setLevel(logging.INFO)
-    logging.getLogger('werkzeug').setLevel(logging.CRITICAL) # Disable annoying flask logs
+    root_logger = logging.getLogger()
+    if not root_logger.handlers:
+        logging.basicConfig(level=logging.INFO)
+    logger.setLevel(logging.INFO)
+    logging.getLogger("werkzeug").setLevel(logging.CRITICAL) # Disable annoying flask logs
 
     app = Flask(
         __name__,
@@ -108,28 +113,28 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         sync_scheduler.start()
         sessions_svc.start()
 
-    import atexit
-
     def cleanup():
         """
         Cleanup function called when app shuts down.
         """
-        try:
-            sched = getattr(app, "sync_scheduler", None)
-            if sched:
+        sched = getattr(app, "sync_scheduler", None)
+        if sched:
+            try:
                 sched.stop()
-        except Exception:
-            pass
-        try:
-            sessions = getattr(app, "sessions_service", None)
-            if sessions:
+            except Exception:
+                logger.exception("Failed to stop sync scheduler during cleanup")
+
+        sessions = getattr(app, "sessions_service", None)
+        if sessions:
+            try:
                 sessions.stop()
-        except Exception:
-            pass
+            except Exception:
+                logger.exception("Failed to stop sessions service during cleanup")
+
         try:
             repo.engine.dispose()
         except Exception:
-            pass
+            logger.exception("Failed to dispose repository engine during cleanup")
 
     atexit.register(cleanup)
 
@@ -292,7 +297,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                     mapped = map_libraries(filtered)
                     repo.upsert_libraries(mapped)
                 except Exception:
-                    pass
+                    logger.exception("Failed to map/upsert libraries")
 
         return jsonify(result), 200
         
@@ -328,43 +333,18 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         """
         Proxy Jellyfin primary item image to the frontend.
         """
-        from urllib.request import Request, urlopen
-        from urllib.error import HTTPError, URLError
-    
-        conn = jf._connection()
-        if not conn:
-            return Response(status=404)
-    
-        scheme, host, port, token = conn
-        tag = (request.args.get("tag") or "").strip()
-    
-        path = f"/Items/{item_id}/Images/Primary"
-        if tag:
-            path = f"{path}?tag={tag}"
-    
-        url = jf._build_url(scheme, host, port, path)
-    
-        req = Request(url, method="GET")
-        req.add_header("X-Emby-Token", token)
-        req.add_header("Accept", "image/*")
-    
-        try:
-            with urlopen(req, timeout=5.0) as resp:
-                body = resp.read()
-                status = getattr(resp, "status", 200)
-                content_type = resp.headers.get("Content-Type", "image/jpeg")
-                return Response(
-                    body,
-                    status=status,
-                    mimetype=content_type,
-                    headers={"Cache-Control": "public, max-age=300"},
-                )
-        except HTTPError as he:
-            return Response(status=he.code)
-        except URLError:
-            return Response(status=502)
-        except Exception:
-            return Response(status=500)
+        tag = (request.args.get("tag") or "").strip() or None
+        result = jf.item_primary_image(item_id=item_id, tag=tag)
+
+        if not result.get("ok"):
+            return Response(status=result.get("status", 500))
+
+        return Response(
+            result.get("body", b""),
+            status=result.get("status", 200),
+            mimetype=result.get("content_type", "image/jpeg"),
+            headers={"Cache-Control": "public, max-age=300"},
+        )
 
     logging.info("\033[92mStartup Complete. Running sync tasks")
     logging.info("Access Borealis at http://localhost:2929/\033[0m")

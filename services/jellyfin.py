@@ -356,6 +356,66 @@ class JellyfinClient:
             path += f"&minDate={encoded_date}"
 
         return self._get(path)
+    
+    def item_primary_image(
+        self,
+        item_id: str,
+        tag: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Fetch a Jellyfin item's primary image.
+        """
+        conn = self._connection()
+        if not conn:
+            return {
+                "ok": False,
+                "status": 404,
+                "body": b"",
+                "content_type": "image/jpeg",
+            }
+
+        scheme, host, port, token = conn
+        path = f"/Items/{item_id}/Images/Primary"
+        if tag:
+            path = f"{path}?tag={tag}"
+
+        url = self._build_url(scheme, host, port, path)
+
+        req = Request(url, method="GET")
+        req.add_header("X-Emby-Token", token)
+        req.add_header("Accept", "image/*")
+
+        try:
+            with urlopen(req, timeout=5.0) as resp:
+                return {
+                    "ok": True,
+                    "status": getattr(resp, "status", 200),
+                    "body": resp.read(),
+                    "content_type": resp.headers.get(
+                        "Content-Type", "image/jpeg"
+                    ),
+                }
+        except HTTPError as exc:
+            return {
+                "ok": False,
+                "status": exc.code,
+                "body": b"",
+                "content_type": "image/jpeg",
+            }
+        except URLError:
+            return {
+                "ok": False,
+                "status": 502,
+                "body": b"",
+                "content_type": "image/jpeg",
+            }
+        except Exception:
+            return {
+                "ok": False,
+                "status": 500,
+                "body": b"",
+                "content_type": "image/jpeg",
+            }
 
 
 def create_client(settings_service: SettingsService) -> JellyfinClient:
