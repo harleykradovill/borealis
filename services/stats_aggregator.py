@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from services.data_models import (
     User,
@@ -16,6 +16,16 @@ from services.data_models import (
     PlaybackActivity,
 )
 
+def _stop_playback_filter():
+    """
+    Include legacy rows (no typed prefix) and typed stop rows.
+    Exclude typed start rows.
+    """
+    return or_(
+        PlaybackActivity.event_name.is_(None),
+        ~PlaybackActivity.event_name.like("VideoPlayback||%"),
+        PlaybackActivity.event_name.like("VideoPlaybackStopped||%"),
+    )
 
 class StatsAggregator:
 
@@ -31,6 +41,7 @@ class StatsAggregator:
                 PlaybackActivity.item_id,
                 func.count(PlaybackActivity.id),
             )
+            .filter(_stop_playback_filter())
             .group_by(PlaybackActivity.item_id)
             .all()
         )
@@ -54,6 +65,7 @@ class StatsAggregator:
                 PlaybackActivity.user_id,
                 func.count(PlaybackActivity.id),
             )
+            .filter(_stop_playback_filter())
             .group_by(PlaybackActivity.user_id)
             .all()
         )
@@ -79,7 +91,8 @@ class StatsAggregator:
                         PlaybackActivity.item_id == Item.jellyfin_id,
                     )
                     .filter(
-                        PlaybackActivity.user_id == user.jellyfin_id
+                        PlaybackActivity.user_id == user.jellyfin_id,
+                        _stop_playback_filter(),
                     )
                     .scalar()
                 )
@@ -89,7 +102,10 @@ class StatsAggregator:
 
                 last_activity = (
                     session.query(PlaybackActivity)
-                    .filter(PlaybackActivity.user_id == user.jellyfin_id)
+                    .filter(
+                        PlaybackActivity.user_id == user.jellyfin_id,
+                        _stop_playback_filter(),
+                    )
                     .order_by(PlaybackActivity.activity_at.desc())
                     .limit(1)
                     .first()
@@ -141,7 +157,10 @@ class StatsAggregator:
             last = (
                 session.query(PlaybackActivity, Item)
                 .join(Item, PlaybackActivity.item_id == Item.jellyfin_id)
-                .filter(Item.library_id == lib.id)
+                .filter(
+                    Item.library_id == lib.id,
+                    _stop_playback_filter(),
+                )
                 .order_by(PlaybackActivity.activity_at.desc())
                 .limit(1)
                 .first()

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 from contextlib import contextmanager
 
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine, func, or_
 from sqlalchemy.orm import sessionmaker, Session
 
 from services.data_models import (
@@ -222,10 +222,17 @@ class Repository:
     
             results = []
             for user in users:
+                stop_playback_filter = or_(
+                    PlaybackActivity.event_name.is_(None),
+                    ~PlaybackActivity.event_name.like("VideoPlayback||%"),
+                    PlaybackActivity.event_name.like("VideoPlaybackStopped||%"),
+                )
+
                 total_plays = session.query(
                     func.count(PlaybackActivity.id)
                 ).filter(
-                    PlaybackActivity.user_id == user.jellyfin_id
+                    PlaybackActivity.user_id == user.jellyfin_id,
+                    stop_playback_filter,
                 ).scalar() or 0
     
                 total_seconds = session.query(
@@ -234,7 +241,8 @@ class Repository:
                     PlaybackActivity,
                     PlaybackActivity.item_id == Item.jellyfin_id
                 ).filter(
-                    PlaybackActivity.user_id == user.jellyfin_id
+                    PlaybackActivity.user_id == user.jellyfin_id,
+                    stop_playback_filter,
                 ).scalar() or 0
     
                 last_activity = session.query(
@@ -243,7 +251,8 @@ class Repository:
                     Item,
                     PlaybackActivity.item_id == Item.jellyfin_id
                 ).filter(
-                    PlaybackActivity.user_id == user.jellyfin_id
+                    PlaybackActivity.user_id == user.jellyfin_id,
+                    stop_playback_filter,
                 ).order_by(
                     PlaybackActivity.activity_at.desc()
                 ).first()

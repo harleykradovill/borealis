@@ -285,8 +285,9 @@ class SyncService:
                     total_events = total_fetched + len(items)
 
                 playback_events = [
-                    item for item in items
-                    if item.get("Type") == "VideoPlaybackStopped"
+                    item
+                    for item in items
+                    if item.get("Type") in {"VideoPlayback", "VideoPlaybackStopped"}
                 ]
 
                 if playback_events:
@@ -461,8 +462,9 @@ class SyncService:
                     break
 
                 playback_events = [
-                    item for item in data
-                    if item.get("Type") == "VideoPlaybackStopped"
+                    item
+                    for item in data
+                    if item.get("Type") in {"VideoPlayback", "VideoPlaybackStopped"}
                 ]
 
                 if playback_events:

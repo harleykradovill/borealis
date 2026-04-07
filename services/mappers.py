@@ -212,6 +212,20 @@ def map_items(
 # Playback events
 # -------------------------
 
+def _encode_playback_event_name(jf_event: Dict[str, Any]) -> str:
+    """
+    Keep Jellyfin playback type in event_name so start/stop can be
+    distinguished later.
+    """
+    event_type = _clean_str(jf_event.get("Type"))
+    event_name = _clean_str(jf_event.get("Name"))
+
+    if event_type and event_name:
+        return f"{event_type}||{event_name}"
+    if event_type:
+        return event_type
+    return event_name
+
 def map_playback_event(
     jf_event: Dict[str, Any],
     username: Optional[str] = None,
@@ -238,11 +252,10 @@ def map_playback_event(
         "activity_log_id": jf_event.get("Id") or jf_event.get("ActivityId"),
         "user_id": user_id,
         "item_id": item_id,
-        "event_name": _clean_str(jf_event.get("Name")),
+        "event_name": _encode_playback_event_name(jf_event),
         "activity_at": activity_at,
         "username_denorm": username,
     }
-
 
 def map_playback_events(
     jf_events: List[Dict[str, Any]],
