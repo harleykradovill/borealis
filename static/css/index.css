@@ -179,6 +179,13 @@
   text-align: right;
 }
 
+.session-card-progress-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 #sessions-container {
   margin-bottom: 2rem;
 }

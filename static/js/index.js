@@ -294,6 +294,15 @@ document.addEventListener("DOMContentLoaded", () => {
     return `Transcoding (${transcodeReason || "unknown"})`;
   }
 
+  function getSessionPlaybackState(playState) {
+    const isPaused = !!playState?.IsPaused;
+    return {
+      isPaused,
+      iconUrl: isPaused ? "/assets/icons/pause.png" : "/assets/icons/play.png",
+      iconAlt: isPaused ? "Paused" : "Playing",
+    };
+  }
+
   function renderSessions(sessions) {
     if (!sessions || sessions.length === 0) {
       container.hidden = true;
@@ -336,6 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const playState = session.PlayState || {};
       const progressTicks = playState.PositionTicks || 0;
       const runtimeTicks = nowPlayingItem.RunTimeTicks || 0;
+      const playbackState = getSessionPlaybackState(playState);
 
       const mediaSource = (session.NowPlayingSessions || [{}])[0] || {};
       const videoCodec = mediaSource.VideoCodec || "unknown";
@@ -376,16 +386,30 @@ document.addEventListener("DOMContentLoaded", () => {
         card.appendChild(div);
       });
 
-      const progressPercent = Math.round((progressTicks / runtimeTicks) * 100);
+      const safeProgressTicks = Number(progressTicks) || 0;
+      const safeRuntimeTicks = Number(runtimeTicks) || 0;
+      const rawPercent =
+        safeRuntimeTicks > 0 ? (safeProgressTicks / safeRuntimeTicks) * 100 : 0;
+      const progressPercent = Math.max(
+        0,
+        Math.min(100, Math.round(rawPercent)),
+      );
       const progressDiv = document.createElement("div");
       progressDiv.className = "session-card-progress";
+
+      const progressIcon = document.createElement("img");
+      progressIcon.className = "session-card-progress-icon";
+      progressIcon.src = playbackState.iconUrl;
+      progressIcon.alt = playbackState.iconAlt;
+      progressIcon.loading = "lazy";
+      progressIcon.decoding = "async";
 
       const progressBar = document.createElement("div");
       progressBar.className = "session-card-progress-bar";
 
       const progressFill = document.createElement("div");
       progressFill.className = "session-card-progress-fill";
-      progressFill.style.width = `${Math.max(0, Math.min(100, progressPercent))}%`;
+      progressFill.style.width = `${progressPercent}%`;
 
       progressBar.appendChild(progressFill);
 
@@ -393,6 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
       progressLabel.className = "session-card-progress-label";
       progressLabel.textContent = `${progressPercent}%`;
 
+      progressDiv.appendChild(progressIcon);
       progressDiv.appendChild(progressBar);
       progressDiv.appendChild(progressLabel);
       card.appendChild(progressDiv);
