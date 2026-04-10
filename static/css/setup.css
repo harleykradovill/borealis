@@ -17,7 +17,7 @@
   align-items: center;
   width: 100%;
   text-align: center;
-  color: var(--accent);
+  color: var(--white);
   font-size: 1.5rem;
   margin-top: 1rem;
 }
@@ -115,7 +115,7 @@
 }
 
 .progress-dot.active {
-  background: var(--accent);
+  background: var(--white);
 }
 
 .progress-dot.completed {
@@ -152,7 +152,7 @@
 .form-grid .form-field input:focus,
 .form-grid .form-field select:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--white);
   box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.15);
 }
 
@@ -166,7 +166,7 @@
 .libraries-tracking h3 {
   margin: 0 0 1rem 0;
   font-size: 1rem;
-  color: var(--accent);
+  color: var(--white);
 }
 
 .library-item {

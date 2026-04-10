@@ -3,9 +3,7 @@
   --surface: #191e27;
   --text: #f0f0f0;
   --text-muted: #b3b3b3;
-  --accent: #ffffff;
   --border: #272735;
-  --focus: #ffffff;
   --positive: #2da30c;
   --negative: #8f1616;
   --white: #ffffff;
@@ -94,7 +92,7 @@ body {
 }
 
 .sidebar-links a.active {
-  background-color: var(--accent);
+  background-color: var(--white);
   color: var(--bg);
 }
 
@@ -178,7 +176,7 @@ body {
 .hero h1 {
   margin: 0 0 0.5rem 0;
   font-size: 2rem;
-  color: var(--accent);
+  color: var(--white);
 }
 .subtitle {
   margin: 0;

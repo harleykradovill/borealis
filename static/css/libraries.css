@@ -32,7 +32,7 @@
 .libraries-chart-group h1 {
   margin: 0;
   font-size: 1rem;
-  color: var(--accent);
+  color: var(--white);
 }
 
 .libraries-chart-group canvas {
@@ -97,7 +97,7 @@
 
 .library-card-attr-value.name {
   font-weight: 600;
-  color: var(--accent);
+  color: var(--white);
   white-space: normal;
   overflow: visible;
   text-overflow: clip;

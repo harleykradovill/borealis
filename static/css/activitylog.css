@@ -32,7 +32,7 @@
 
 .pagination .btn.active,
 .pagination .btn[aria-current="page"] {
-  background: var(--focus);
+  background: var(--white);
   color: var(--black);
   background-color: var(--white);
   border-radius: 12px;
@@ -62,7 +62,7 @@
 }
 
 .activitylog-filter-btn:focus-visible {
-  outline: 2px solid var(--focus);
+  outline: 2px solid var(--white);
   outline-offset: 2px;
 }
 
