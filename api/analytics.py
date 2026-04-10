@@ -218,7 +218,7 @@ def create_analytics_blueprint(*, svc, repo, sync):
                 "message": f"Failed to fetch library stats: {str(exc)}"
             }), 500
         
-    @bp.get("/api/analytics/server/sync-progress/stream")
+    @bp.get("/analytics/server/sync-progress/stream")
     def api_analytics_server_sync_progress_stream() -> Response:
         """
         Stream sync-progress updates

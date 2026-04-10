@@ -366,7 +366,6 @@ document.addEventListener("DOMContentLoaded", () => {
           label: "Audio",
           value: formatTranscodeStatus(audioIsTranscoding, audioCodec),
         },
-        { label: "Now Playing", value: itemName },
       ];
 
       attrs.forEach((attr) => {
@@ -397,6 +396,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const progressDiv = document.createElement("div");
       progressDiv.className = "session-card-progress";
 
+      const progressTitle = document.createElement("div");
+      progressTitle.className = "session-card-progress-title";
+      progressTitle.textContent = itemName;
+
+      const progressMeta = document.createElement("div");
+      progressMeta.className = "session-card-progress-meta";
+
       const progressIcon = document.createElement("img");
       progressIcon.className = "session-card-progress-icon";
       progressIcon.src = playbackState.iconUrl;
@@ -417,9 +423,12 @@ document.addEventListener("DOMContentLoaded", () => {
       progressLabel.className = "session-card-progress-label";
       progressLabel.textContent = `${progressPercent}%`;
 
-      progressDiv.appendChild(progressIcon);
-      progressDiv.appendChild(progressBar);
-      progressDiv.appendChild(progressLabel);
+      progressMeta.appendChild(progressIcon);
+      progressMeta.appendChild(progressBar);
+      progressMeta.appendChild(progressLabel);
+
+      progressDiv.appendChild(progressTitle);
+      progressDiv.appendChild(progressMeta);
       card.appendChild(progressDiv);
 
       cardsContainer.appendChild(card);

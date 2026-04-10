@@ -105,12 +105,12 @@
   background-size: cover;
   background-position: center;
   filter: blur(5px);
-  transform: scale(1.08);
+  transform: scale(1.1);
   z-index: 0;
 }
 
 .session-card::after {
-  background: #191e27cc;
+  background: #15161ada;
   z-index: 1;
 }
 
@@ -148,8 +148,25 @@
 
 .session-card-progress {
   margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 3px solid var(--border);
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.session-card-progress-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-card-progress-meta {
   display: flex;
   align-items: center;
   gap: 0.75rem;
