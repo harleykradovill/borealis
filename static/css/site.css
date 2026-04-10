@@ -52,17 +52,11 @@ body {
 }
 
 .sidebar .sidebar-brand {
-  display: inline-flex;
+  display: flex;
+  width: 100%;
+  justify-content: center;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--text);
-  text-decoration: none;
-  margin-bottom: 0.75rem;
-}
-
-.sidebar .brand-logo {
-  width: 36px;
-  height: 36px;
+  margin-bottom: 1rem;
 }
 
 .sidebar-links {
@@ -112,6 +106,8 @@ body {
 .content {
   flex: 1;
   padding: 2rem 1rem;
+  max-width: 1500px;
+  margin: 0 auto;
 }
 
 .btn {
@@ -136,7 +132,6 @@ body {
 
 .btn:focus {
   outline: none;
-  border-color: var(--border);
   box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
 }
 
@@ -145,7 +140,6 @@ body {
 }
 
 .brand {
-  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   color: var(--text);
@@ -155,17 +149,6 @@ body {
   width: 28px;
   height: 28px;
   object-fit: contain;
-  filter: drop-shadow(0 0 0.25rem rgba(255, 255, 255, 0.1));
-}
-.brand-text {
-  font-weight: 600;
-  letter-spacing: 0.25px;
-}
-
-.content {
-  max-width: 1500px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
 }
 
 .hero {
@@ -195,58 +178,6 @@ body {
 
 .btn-danger:focus {
   outline: none;
-  border-color: var(--border);
-  box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 42px;
-  height: 24px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.switch .slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  transition:
-    background-color 120ms ease,
-    box-shadow 120ms ease;
-}
-
-.switch .slider::before {
-  content: "";
-  position: absolute;
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: #fff;
-  border-radius: 50%;
-  transition: transform 120ms ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-}
-
-.switch input:checked + .slider {
-  background: var(--positive);
-}
-
-.switch input:checked + .slider::before {
-  transform: translate(18px, -50%);
-}
-
-.switch input:focus + .slider {
   box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
 }
 
@@ -322,10 +253,7 @@ body {
 /* Inputs */
 .form-field input,
 .form-field select,
-.form-field textarea,
-input.form-control,
-select.form-control,
-textarea.form-control {
+.form-field textarea {
   appearance: none;
   background: var(--surface);
   color: var(--text);
@@ -343,18 +271,13 @@ textarea.form-control {
 .form-field input:hover,
 .form-field select:hover,
 .form-field textarea:hover,
-input.form-control:hover,
-select.form-control:hover,
-textarea.form-control:hover {
+input.form-control:hover {
   background: var(--surface);
 }
 
 .form-field input:focus,
 .form-field select:focus,
-.form-field textarea:focus,
-input.form-control:focus,
-select.form-control:focus,
-textarea.form-control:focus {
+.form-field textarea:focus {
   border-color: var(--border);
   box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
 }
