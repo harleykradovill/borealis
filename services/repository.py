@@ -215,63 +215,183 @@ class Repository:
         self, include_archived: bool = False
     ) -> List[Dict[str, Any]]:
         with self._session() as session:
-            users = session.query(User).filter(
-                User.archived.is_(False) if not include_archived
-                else True
-            ).all()
+            user_query = session.query(User)
+            if not include_archived:
+                user_query = user_query.filter(User.archived.is_(False))
+            users = user_query.all()
+            if not users:
+                return []
+
+            user_ids = [u.jellyfin_id for u in users if u.jellyfin_id]
 
             stop_playback_filter = or_(
                 PlaybackActivity.event_name.is_(None),
                 ~PlaybackActivity.event_name.like("VideoPlayback||%"),
                 PlaybackActivity.event_name.like("VideoPlaybackStopped||%"),
             )
-    
+            
+            total_rows = (
+                session.query(
+                    PlaybackActivity.user_id,
+                    func.count(PlaybackActivity.id),
+                )
+                .filter(
+                    PlaybackActivity.user_id.in_(user_ids),
+                    stop_playback_filter,
+                )
+                .group_by(PlaybackActivity.user_id)
+                .all()
+            )
+            total_plays_by_user = {
+                user_id: int(total or 0)
+                for user_id, total in total_rows
+                if user_id
+            }
+
+            latest_ts_subq = (
+                session.query(
+                    PlaybackActivity.user_id.label("user_id"),
+                    func.max(PlaybackActivity.activity_at).label("max_activity_at"),
+                )
+                .filter(
+                    PlaybackActivity.user_id.in_(user_ids),
+                    stop_playback_filter,
+                )
+                .group_by(PlaybackActivity.user_id)
+                .subquery()
+            )
+
+            latest_rows = (
+                session.query(
+                    PlaybackActivity.user_id,
+                    PlaybackActivity.activity_at,
+                    PlaybackActivity.item_id,
+                )
+                .join(
+                    latest_ts_subq,
+                    (PlaybackActivity.user_id == latest_ts_subq.c.user_id)
+                    & (
+                        PlaybackActivity.activity_at
+                        == latest_ts_subq.c.max_activity_at
+                    ),
+                )
+                .order_by(PlaybackActivity.id.desc())
+                .all()
+            )
+
+            latest_by_user: Dict[str, Dict[str, Any]] = {}
+            for user_id, activity_at, item_id in latest_rows:
+                if user_id and user_id not in latest_by_user:
+                    latest_by_user[user_id] = {
+                        "activity_at": activity_at,
+                        "item_id": item_id,
+                    }
+
+            last_item_ids = [
+                row["item_id"]
+                for row in latest_by_user.values()
+                if row.get("item_id")
+            ]
+
+            item_rows = (
+                session.query(
+                    Item.jellyfin_id,
+                    Item.name,
+                    Item.type,
+                    Item.parent_id,
+                )
+                .filter(Item.jellyfin_id.in_(last_item_ids))
+                .all()
+                if last_item_ids
+                else []
+            )
+            items_by_id = {
+                jellyfin_id: {
+                    "name": name,
+                    "type": (item_type or "").lower(),
+                    "parent_id": parent_id,
+                }
+                for jellyfin_id, name, item_type, parent_id in item_rows
+            }
+
+            episode_parent_ids = [
+                d["parent_id"]
+                for d in items_by_id.values()
+                if d["type"] == "episode" and d.get("parent_id")
+            ]
+
+            season_rows = (
+                session.query(
+                    Item.jellyfin_id,
+                    Item.parent_id,
+                )
+                .filter(Item.jellyfin_id.in_(episode_parent_ids))
+                .all()
+                if episode_parent_ids
+                else []
+            )
+            season_to_series = {
+                season_id: series_id
+                for season_id, series_id in season_rows
+                if season_id and series_id
+            }
+
+            series_ids = list(set(season_to_series.values()))
+            series_rows = (
+                session.query(
+                    Item.jellyfin_id,
+                    Item.name,
+                )
+                .filter(Item.jellyfin_id.in_(series_ids))
+                .all()
+                if series_ids
+                else []
+            )
+            series_name_by_id = {
+                series_id: series_name
+                for series_id, series_name in series_rows
+                if series_id
+            }
+
             results = []
             for user in users:
-                total_plays = session.query(
-                    func.count(PlaybackActivity.id)
-                ).filter(
-                    PlaybackActivity.user_id == user.jellyfin_id,
-                    stop_playback_filter,
-                ).scalar() or 0
-    
-                total_seconds = int(user.total_watch_time_seconds or 0)
-    
-                last_activity = session.query(
-                    PlaybackActivity, Item
-                ).join(
-                    Item,
-                    PlaybackActivity.item_id == Item.jellyfin_id
-                ).filter(
-                    PlaybackActivity.user_id == user.jellyfin_id,
-                    stop_playback_filter,
-                ).order_by(
-                    PlaybackActivity.activity_at.desc()
-                ).first()
-    
+                latest = latest_by_user.get(user.jellyfin_id)
                 item_name = None
-                if last_activity:
-                    last_item_id = last_activity[1].jellyfin_id
-                    item_name = self._series_or_item_name_in_session(
-                        session,
-                        last_item_id,
-                    )
-                last_activity_ts = (
-                    last_activity[0].activity_at if last_activity else None
+
+                if latest:
+                    item_id = latest.get("item_id")
+                    item_meta = items_by_id.get(item_id or "")
+                    if item_meta:
+                        if item_meta["type"] == "episode":
+                            season_id = item_meta.get("parent_id")
+                            series_id = season_to_series.get(season_id or "")
+                            item_name = (
+                                series_name_by_id.get(series_id or "")
+                                or item_meta.get("name")
+                            )
+                        else:
+                            item_name = item_meta.get("name")
+
+                results.append(
+                    {
+                        "id": user.id,
+                        "jellyfin_id": user.jellyfin_id,
+                        "name": user.name,
+                        "is_admin": user.is_admin,
+                        "total_plays": int(
+                            total_plays_by_user.get(user.jellyfin_id, 0)
+                        ),
+                        "total_watch_time_seconds": int(
+                            user.total_watch_time_seconds or 0
+                        ),
+                        "last_watched_item_name": item_name,
+                        "last_device": user.last_device,
+                        "last_seen_at": (
+                            latest.get("activity_at") if latest else None
+                        ),
+                    }
                 )
-    
-                results.append({
-                    "id": user.id,
-                    "jellyfin_id": user.jellyfin_id,
-                    "name": user.name,
-                    "is_admin": user.is_admin,
-                    "total_plays": int(total_plays),
-                    "total_watch_time_seconds": int(total_seconds or 0),
-                    "last_watched_item_name": item_name,
-                    "last_device": user.last_device,
-                    "last_seen_at": last_activity_ts,
-                })
-    
+
             return results
 
     # -------------------------
