@@ -79,6 +79,22 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     from services.sync_scheduler import SyncScheduler
 
+    def _has_server_config(settings: Dict) -> bool:
+        """
+        Check whether required Jellyfin server settings exist.
+
+        :param settings: Settings dictionary
+        :returns: True when host, port, and API key are present
+        """
+        return bool(
+            settings.get("jf_host")
+            and settings.get("jf_port")
+            and settings.get("jf_api_key")
+        )
+    
+    current_settings = svc.get()
+    initial_interval = int(current_settings.get("sync_interval") or 1800)
+
     current_settings = svc.get()
     initial_interval = int(current_settings.get("sync_interval") or 1800)
 
@@ -103,11 +119,8 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     )
     app.sessions_service = sessions_svc
     
-    has_server = bool(
-        current_settings.get("jf_host")
-        and current_settings.get("jf_port")
-        and current_settings.get("jf_api_key")
-    )
+    has_server = _has_server_config(current_settings)
+    app.config["HAS_SERVER_CONFIGURED"] = has_server
 
     if not app.config.get("DEBUG") and has_server:
         sync_scheduler.start()
@@ -151,13 +164,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         """
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            settings = svc.get()
-            has_server = (
-                settings.get("jf_host")
-                and settings.get("jf_port")
-                and settings.get("jf_api_key")
-            )
-            if not has_server:
+            if not bool(app.config.get("HAS_SERVER_CONFIGURED")):
                 return redirect("/setup")
             return f(*args, **kwargs)
         return decorated_function

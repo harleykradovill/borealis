@@ -193,6 +193,7 @@ def create_settings_blueprint(*, svc, repo, sync):
             and updated.get("jf_port")
             and updated.get("jf_api_key")
         )
+        current_app.config["HAS_SERVER_CONFIGURED"] = bool(has_server)
 
         try:
             new_interval = updated.get("sync_interval")
