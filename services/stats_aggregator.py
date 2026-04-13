@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Dict, Any, List, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, and_
 
 from services.data_models import (
     User,
@@ -126,8 +126,14 @@ class StatsAggregator:
     @staticmethod
     def refresh_all_stats(session: Session) -> Dict[str, int]:
         """
-        Refresh all denormalized statistics in a single operation.
+        Refresh denormalized user, item, and library play statistics.
+
+        :param session: Active SQL session
+        :returns: Counts of processed libraries, items, and users
+        :raises Exception: Propagates database/query errors from SQLAlchemy
         """
+
+        stop_filter = _stop_playback_filter()
 
         # ---- Item play counts ----
         play_counts = dict(
@@ -135,7 +141,7 @@ class StatsAggregator:
                 PlaybackActivity.item_id,
                 func.count(PlaybackActivity.id),
             )
-            .filter(_stop_playback_filter())
+            .filter(stop_filter)
             .group_by(PlaybackActivity.item_id)
             .all()
         )
@@ -159,7 +165,7 @@ class StatsAggregator:
                 PlaybackActivity.user_id,
                 func.count(PlaybackActivity.id),
             )
-            .filter(_stop_playback_filter())
+            .filter(stop_filter)
             .group_by(PlaybackActivity.user_id)
             .all()
         )
@@ -169,12 +175,56 @@ class StatsAggregator:
         )
 
         users_processed = 0
-        if user_counts:
+        user_ids = [uid for uid in user_counts.keys() if uid]
+        if user_ids:
             users = (
                 session.query(User)
-                .filter(User.jellyfin_id.in_(user_counts.keys()))
+                .filter(User.jellyfin_id.in_(user_ids))
                 .all()
             )
+
+            latest_user_ts = (
+                session.query(
+                    PlaybackActivity.user_id.label("user_id"),
+                    func.max(PlaybackActivity.activity_at).label(
+                        "max_activity_at"
+                    ),
+                )
+                .filter(
+                    PlaybackActivity.user_id.in_(user_ids),
+                    stop_filter,
+                )
+                .group_by(PlaybackActivity.user_id)
+                .subquery()
+            )
+
+            latest_user_rows = (
+                session.query(
+                    PlaybackActivity.user_id,
+                    PlaybackActivity.activity_at,
+                    PlaybackActivity.event_name,
+                    PlaybackActivity.id,
+                )
+                .join(
+                    latest_user_ts,
+                    and_(
+                        PlaybackActivity.user_id == latest_user_ts.c.user_id,
+                        PlaybackActivity.activity_at
+                        == latest_user_ts.c.max_activity_at,
+                    ),
+                )
+                .order_by(PlaybackActivity.id.desc())
+                .all()
+            )
+
+            latest_user_by_id: Dict[str, Dict[str, Any]] = {}
+            for user_id, activity_at, event_name, _ in latest_user_rows:
+                if user_id and user_id not in latest_user_by_id:
+                    latest_user_by_id[user_id] = {
+                        "activity_at": activity_at,
+                        "event_name": event_name,
+                    }
+
             for user in users:
                 new_total = int(user_counts.get(user.jellyfin_id, 0))
                 if user.total_plays != new_total:
@@ -186,27 +236,16 @@ class StatsAggregator:
                 if user.total_watch_time_seconds != watch_seconds:
                     user.total_watch_time_seconds = watch_seconds
 
-                last_activity = (
-                    session.query(PlaybackActivity)
-                    .filter(
-                        PlaybackActivity.user_id == user.jellyfin_id,
-                        _stop_playback_filter(),
-                    )
-                    .order_by(PlaybackActivity.activity_at.desc())
-                    .limit(1)
-                    .first()
-                )
+                latest = latest_user_by_id.get(user.jellyfin_id)
+                if latest:
+                    latest_ts = latest.get("activity_at")
+                    if user.last_seen_at != latest_ts:
+                        user.last_seen_at = latest_ts
 
-                if last_activity:
-                    if user.last_seen_at != last_activity.activity_at:
-                        user.last_seen_at = last_activity.activity_at
-
-                    if last_activity.event_name:
-                        device = (
-                            StatsAggregator
-                            ._extract_device_from_event_name(
-                                last_activity.event_name
-                            )
+                    event_name = latest.get("event_name")
+                    if event_name:
+                        device = StatsAggregator._extract_device_from_event_name(
+                            str(event_name)
                         )
                         if device and user.last_device != device:
                             user.last_device = device
@@ -218,56 +257,159 @@ class StatsAggregator:
         libraries_processed = 0
         libraries = session.query(Library).all()
 
+        lib_agg_rows = (
+            session.query(
+                Item.library_id,
+                func.count(Item.id),
+                func.coalesce(func.sum(Item.runtime_seconds), 0),
+                func.coalesce(func.sum(Item.size_bytes), 0),
+                func.coalesce(func.sum(Item.play_count), 0),
+            )
+            .filter(Item.archived.is_(False))
+            .group_by(Item.library_id)
+            .all()
+        )
+        lib_agg_by_id = {
+            int(library_id): (
+                int(total_files or 0),
+                int(total_time_seconds or 0),
+                int(size_bytes or 0),
+                int(total_plays or 0),
+            )
+            for (
+                library_id,
+                total_files,
+                total_time_seconds,
+                size_bytes,
+                total_plays,
+            ) in lib_agg_rows
+            if library_id is not None
+        }
+
+        lib_item_rows = (
+            session.query(Item.library_id, Item.jellyfin_id)
+            .filter(Item.archived.is_(False))
+            .all()
+        )
+        lib_item_ids: Dict[int, List[str]] = {}
+        for library_id, jellyfin_id in lib_item_rows:
+            if library_id is None or not jellyfin_id:
+                continue
+            lib_item_ids.setdefault(int(library_id), []).append(jellyfin_id)
+
+        latest_lib_ts = (
+            session.query(
+                Item.library_id.label("library_id"),
+                func.max(PlaybackActivity.activity_at).label("max_activity_at"),
+            )
+            .join(Item, PlaybackActivity.item_id == Item.jellyfin_id)
+            .filter(stop_filter)
+            .group_by(Item.library_id)
+            .subquery()
+        )
+
+        latest_lib_rows = (
+            session.query(
+                Item.library_id,
+                Item.jellyfin_id,
+                Item.name,
+                Item.type,
+                Item.parent_id,
+                PlaybackActivity.id,
+            )
+            .join(PlaybackActivity, PlaybackActivity.item_id == Item.jellyfin_id)
+            .join(
+                latest_lib_ts,
+                and_(
+                    Item.library_id == latest_lib_ts.c.library_id,
+                    PlaybackActivity.activity_at
+                    == latest_lib_ts.c.max_activity_at,
+                ),
+            )
+            .order_by(PlaybackActivity.id.desc())
+            .all()
+        )
+
+        latest_item_by_library: Dict[int, Dict[str, Any]] = {}
+        for (
+            library_id,
+            jellyfin_id,
+            item_name,
+            item_type,
+            parent_id,
+            _,
+        ) in latest_lib_rows:
+            if library_id is None:
+                continue
+            lid = int(library_id)
+            if lid not in latest_item_by_library:
+                latest_item_by_library[lid] = {
+                    "jellyfin_id": jellyfin_id,
+                    "name": item_name,
+                    "type": (item_type or "").lower(),
+                    "parent_id": parent_id,
+                }
+
+        episode_parent_ids = list(
+            {
+                meta["parent_id"]
+                for meta in latest_item_by_library.values()
+                if meta.get("type") == "episode" and meta.get("parent_id")
+            }
+        )
+
+        season_rows = (
+            session.query(Item.jellyfin_id, Item.parent_id)
+            .filter(Item.jellyfin_id.in_(episode_parent_ids))
+            .all()
+            if episode_parent_ids
+            else []
+        )
+        season_to_series = {
+            season_id: series_id
+            for season_id, series_id in season_rows
+            if season_id and series_id
+        }
+
+        series_ids = list(set(season_to_series.values()))
+        series_rows = (
+            session.query(Item.jellyfin_id, Item.name)
+            .filter(Item.jellyfin_id.in_(series_ids))
+            .all()
+            if series_ids
+            else []
+        )
+        series_name_by_id = {
+            series_id: series_name
+            for series_id, series_name in series_rows
+            if series_id
+        }
+
+        last_played_name_by_library: Dict[int, Optional[str]] = {}
+        for library_id, meta in latest_item_by_library.items():
+            if meta.get("type") == "episode":
+                season_id = meta.get("parent_id")
+                series_id = season_to_series.get(season_id or "")
+                last_played_name_by_library[library_id] = (
+                    series_name_by_id.get(series_id or "")
+                    or meta.get("name")
+                )
+            else:
+                last_played_name_by_library[library_id] = meta.get("name")
+
         for lib in libraries:
-            agg = (
-                session.query(
-                    func.count(Item.id),
-                    func.coalesce(func.sum(Item.runtime_seconds), 0),
-                    func.coalesce(func.sum(Item.size_bytes), 0),
-                    func.coalesce(func.sum(Item.play_count), 0),
-                )
-                .filter(
-                    Item.library_id == lib.id,
-                    Item.archived.is_(False),
-                )
-                .one()
+            total_files, total_time_seconds, size_bytes, total_plays = (
+                lib_agg_by_id.get(lib.id, (0, 0, 0, 0))
             )
 
-            total_files = int(agg[0])
-            total_time_seconds = int(agg[1])
-            size_bytes = int(agg[2])
-            total_plays = int(agg[3])
-
-            library_item_ids = [
-                row[0]
-                for row in session.query(Item.jellyfin_id)
-                .filter(
-                    Item.library_id == lib.id,
-                    Item.archived.is_(False),
-                )
-                .all()
-            ]
             total_playback_seconds = int(
-                sum(watch_seconds_by_item.get(item_id, 0) for item_id in library_item_ids)
-            )
-
-            last = (
-                session.query(PlaybackActivity, Item)
-                .join(Item, PlaybackActivity.item_id == Item.jellyfin_id)
-                .filter(
-                    Item.library_id == lib.id,
-                    _stop_playback_filter(),
+                sum(
+                    watch_seconds_by_item.get(item_id, 0)
+                    for item_id in lib_item_ids.get(lib.id, [])
                 )
-                .order_by(PlaybackActivity.activity_at.desc())
-                .limit(1)
-                .first()
             )
 
-            last_played_name: Optional[str] = (
-                StatsAggregator._series_or_item_name(session, last[1])
-                if last
-                else None
-            )
+            last_played_name = last_played_name_by_library.get(lib.id)
 
             changed = False
             if lib.total_files != total_files:
