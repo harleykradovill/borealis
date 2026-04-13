@@ -27,10 +27,9 @@ class JellyfinClient:
 
     def _read_settings(self) -> Tuple[str, str, str, str]:
         """
-        Read settings and normalize scheme/host.
+        Read persisted Jellyfin settings and normalize connection values.
 
-        :param self: Instance containing the settings provider
-        :returns Tuple[str, str, str, str]: (scheme, host, port, api_token)
+        :returns (scheme, host, port, api_token)
         """
         s = self._settings.get() # Get settings dictionary
         raw_host = (s.get("jf_host") or "").strip()
@@ -82,8 +81,11 @@ class JellyfinClient:
         """
         Construct a full URL for a given Jellyfin path.
 
+        :param scheme: URL scheme (http or https)
+        :param host: Jellyfin host name or IP
+        :param port: Jellyfin server port
         :param path: API path
-        :returns str | None: Fully URL, or None if config is invalid
+        :returns Full URL
         """
         if not path.startswith("/"):
             path = f"/{path}"
@@ -215,6 +217,11 @@ class JellyfinClient:
         }
 
     def _connection(self):
+        """
+        Validate connection fields and return a normalized connection tuple.
+
+        :returns: (scheme, host, port, token) when valid, otherwise None
+        """
         scheme, host, port, token = self._read_settings()
         if not host or not port or not port.isdigit() or not token:
             return None
@@ -341,7 +348,7 @@ class JellyfinClient:
         :param limit: Max number of entires to return
         :param min_date: Optional timestamp to filter entries from
         :param has_user_id: Whether to include only entries associated with users
-        :returns dict: Resulting object containing success flag, status, and log entries
+        :returns: Result object containing success flat, status, and log entries
         """
         path = (
             f"/System/ActivityLog/Entries?"
@@ -364,6 +371,10 @@ class JellyfinClient:
     ) -> Dict[str, Any]:
         """
         Fetch a Jellyfin item's primary image.
+
+        :param item_id: Jellyfin item identifer
+        :param tag: Optional image tag for cache/version targeting
+        :returns: Result object with ok/status/body/content_type fields
         """
         conn = self._connection()
         if not conn:
@@ -420,7 +431,7 @@ class JellyfinClient:
 
 def create_client(settings_service: SettingsService) -> JellyfinClient:
     """
-    Factory to create a JellyfinClient from a settings_store.
+    Create a JellyfinClient from the settings service.
 
     :param settings_service: Settings provider containing config
     : returns JellyfinClient: Initialized Jellyfin client instance
