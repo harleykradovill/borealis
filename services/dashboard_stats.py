@@ -26,6 +26,12 @@ ALL_SECTIONS = (
 
 
 def _weekday_name(monday_zero_index: int) -> str:
+    """
+    Convert a Monday-based weekday index to a weekday name.
+
+    :para monday_zero_index: Weekday index where Monday = 0 and Sunday = 6
+    :returns: Weekday name when index is valid, otherwise "Unknown"
+    """
     names = [
         "Monday",
         "Tuesday",
@@ -42,8 +48,9 @@ def _weekday_name(monday_zero_index: int) -> str:
 
 def _sqlite_weekday_expr():
     """
-    SQLite strftime('%w') returns 0..6 where 0 is Sunday.
-    Convert to Monday=0..Sunday=6 with: (w + 6) % 7.
+    Build a SQL expression for Monday-based weekday indexing.
+
+    :returns: SQL expression that maps SQL Sunday = 0..Saturday=6 to Monday=0..Sunday=6
     """
     w = func.cast(
         func.strftime(
@@ -56,12 +63,25 @@ def _sqlite_weekday_expr():
 
 
 class DashboardStatsBuilder:
+    """
+    Build dashboard statistic sections from database models.
+    """
     @staticmethod
     def build_all(
         session: Session,
         limit: int = 5,
         name_resolver: Optional[Callable[[str], Optional[str]]] = None,
     ) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Build all dashboard statistic sections in one call.
+
+        :param session: Active SQL session
+        :param limit: Max records per section, clamped to at least 1
+        :param name_resolver: Optional callable to resolve item names by ID
+        :returns: Mapping of section keys to statistic row dicts
+        :raises ValueError: Raised when limit cannot be converted to int
+        :raises TypeError: Raised when limit type is not convertible to int
+        """
         n = max(1, int(limit or 5))
         return {
             SECTION_TOP_USERS: DashboardStatsBuilder.top_users_by_plays(
@@ -90,6 +110,13 @@ class DashboardStatsBuilder:
     def top_users_by_plays(
         session: Session, limit: int
     ) -> List[Dict[str, Any]]:
+        """
+        Return highest-play users, excluding archived.
+
+        :param session: Active SQL session
+        :param limit: Max number of users to return
+        :returns: List of users with Jellyfin ID, name, and play count
+        """
         rows = (
             session.query(User)
             .filter(User.archived.is_(False))
@@ -110,6 +137,13 @@ class DashboardStatsBuilder:
     def top_items_by_plays(
         session: Session, limit: int
     ) -> List[Dict[str, Any]]:
+        """
+        Return highest-play items with their library names.
+
+        :param session: Active SQL session
+        :param limit: Max number of items to return
+        :returns: List of items with type, library, and play count
+        """
         rows = (
             session.query(Item, Library)
             .join(Library, Item.library_id == Library.id)
@@ -133,6 +167,13 @@ class DashboardStatsBuilder:
     def top_libraries_by_plays(
         session: Session, limit: int
     ) -> List[Dict[str, Any]]:
+        """
+        Return libraries ordered by total plays, excluding archived.
+
+        :param session: Active SQL session
+        :param limit: Max number of libraries to return
+        :returns: List of libraries with Jellyfin ID, name, and play count
+        """
         rows = (
             session.query(Library)
             .filter(Library.archived.is_(False))
@@ -153,6 +194,13 @@ class DashboardStatsBuilder:
     def top_users_by_watch_time(
         session: Session, limit: int
     ) -> List[Dict[str, Any]]:
+        """
+        Return users ordered by total watch time.
+
+        :param session: Active SQL session
+        :param limit: Max number of users to return
+        :returns: List of users with Jellyfin ID, name, and watch seconds
+        """
         rows = (
             session.query(User)
             .filter(User.archived.is_(False))
@@ -173,6 +221,13 @@ class DashboardStatsBuilder:
     def most_active_weekdays(
         session: Session, limit: int
     ) -> List[Dict[str, Any]]:
+        """
+        Return weekdays ranked by playback activity.
+
+        :param session: Active SQL session
+        :param limit: Max number of weekdays to return
+        :returns: List of weekday rows with index, name, and play totals
+        """
         weekday_expr = _sqlite_weekday_expr()
 
         rows = (
@@ -204,6 +259,14 @@ class DashboardStatsBuilder:
         limit: int,
         name_resolver: Optional[Callable[[str], Optional[str]]] = None,
     ) -> List[Dict[str, Any]]:
+        """
+        Return recent items with last viewer and timestamp
+
+        :param session: Active SQL session
+        :param limit: Max number of unique items to return
+        :param name_resolver: Optional callable to resolve item names by ID
+        :returns: List of recently watched items with user context
+        """
         raw = (
             session.query(PlaybackActivity, Item, User)
             .join(Item, PlaybackActivity.item_id == Item.jellyfin_id)

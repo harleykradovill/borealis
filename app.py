@@ -115,7 +115,10 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     def cleanup():
         """
-        Cleanup function called when app shuts down.
+        Stop background services and release repo resources on shutdown.
+
+        :returns: None
+        :raises Exception: Logs and supresses internal shutdown errors
         """
         sched = getattr(app, "sync_scheduler", None)
         if sched:
@@ -140,7 +143,11 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     def require_server(f):
         """
-        Decorator that redirects to setup if no server is configured.
+        Ensure Jellyfin server credentials exist before serving protected routes.
+
+        :param f: Route handler function to wrap
+        :returns: Wrapped route handler that redirects to setup when unconfigured
+        :raises Exception: Propagates exceptions raised by the wrapped handler
         """
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -158,6 +165,13 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     @app.get("/assets/<path:filename>")
     def assets(filename: str) -> Response:
+        """
+        Serve static JavaScript and packaged asset files by request path.
+
+        :param filename: Relative asset path from the /assets route
+        :returns: Flask response containing the requested file
+        :raises NotFound: Returns by Flask if the asset path does not exist
+        """
         if filename.startswith("js/"):
             return send_from_directory(
                 "static/js",
