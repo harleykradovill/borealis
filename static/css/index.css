@@ -87,6 +87,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
+  min-height: 320px;
 }
 
 .session-card::before,
@@ -140,9 +141,12 @@
 .session-card-attr-value {
   color: var(--text);
   font-size: 0.9rem;
-  word-break: break-word;
   text-align: right;
   flex: 1;
+  word-break: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .session-card-progress {
@@ -206,7 +210,8 @@
   margin-bottom: 2rem;
 }
 
-#sessions-cards {
+#sessions-cards,
+.sessions-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;

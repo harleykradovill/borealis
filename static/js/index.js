@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("plays-matrix");
   const emptyEl = document.getElementById("matrix-chart-empty-files");
+  const matrixLoading = document.getElementById("matrix-loading");
   if (!canvas) return;
 
   async function loadActivity(days = 365) {
@@ -113,133 +114,140 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function render() {
-    const items = await loadActivity(365);
-    const { data, maxV, weeks } = buildMatrix(items, 365);
-    if (!data.length || maxV === 0) {
-      if (emptyEl) emptyEl.hidden = false;
-      canvas.style.display = "none";
-      return;
-    } else {
-      if (emptyEl) emptyEl.hidden = true;
-      canvas.style.display = "";
-    }
+    try {
+      const items = await loadActivity(365);
+      const { data, maxV, weeks } = buildMatrix(items, 365);
+      if (!data.length || maxV === 0) {
+        if (emptyEl) emptyEl.hidden = false;
+        canvas.style.display = "none";
+        return;
+      } else {
+        if (emptyEl) emptyEl.hidden = true;
+        canvas.style.display = "";
+      }
 
-    const monthLabels = generateMonthLabels(data, weeks);
-    const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const monthLabels = generateMonthLabels(data, weeks);
+      const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    const canvasContainer = canvas.parentElement;
-    const labelsWrapper = document.createElement("div");
-    labelsWrapper.className = "matrix-labels-wrapper";
+      const canvasContainer = canvas.parentElement;
+      const labelsWrapper = document.createElement("div");
+      labelsWrapper.className = "matrix-labels-wrapper";
 
-    const topLabels = document.createElement("div");
-    topLabels.className = "matrix-top-labels";
-    monthLabels.forEach((label) => {
-      const div = document.createElement("div");
-      div.className = "matrix-month-label";
-      div.textContent = label;
-      topLabels.appendChild(div);
-    });
+      const topLabels = document.createElement("div");
+      topLabels.className = "matrix-top-labels";
+      monthLabels.forEach((label) => {
+        const div = document.createElement("div");
+        div.className = "matrix-month-label";
+        div.textContent = label;
+        topLabels.appendChild(div);
+      });
 
-    const contentWrapper = document.createElement("div");
-    contentWrapper.className = "matrix-content";
+      const contentWrapper = document.createElement("div");
+      contentWrapper.className = "matrix-content";
 
-    const leftLabels = document.createElement("div");
-    leftLabels.className = "matrix-left-labels";
-    dayLabels.forEach((day) => {
-      const div = document.createElement("div");
-      div.className = "matrix-day-label";
-      div.textContent = day;
-      leftLabels.appendChild(div);
-    });
+      const leftLabels = document.createElement("div");
+      leftLabels.className = "matrix-left-labels";
+      dayLabels.forEach((day) => {
+        const div = document.createElement("div");
+        div.className = "matrix-day-label";
+        div.textContent = day;
+        leftLabels.appendChild(div);
+      });
 
-    const canvasWrapper = document.createElement("div");
-    canvasWrapper.className = "matrix-canvas-wrapper";
-    canvasWrapper.appendChild(canvas.cloneNode(true));
-    const newCanvas = canvasWrapper.querySelector("canvas");
+      const canvasWrapper = document.createElement("div");
+      canvasWrapper.className = "matrix-canvas-wrapper";
+      canvasWrapper.appendChild(canvas.cloneNode(true));
+      const newCanvas = canvasWrapper.querySelector("canvas");
 
-    contentWrapper.appendChild(leftLabels);
-    contentWrapper.appendChild(canvasWrapper);
+      contentWrapper.appendChild(leftLabels);
+      contentWrapper.appendChild(canvasWrapper);
 
-    labelsWrapper.appendChild(topLabels);
-    labelsWrapper.appendChild(contentWrapper);
+      labelsWrapper.appendChild(topLabels);
+      labelsWrapper.appendChild(contentWrapper);
 
-    canvasContainer.replaceChild(labelsWrapper, canvas);
+      canvasContainer.replaceChild(labelsWrapper, canvas);
 
-    const ctx = newCanvas.getContext("2d");
+      const ctx = newCanvas.getContext("2d");
 
-    const config = {
-      type: "matrix",
-      data: {
-        datasets: [
-          {
-            data,
-            borderWidth: 0,
-            borderRadius: 5,
-            backgroundColor: (ctxArg) => {
-              const v = ctxArg.raw.v || 0;
-              return colorFor(v, maxV);
+      const config = {
+        type: "matrix",
+        data: {
+          datasets: [
+            {
+              data,
+              borderWidth: 0,
+              borderRadius: 5,
+              backgroundColor: (ctxArg) => {
+                const v = ctxArg.raw.v || 0;
+                return colorFor(v, maxV);
+              },
+              width: ({ chart }) => {
+                const areaW = (chart.chartArea || {}).width || canvas.width;
+                const areaH = (chart.chartArea || {}).height || canvas.height;
+                const cellW = Math.max(2, Math.floor(areaW / weeks) - 1);
+                const cellH = Math.max(2, Math.floor(areaH / 7) - 1);
+                return Math.max(2, Math.min(cellW, cellH));
+              },
+              height: ({ chart }) => {
+                const areaW = (chart.chartArea || {}).width || canvas.width;
+                const areaH = (chart.chartArea || {}).height || canvas.height;
+                const cellW = Math.max(2, Math.floor(areaW / weeks) - 1);
+                const cellH = Math.max(2, Math.floor(areaH / 7) - 1);
+                return Math.max(2, Math.min(cellW, cellH));
+              },
             },
-            width: ({ chart }) => {
-              const areaW = (chart.chartArea || {}).width || canvas.width;
-              const areaH = (chart.chartArea || {}).height || canvas.height;
-              const cellW = Math.max(2, Math.floor(areaW / weeks) - 1);
-              const cellH = Math.max(2, Math.floor(areaH / 7) - 1);
-              return Math.max(2, Math.min(cellW, cellH));
-            },
-            height: ({ chart }) => {
-              const areaW = (chart.chartArea || {}).width || canvas.width;
-              const areaH = (chart.chartArea || {}).height || canvas.height;
-              const cellW = Math.max(2, Math.floor(areaW / weeks) - 1);
-              const cellH = Math.max(2, Math.floor(areaH / 7) - 1);
-              return Math.max(2, Math.min(cellW, cellH));
-            },
-          },
-        ],
-      },
-      options: {
-        animation: {
-          x: { duration: 0 },
-          y: { duration: 0 },
+          ],
         },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              title: () => "",
-              label: (ctx) => {
-                const r = ctx.raw;
-                return `${r.date} - ${r.v} plays`;
+        options: {
+          animation: {
+            x: { duration: 0 },
+            y: { duration: 0 },
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                title: () => "",
+                label: (ctx) => {
+                  const r = ctx.raw;
+                  return `${r.date} - ${r.v} plays`;
+                },
               },
             },
           },
-        },
-        scales: {
-          x: {
-            display: false,
-            min: 0.5,
-            max: weeks + 0.5,
-            offset: false,
-            grid: { display: false },
+          scales: {
+            x: {
+              display: false,
+              min: 0.5,
+              max: weeks + 0.5,
+              offset: false,
+              grid: { display: false },
+            },
+            y: {
+              display: false,
+              min: 0.5,
+              max: 7.5,
+              grid: { display: false },
+            },
           },
-          y: {
-            display: false,
-            min: 0.5,
-            max: 7.5,
-            grid: { display: false },
-          },
+          maintainAspectRatio: false,
+          responsive: true,
         },
-        maintainAspectRatio: false,
-        responsive: true,
-      },
-    };
+      };
 
-    if (window.__playsMatrixChart) {
-      try {
-        window.__playsMatrixChart.destroy();
-      } catch (e) {}
-      window.__playsMatrixChart = null;
+      if (window.__playsMatrixChart) {
+        try {
+          window.__playsMatrixChart.destroy();
+        } catch (e) {}
+        window.__playsMatrixChart = null;
+      }
+      window.__playsMatrixChart = new Chart(ctx, config);
+    } finally {
+      if (matrixLoading) {
+        matrixLoading.classList.remove("skeleton");
+        matrixLoading.style.display = "none";
+      }
     }
-    window.__playsMatrixChart = new Chart(ctx, config);
   }
 
   function generateMonthLabels(data, weeks) {
@@ -298,6 +306,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const container = document.getElementById("sessions-container");
   const empty = document.getElementById("sessions-empty");
   const cardsContainer = document.getElementById("sessions-cards");
+  const loading = document.getElementById("sessions-loading");
+  let firstLoadDone = false;
 
   if (!container || !cardsContainer) return;
 
@@ -319,6 +329,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderSessions(sessions) {
+    if (!firstLoadDone) {
+      firstLoadDone = true;
+      if (loading) {
+        loading.classList.remove("skeleton");
+        loading.style.display = "none";
+      }
+    }
+
     if (!sessions || sessions.length === 0) {
       container.hidden = true;
       if (empty) empty.hidden = false;
@@ -494,6 +512,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 (function () {
   const LIMIT = 5;
+  const statLists = document.querySelectorAll(
+    ".statistics-item.skeleton, .statistics-value.skeleton",
+  );
+
+  function clearStatsSkeleton() {
+    statLists.forEach((el) => el.classList.remove("skeleton"));
+  }
 
   function fmtHours(seconds) {
     if (seconds === null || seconds === undefined || seconds === "") return "";
@@ -598,6 +623,8 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     } catch (err) {
       console.error("Failed to load watch statistics:", err);
+    } finally {
+      clearStatsSkeleton();
     }
   }
 

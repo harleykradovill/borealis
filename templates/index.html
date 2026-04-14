@@ -26,13 +26,24 @@
           <h2 style="margin: 0 0 1rem 0; color: var(--white)">
             Active Sessions
           </h2>
+
+          <div id="sessions-loading" class="skeleton">
+            <div class="wrapper sessions-cards" style="margin-bottom: 2rem">
+              <div class="session-card" style="min-height: 320px"></div>
+              <div class="session-card" style="min-height: 320px"></div>
+              <div class="session-card" style="min-height: 320px"></div>
+            </div>
+          </div>
+
           <div id="sessions-container" hidden>
             <div id="sessions-cards" class="sessions-cards"></div>
           </div>
+
           <div
             id="sessions-empty"
             class="settings-placeholder"
             style="margin-bottom: 2rem"
+            hidden
           >
             <p>No active sessions.</p>
           </div>
@@ -41,6 +52,12 @@
         <div class="matrix-chart-group">
           <h2>Plays Heatmap</h2>
           <div class="matrix-card">
+            <div id="matrix-loading" class="skeleton">
+              <div class="wrapper">
+                <div style="height: 225px; border-radius: 8px"></div>
+              </div>
+            </div>
+
             <canvas
               id="plays-matrix"
               width="800"
@@ -67,21 +84,116 @@
               <div class="statistics-card-content">
                 <h3 class="statistics-card-title">Top Users</h3>
                 <ul id="stat-top-users-names" class="statistics-card-list">
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
               <div class="statistics-card-values">
                 <div class="statistics-card-header">Plays</div>
                 <ul id="stat-top-users-values" class="statistics-values-list">
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -91,21 +203,116 @@
               <div class="statistics-card-content">
                 <h3 class="statistics-card-title">Top Items</h3>
                 <ul id="stat-top-items-names" class="statistics-card-list">
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
               <div class="statistics-card-values">
                 <div class="statistics-card-header">Plays</div>
                 <ul id="stat-top-items-values" class="statistics-values-list">
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -118,11 +325,41 @@
               <div class="statistics-card-content">
                 <h3 class="statistics-card-title">Top Libraries</h3>
                 <ul id="stat-top-libraries-names" class="statistics-card-list">
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
               <div class="statistics-card-values">
@@ -131,11 +368,76 @@
                   id="stat-top-libraries-values"
                   class="statistics-values-list"
                 >
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -148,21 +450,116 @@
               <div class="statistics-card-content">
                 <h3 class="statistics-card-title">Watch Time by User</h3>
                 <ul id="stat-watch-time-names" class="statistics-card-list">
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
               <div class="statistics-card-values">
                 <div class="statistics-card-header">Hours</div>
                 <ul id="stat-watch-time-values" class="statistics-values-list">
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -172,21 +569,116 @@
               <div class="statistics-card-content">
                 <h3 class="statistics-card-title">Most Active Day</h3>
                 <ul id="stat-active-day-names" class="statistics-card-list">
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
               <div class="statistics-card-values">
                 <div class="statistics-card-header">Plays</div>
                 <ul id="stat-active-day-values" class="statistics-values-list">
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -196,21 +688,116 @@
               <div class="statistics-card-content">
                 <h3 class="statistics-card-title">Recently Watched</h3>
                 <ul id="stat-recent-names" class="statistics-card-list">
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
-                  <li class="statistics-item"></li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-item">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div style="height: 14px; border-radius: 6px"></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
               <div class="statistics-card-values">
                 <div class="statistics-card-header">Date</div>
                 <ul id="stat-recent-values" class="statistics-values-list">
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
-                  <li class="statistics-value"></li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
+                  <li class="statistics-value">
+                    <div class="skeleton">
+                      <div class="wrapper">
+                        <div
+                          style="
+                            height: 14px;
+                            width: 48px;
+                            border-radius: 6px;
+                            margin-left: auto;
+                          "
+                        ></div>
+                      </div>
+                    </div>
+                  </li>
                 </ul>
               </div>
             </div>
