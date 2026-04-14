@@ -22,6 +22,11 @@ class SettingsService:
     encryption_key_path: str
 
     def __post_init__(self) -> None:
+        """
+        Initialize database engine, session factory, schema, and encryption client.
+
+        :returns: None
+        """
         self.engine = create_engine(self.database_url, future=True)
         self.SessionLocal = sessionmaker(
             bind=self.engine,
@@ -34,6 +39,9 @@ class SettingsService:
     def _session(self) -> Iterator[Session]:
         """
         Context manager for database sessions with auto-commit.
+
+        :returns: Yields an active SQLAlchemy Session
+        :raises Exception: Re-raises any exception after rolling back the session
         """
         session: Session = self.SessionLocal()
         try:
@@ -48,6 +56,8 @@ class SettingsService:
     def _load_or_create_key(self) -> bytes:
         """
         Load a Fernet key from disk, or create one if missing.
+
+        :returns: Fernet key bytes used for encryption and decryption
         """
         if (
             not self.encryption_key_path
@@ -69,6 +79,9 @@ class SettingsService:
     def _get_or_create_row(self, session: Session) -> Settings:
         """
         Retrieve the single Settings row, creating if missing.
+
+        :param session: Active SQL session
+        :returns: Settings model instance
         """
         obj = session.query(Settings).first()
         if obj:
@@ -82,6 +95,9 @@ class SettingsService:
     def get(self) -> Dict[str, Any]:
         """
         Retrieve current settings.
+
+        :returns: settings dict including decrypted values when available
+        :raises InvalidToken: if stored encrypted data cannot be decrypted with the key
         """
         with self._session() as session:
             settings = self._get_or_create_row(session)
@@ -90,6 +106,12 @@ class SettingsService:
     def update(self, values: Dict[str, Any]) -> Dict[str, Any]:
         """
         Update settings with provided values.
+
+        :param values: partial settings payload to persist
+        :returns: updated settings dict including decrypted values
+        :raises ValueError: if sync_inverval cannot be converted to int
+        :raises TypeError: if sync_interval has an invalid type for int conversion
+        :raises InvalidToken: if encrypted data cannot be decrypted
         """
         with self._session() as session:
             settings = self._get_or_create_row(session)
@@ -123,6 +145,11 @@ class SettingsService:
     def set_last_activity_log_sync(self, timestamp: int) -> None:
         """
         Store the timestamp of the last successful activity log sync.
+
+        :param timestamp: unix timestamp to persis
+        :returns: None
+        :raises ValueError: if timestamp cannot be converted to int
+        :raises TypeError: if timestamp has an invalid type
         """
         with self._session() as session:
             settings = self._get_or_create_row(session)
@@ -131,6 +158,8 @@ class SettingsService:
     def get_last_activity_log_sync(self) -> Optional[int]:
         """
         Retrieve the timestamp of the last successful activity log sync.
+
+        :returns: stored unix timestamp or None when not set yet
         """
         with self._session() as session:
             settings = session.query(Settings).first()
