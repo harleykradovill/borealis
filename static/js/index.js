@@ -276,7 +276,22 @@ document.addEventListener("DOMContentLoaded", () => {
     return labels;
   }
 
-  render();
+  function scheduleHeatmapRender() {
+    const run = () => {
+      render().catch((err) => {
+        console.error("Failed to render plays heatmap:", err);
+      });
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(run, { timeout: 100 });
+      return;
+    }
+
+    window.setTimeout(run, 0);
+  }
+
+  scheduleHeatmapRender();
 });
 
 (function () {

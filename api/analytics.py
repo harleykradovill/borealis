@@ -278,20 +278,37 @@ def create_analytics_blueprint(*, svc, repo, sync):
             page = request.args.get("page", 1, type=int) or 1
             per_page = request.args.get("per_page", 25, type=int) or 25
             user_ids_raw = request.args.get("user_ids", "", type=str) or ""
-    
+
+            include_users_raw = (
+                request.args.get("include_users", "true", type=str) or "true"
+            )
+            include_total_raw = (
+                request.args.get("include_total", "true", type=str) or "true"
+            )
+
             page = max(1, int(page))
             per_page = max(1, min(1000, int(per_page)))
-    
+
             user_ids = [
                 user_id.strip()
                 for user_id in user_ids_raw.split(",")
                 if user_id and user_id.strip()
             ]
-    
+
+            disabled_values = {"0", "false", "no", "off"}
+            include_users = (
+                include_users_raw.strip().lower() not in disabled_values
+            )
+            include_total = (
+                include_total_raw.strip().lower() not in disabled_values
+            )
+
             res = repo.get_activity_logs(
                 page=page,
                 per_page=per_page,
                 user_ids=user_ids or None,
+                include_users=include_users,
+                include_total=include_total,
             )
             return jsonify({"ok": True, "data": res}), 200
         except Exception as exc:

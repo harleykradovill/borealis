@@ -819,6 +819,8 @@ class Repository:
         page: int = 1,
         per_page: int = 50,
         user_ids: Optional[List[str]] = None,
+        include_users: bool = True,
+        include_total: bool = True,
     ) -> Dict[str, Any]:
         """
         Return paginated activity logs ordered by newest first.
@@ -844,10 +846,14 @@ class Repository:
                     PlaybackActivity.user_id.in_(selected_user_ids)
                 )
 
-            total = (
-                base_query.with_entities(func.count(PlaybackActivity.id)).scalar()
-                or 0
-            )
+            total = None
+            if include_total:
+                total = (
+                    base_query.with_entities(
+                        func.count(PlaybackActivity.id)
+                    ).scalar()
+                    or 0
+                )
 
             rows = (
                 base_query
@@ -860,32 +866,34 @@ class Repository:
                 .all()
             )
 
-            user_rows = (
-                session.query(
-                    PlaybackActivity.user_id,
-                    PlaybackActivity.username_denorm,
+            users = []
+            if include_users:
+                user_rows = (
+                    session.query(
+                        PlaybackActivity.user_id,
+                        PlaybackActivity.username_denorm,
+                    )
+                    .filter(PlaybackActivity.user_id.isnot(None))
+                    .distinct()
+                    .order_by(
+                        func.lower(
+                            func.coalesce(
+                                PlaybackActivity.username_denorm,
+                                PlaybackActivity.user_id,
+                            )
+                        ).asc()
+                    )
+                    .all()
                 )
-                .filter(PlaybackActivity.user_id.isnot(None))
-                .distinct()
-                .order_by(
-                    func.lower(
-                        func.coalesce(
-                            PlaybackActivity.username_denorm,
-                            PlaybackActivity.user_id,
-                        )
-                    ).asc()
-                )
-                .all()
-            )
 
-            users = [
-                {
-                    "user_id": user_id,
-                    "username_denorm": username_denorm,
-                }
-                for user_id, username_denorm in user_rows
-                if user_id
-            ]
+                users = [
+                    {
+                        "user_id": user_id,
+                        "username_denorm": username_denorm,
+                    }
+                    for user_id, username_denorm in user_rows
+                    if user_id
+                ]
 
             return {
                 "ok": True,
@@ -894,7 +902,7 @@ class Repository:
                 "selected_user_ids": selected_user_ids,
                 "page": page,
                 "per_page": per_page,
-                "total": int(total),
+                "total": int(total) if total is not None else None,
             }
 
     # -------------------------
