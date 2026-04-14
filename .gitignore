@@ -1,7 +1,8 @@
 # Project
 .vscode
 .idea
-.github
+.github/*
+!.github/workflows/
 *.db
 
 # Environment
