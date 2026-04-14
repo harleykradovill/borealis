@@ -22,7 +22,7 @@ Base = declarative_base()
 
 class User(Base):
     """
-    Jellyfin user account.
+    Persisted Jellyfin user account and aggregate viewing statistics.
     """
     __tablename__ = "users"
 
@@ -43,6 +43,11 @@ class User(Base):
     )
 
     def to_dict(self) -> Dict[str, Any]:
+        """
+        Serialize the user record for API responses.
+
+        :returns Dictionary containing user ID, role, playback totals, and last seen
+        """
         return {
             "id": self.id,
             "jellyfin_id": self.jellyfin_id,
@@ -58,7 +63,7 @@ class User(Base):
 
 class Library(Base):
     """
-    Jellyfin library/media folder.
+    Persisted Jellyfin library with playback, file, and storage aggregates.
     """
     __tablename__ = "libraries"
 
@@ -86,6 +91,11 @@ class Library(Base):
     )
 
     def to_dict(self) -> Dict[str, Any]:
+        """
+        Serialize the library record for API responses.
+
+        :returns Dictionary containing library ID, media totals, playback totals, storage size, and archive state
+        """
         return {
             "id": self.id,
             "jellyfin_id": self.jellyfin_id,
@@ -104,7 +114,7 @@ class Library(Base):
 
 class Item(Base):
     """
-    Individual media items.
+    Persisted Jellyfin media items linked to a parent library.
     """
     __tablename__ = "items"
 
@@ -137,6 +147,11 @@ class Item(Base):
     )
 
     def to_dict(self) -> Dict[str, Any]:
+        """
+        Serialize the media item record for API responses.
+
+        :returns Dictionary containing item ID, library iD, playback stats, runtime, size, and archive state
+        """
         return {
             "id": self.id,
             "jellyfin_id": self.jellyfin_id,
@@ -154,7 +169,7 @@ class Item(Base):
 
 class PlaybackActivity(Base):
     """
-    Individual playback event.
+    Persisted playback activity event sourced from the Jellyfin activity log.
     """
     __tablename__ = "playback_activity"
 
@@ -179,7 +194,9 @@ class PlaybackActivity(Base):
 
     def to_dict(self) -> Dict[str, Any]:
         """
-        Serialize to dictionary for API responses.
+        Serialize a playback activity event for API responses.
+
+        :returns Dictionary containing log ID, user & item ID, event name, timestamp, and username
         """
         return {
             "id": self.id,
@@ -194,7 +211,7 @@ class PlaybackActivity(Base):
 
 class TaskLog(Base):
     """
-    Records sync operations and other background tasks.
+    Persisted background task execution record for sync and maintenance jobs.
     """
     __tablename__ = "task_logging"
 
@@ -214,6 +231,11 @@ class TaskLog(Base):
     )
 
     def to_dict(self) -> Dict[str, Any]:
+        """
+        Serialize a task log entry for API responses.
+
+        :returns Dictionary containing task metadata, timing, result, and log payload
+        """
         import json
         log_data = None
         if self.log_json:
@@ -235,6 +257,9 @@ class TaskLog(Base):
         }
     
 class Settings(Base):
+    """
+    Persisted Borealis application and Jellyfin connection settings.
+    """
     __tablename__ = "settings"
 
     id = Column(Integer, primary_key=True)
@@ -250,7 +275,10 @@ class Settings(Base):
 
     def to_dict(self, fernet: Optional[Fernet] = None) -> Dict[str, Any]:
         """
-        Convert to dict. If fernet provided, decrypt jf_api_key.
+        Serialize settings values and optionally decrypt the API key.
+
+        :param fernet: Optional fernet instance used to decrypt stored Jellyfin API key
+        :returns Dictionary containing general settings, Jellyfin settings and metadata, and sync interval
         """
         api_key_plain = None
 
@@ -274,6 +302,9 @@ class Settings(Base):
         }
     
 class DashboardStat(Base):
+    """
+    Persisted cached dashboard section payload and last update timestamp.
+    """
     __tablename__ = "dashboard_stats"
 
     id = Column(Integer, primary_key=True)
@@ -287,6 +318,11 @@ class DashboardStat(Base):
     )
 
     def to_dict(self) -> Dict[str, Any]:
+        """
+        Serialize a dashboard statistics section for API responses.
+
+        :returns Dictionary containing section key, payload list, and last update timestamp
+        """
         import json
 
         payload = []
