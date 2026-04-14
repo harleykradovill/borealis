@@ -46,7 +46,7 @@ class User(Base):
         """
         Serialize the user record for API responses.
 
-        :returns Dictionary containing user ID, role, playback totals, and last seen
+        :returns: Dictionary containing user ID, role, playback totals, and last seen
         """
         return {
             "id": self.id,
@@ -94,7 +94,7 @@ class Library(Base):
         """
         Serialize the library record for API responses.
 
-        :returns Dictionary containing library ID, media totals, playback totals, storage size, and archive state
+        :returns: Dictionary containing library ID, media totals, playback totals, storage size, and archive state
         """
         return {
             "id": self.id,
@@ -150,7 +150,7 @@ class Item(Base):
         """
         Serialize the media item record for API responses.
 
-        :returns Dictionary containing item ID, library iD, playback stats, runtime, size, and archive state
+        :returns: Dictionary containing item ID, library iD, playback stats, runtime, size, and archive state
         """
         return {
             "id": self.id,
@@ -196,7 +196,7 @@ class PlaybackActivity(Base):
         """
         Serialize a playback activity event for API responses.
 
-        :returns Dictionary containing log ID, user & item ID, event name, timestamp, and username
+        :returns: Dictionary containing log ID, user & item ID, event name, timestamp, and username
         """
         return {
             "id": self.id,
@@ -234,7 +234,7 @@ class TaskLog(Base):
         """
         Serialize a task log entry for API responses.
 
-        :returns Dictionary containing task metadata, timing, result, and log payload
+        :returns: Dictionary containing task metadata, timing, result, and log payload
         """
         import json
         log_data = None
@@ -278,7 +278,7 @@ class Settings(Base):
         Serialize settings values and optionally decrypt the API key.
 
         :param fernet: Optional fernet instance used to decrypt stored Jellyfin API key
-        :returns Dictionary containing general settings, Jellyfin settings and metadata, and sync interval
+        :returns: Dictionary containing general settings, Jellyfin settings and metadata, and sync interval
         """
         api_key_plain = None
 
@@ -321,7 +321,7 @@ class DashboardStat(Base):
         """
         Serialize a dashboard statistics section for API responses.
 
-        :returns Dictionary containing section key, payload list, and last update timestamp
+        :returns: Dictionary containing section key, payload list, and last update timestamp
         """
         import json
 

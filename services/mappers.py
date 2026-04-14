@@ -15,7 +15,7 @@ def _clean_str(value: Any) -> str:
     Convert a value to a trimmed string.
     
     :param value: Any value to convert to string
-    :return: A str with leading/trailing whitespace removed
+    :returns: A str with leading/trailing whitespace removed
     """
     return str(value).strip() if value else ""
 
@@ -25,7 +25,7 @@ def _parse_jf_date(value: Any) -> Optional[int]:
     Parse various Jellyfin DateCreated formats into epoch seconds.
     
     :param value: The date value from Jellyfin
-    :return: Epoch seconds as an int, or None if cannot be parsed
+    :returns: Epoch seconds as an int, or None if cannot be parsed
     """
     if not value:
         return None
@@ -67,7 +67,7 @@ def _map_many(
     
     :param items: Iterable of dict-like Jellyfin objects
     :param fn: A function that accepts a single item
-    :return: A list of mapped dicts produced by fn for each item
+    :returns: A list of mapped dicts produced by fn for each item
     """
     return [m for item in items or [] if (m := fn(item))]
 
@@ -81,7 +81,7 @@ def map_user(jf_user: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     Tranform a Jellyfin user object into a User table row dict.
     
     :param jf_user: Jellyfin user object
-    :return: A dict containing 'jellyfin_id', 'name', 'is_admin'
+    :returns: Mapped user row dict, or None when required fields are missing
     """
     jf_id = _clean_str(jf_user.get("Id"))
     name = _clean_str(jf_user.get("Name"))
@@ -101,7 +101,7 @@ def map_users(jf_users: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     Transform a list of Jellyfin users into User table row dicts.
     
     :param jf_users: List of Jellyfin user dicts
-    :return: List of mapped user dicts
+    :returns: List of mapped user dicts
     """
     return _map_many(jf_users, map_user)
 
@@ -115,7 +115,7 @@ def map_library(jf_library: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     Transform a Jellyfin library/media folder into a Library table row dict.
     
     :param jf_library: Jellyfin library object
-    :return: A dict containing 'jellyfin_id', 'name', 'type', 'image_url'
+    :returns: A dict containing 'jellyfin_id', 'name', 'type', 'image_url'
     """
     jf_id = _clean_str(jf_library.get("Id"))
     name = _clean_str(jf_library.get("Name") or jf_library.get("Path"))
@@ -143,7 +143,7 @@ def map_libraries(jf_libraries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     Transform a list of Jellyfin libraries into Library table row dicts.
     
     :param jf_libraries: List of Jellyfin library dicts
-    :return: List of mapped library dicts
+    :returns: List of mapped library dicts
     """
     return _map_many(jf_libraries, map_library)
 
@@ -161,7 +161,7 @@ def map_item(
     
     :param jf_item: Jellyfin item object
     :param library_internal_id: Internal database ID for libary
-    :return: A dict with fields suitable for insertion into Item table
+    :returns: Mapped item row dict, or None when required fields are missing
     """
     jf_id = _clean_str(jf_item.get("Id"))
     name = _clean_str(jf_item.get("Name"))
@@ -199,7 +199,7 @@ def map_items(
     
     :param jf_items: List of Jellyfin item dicts
     :param library_internal_id: Internal database ID for library
-    :return: List of mapped item dicts
+    :returns: List of mapped item dicts
     """
     return [
         m
@@ -214,8 +214,10 @@ def map_items(
 
 def _encode_playback_event_name(jf_event: Dict[str, Any]) -> str:
     """
-    Keep Jellyfin playback type in event_name so start/stop can be
-    distinguished later.
+    Build an event_name that preserves Jellyfin event type and name.
+
+    :param jf_event: Jellyfin playback event object
+    :returns: Encoded event name string used to distinguish playback events
     """
     event_type = _clean_str(jf_event.get("Type"))
     event_name = _clean_str(jf_event.get("Name"))
@@ -235,7 +237,7 @@ def map_playback_event(
     
     :param jf_event: Jellyfin playback event object
     :param username: Optional username to include with activity row
-    :return: A dict representing the playback activity row
+    :returns: A dict representing the playback activity row
     """
     user_id = _clean_str(jf_event.get("UserId"))
     item_id = _clean_str(jf_event.get("ItemId"))
@@ -267,7 +269,7 @@ def map_playback_events(
     
     :param jf_events: List of Jellyfin playback event dicts
     :param user_lookup: Optional mapping of user_id -> username
-    :return: List of mapped playback activity dicts
+    :returns: List of mapped playback activity dicts
     """
     results = []
 
