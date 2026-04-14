@@ -205,10 +205,10 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     def libraries() -> Response:
         return render_template("libraries.html"), 200
 
-    @app.get("/activitylog")
+    @app.get("/playbackactivity")
     @require_server
-    def activitylog() -> Response:
-        return render_template("activitylog.html"), 200
+    def playbackactivity() -> Response:
+        return render_template("playbackactivity.html"), 200
 
     @app.get("/settings")
     @require_server

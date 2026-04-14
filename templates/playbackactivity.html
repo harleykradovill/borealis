@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Borealis | Activity Log</title>
+    <title>Borealis | Playback Activity</title>
     <link
       rel="icon"
       type="image/x-icon"
@@ -15,7 +15,7 @@
     />
     <link
       rel="stylesheet"
-      href="{{ url_for('static', filename='css/activitylog.css') }}"
+      href="{{ url_for('static', filename='css/playbackactivity.css') }}"
     />
   </head>
   <body>
@@ -23,7 +23,7 @@
       {% include '_sidebar.html' %}
       <main id="content" class="content" tabindex="-1" role="main">
         <section class="hero" style="max-width: 1500px; margin: 1.5rem auto">
-          <h1 style="margin: 0 0 0.5rem 0">Activity Log</h1>
+          <h1 style="margin: 0 0 0.5rem 0">Playback Activity</h1>
           <p
             class="subtitle"
             style="margin: 0 0 1rem 0; color: var(--text-muted)"
@@ -32,7 +32,7 @@
           </p>
 
           <div id="activitylog-empty" class="settings-placeholder" hidden>
-            <p>No activity log entries available.</p>
+            <p>No playback activity available.</p>
           </div>
 
           <div id="activitylog-container" hidden>
@@ -158,6 +158,6 @@
 
     <script src="../static/js/toast.js"></script>
     <script src="../static/js/site.js"></script>
-    <script src="../static/js/activitylog.js"></script>
+    <script src="../static/js/playbackactivity.js"></script>
   </body>
 </html>
