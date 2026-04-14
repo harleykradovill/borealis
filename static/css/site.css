@@ -281,3 +281,34 @@ input.form-control:hover {
   border-color: var(--border);
   box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
 }
+
+/* Skeleton Loader */
+.skeleton {
+  display: contents;
+
+  --_default-color: var(--surface);
+  --_shimmer-color: var(--border);
+  :not(.wrapper) {
+    animation: skeleton-shimmer 1s ease-out infinite;
+
+    background: linear-gradient(
+      100deg,
+      var(--_default-color),
+      var(--_default-color) 50%,
+      var(--_shimmer-color) 60%,
+      var(--_default-color) 70%
+    );
+
+    background-size: 200% 100%;
+    background-attachment: fixed;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position-x: 200%;
+  }
+  100% {
+    background-position-x: 0%;
+  }
+}
