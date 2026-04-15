@@ -89,13 +89,13 @@ class JellyfinClient:
         """
         if not path.startswith("/"):
             path = f"/{path}"
-
-        try:
-            ipaddress.IPv6Address(host)
+    
+        is_ipv6 = ":" in host
+        if is_ipv6:
             base = f"{scheme}://[{host}]:{port}"
-        except ValueError:
+        else:
             base = f"{scheme}://{host}:{port}"
-
+    
         return f"{base}{path}"
 
     def _is_transient_error(self, exc: Exception) -> bool:
