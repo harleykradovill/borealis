@@ -5,12 +5,23 @@ import threading
 
 from flask import Blueprint, Response, jsonify, request, current_app
 
+"""
+Create the settings API blueprints with routes for configuration and sync management.
+
+:param svc: SettingsService instance
+:param repo: Repository database for users, libraries, items, activity logs
+:param sync: SyncService coordinating metadata syncs with Jellyfin
+:returns: Configured Flask blueprint
+"""
 def create_settings_blueprint(*, svc, repo, sync):
     bp = Blueprint("settings_api", __name__, url_prefix="/api")
 
     def _build_sync_progress_payload() -> dict:
         """
-        Build a normalized sync-progress payload
+        Build a normalized sync-progress payload from latest task log.
+
+        :returns: Dictionary containing sync state with ok, syncing, phase, task_id, processed_events,
+        total_events, message
         """
         task = repo.get_latest_sync_task()
 
@@ -73,6 +84,8 @@ def create_settings_blueprint(*, svc, repo, sync):
     def test_connection_with_credentials() -> Response:
         """
         Test Jellyfin connectivity with provided credentials.
+
+        :returns: JSON response with connection result (ok, status code, server_name, server_version), or error details
         """
         from urllib.request import Request, urlopen
         from urllib.error import URLError, HTTPError
@@ -160,6 +173,11 @@ def create_settings_blueprint(*, svc, repo, sync):
     
     @bp.get("/settings")
     def get_settings() -> Response:
+        """
+        Retrieve current Jellyfin settings and app preferences.
+
+        :returns: JSON response containing all settings with masked sensistive data
+        """
         data = svc.get()
 
         def _mask_key(k):
@@ -177,6 +195,11 @@ def create_settings_blueprint(*, svc, repo, sync):
     
     @bp.put("/settings")
     def update_settings() -> Response:
+        """
+        Update Jellyfin settings and application preferences with provided values.
+
+        :returns: JSON response containing updated settings
+        """
         payload = request.get_json(silent=True) or {}
 
         current_settings = svc.get()
@@ -234,6 +257,11 @@ def create_settings_blueprint(*, svc, repo, sync):
     
     @bp.get("/settings/sync-status")
     def get_sync_status() -> Response:
+        """
+        Retrieve current sync scheduler status including next run and interval.
+
+        :returns: JSON response with syncing flag, next sync timestamp, and interval in seconds
+        """
         sched = getattr(current_app, "sync_scheduler", None)
         sched_status = (
             sched.get_status()
@@ -256,7 +284,9 @@ def create_settings_blueprint(*, svc, repo, sync):
     @bp.get("/analytics/server/sync-progress")
     def api_analytics_server_sync_progress() -> Response:
         """
-        Get the current progress of initial activity log sync.
+        Get the current progress of the active or most recent sync task.
+
+        :returns: JSON response with sync state payload, or error details with HTTP 500
         """
         try:
             return jsonify(_build_sync_progress_payload()), 200

@@ -1,16 +1,26 @@
 import json
 import logging
 import time
-import threading
 
 from flask import Blueprint, Response, jsonify, request, current_app, stream_with_context
 
+"""
+Create the analytics API blueprint and register all analytics routes.
+
+:param svc: SettingsService instance
+:param repo: Repository database for users, libraries, items, activity logs
+:param sync: SyncService coordinating metadata syncs with Jellyfin
+:returns: Configured Flask blueprint
+"""
 def create_analytics_blueprint(*, svc, repo, sync):
     bp = Blueprint("analytics_api", __name__, url_prefix="/api")
 
     def _build_sync_progress_payload() -> dict:
         """
-        Build a normalized sync-progress payload
+        Build a normalized sync-progress payload from latest task log.
+
+        :returns: Dictionary containing sync state with ok, syncing, phase, task_id, processed_events,
+        total_events, message
         """
         task = repo.get_latest_sync_task()
 
@@ -73,6 +83,8 @@ def create_analytics_blueprint(*, svc, repo, sync):
     def api_analytics_stats_users() -> Response:
         """
         Retrieve all users with their play statistics.
+
+        :returns: JSON response with user records and HTTP 200, or error details with HTTP 500
         """
         try:
             users = repo.get_users_with_stats(include_archived=False)
@@ -89,7 +101,9 @@ def create_analytics_blueprint(*, svc, repo, sync):
     @bp.get("/analytics/stats/dashboard")
     def api_analytics_stats_dashboard() -> Response:
         """
-        Retrieve watch statistics for dashboard.
+        Retrieve watch statistics for dashboard statistics sections.
+
+        :returns: JSON response with section_key-mapped payloads and HTTP 200, or error details with HTTP 500
         """
         try:
             section_keys = [
@@ -139,7 +153,9 @@ def create_analytics_blueprint(*, svc, repo, sync):
     @bp.get("/analytics/items/added-last-30-days")
     def api_analytics_items_added_last_30_days() -> Response:
         """
-        Return items added per library for the last 30 days.
+        Count items added per library for each of the last 30 days.
+
+        :returns: JSON response with date array and per-library counts with HTTP 200, or error details with HTTP 500
         """
         try:
             from datetime import datetime, timedelta
@@ -205,6 +221,8 @@ def create_analytics_blueprint(*, svc, repo, sync):
     def api_analytics_stats_libraries() -> Response:
         """
         Retrieve all libraries with their play count statistics.
+
+        :returns: JSON response with library records and HTTP 200, or error details with HTTP 500
         """
         try:
             stats = repo.get_library_stats(include_archived=False)
@@ -221,7 +239,9 @@ def create_analytics_blueprint(*, svc, repo, sync):
     @bp.get("/analytics/server/sync-progress/stream")
     def api_analytics_server_sync_progress_stream() -> Response:
         """
-        Stream sync-progress updates
+        Stream sync-progress updates as Server-Sent events to clients.
+
+        :returns: Streaming Response with text/event-stream MIME type
         """
         def event_stream():
             last_payload = None
@@ -254,7 +274,9 @@ def create_analytics_blueprint(*, svc, repo, sync):
     @bp.get("/analytics/task-logs")
     def api_analytics_task_logs() -> Response:
         """
-        Retrieve recent task log entries.
+        Retrieve recent task log entries with pagnation and bounded result limit of 1-500.
+
+        :returns: JSON response with the task log records with HTTP 500, or error details with HTTP 500
         """
         try:
             limit = request.args.get("limit", 50, type=int)
@@ -272,7 +294,9 @@ def create_analytics_blueprint(*, svc, repo, sync):
     @bp.get("/analytics/activitylog")
     def api_analytics_activity_log() -> Response:
         """
-        Retrieve paginated activity log entries.
+        Retrieve paginated activity log entries with optional per-user filtering.
+
+        :returns: JSON response with pagnated activity records with HTTP 200, or error details with HTTP 500
         """
         try:
             page = request.args.get("page", 1, type=int) or 1
@@ -321,6 +345,8 @@ def create_analytics_blueprint(*, svc, repo, sync):
     def api_analytics_sessions() -> Response:
         """
         Retrieve active sessions from the sessions service.
+
+        :returns: JSON response with session records with HTTP 200, or service-unavailable error with HTTP 500
         """
         sessions_svc = getattr(current_app, "sessions_service", None)
         if not sessions_svc:
