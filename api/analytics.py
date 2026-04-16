@@ -4,6 +4,8 @@ import time
 
 from flask import Blueprint, Response, jsonify, request, current_app, stream_with_context
 
+logger = logging.getLogger(__name__)
+
 """
 Create the analytics API blueprint and register all analytics routes.
 
@@ -43,7 +45,8 @@ def create_analytics_blueprint(*, svc, repo, sync):
         if raw_log:
             try:
                 log_data = json.loads(raw_log)
-            except Exception:
+            except Exception as e:
+                logger.warning(f"[WARN] Failed to parse task log JSON for task_id {task_id}: {str(e)}")
                 log_data = {}
 
         processed = int(log_data.get("items_synced") or 0)
@@ -93,6 +96,7 @@ def create_analytics_blueprint(*, svc, repo, sync):
                 "data": users
             }), 200
         except Exception as exc:
+            logger.exception("[ERROR] Failed to fetch users")
             return jsonify({
                 "ok": False,
                 "message": f"Failed to fetch users: {str(exc)}"
@@ -143,6 +147,7 @@ def create_analytics_blueprint(*, svc, repo, sync):
             }), 200
 
         except Exception as exc:
+            logger.exception("[ERROR] Failed to fetch dashboard stats")
             return jsonify({
                 "ok": False,
                 "message": (
@@ -212,6 +217,7 @@ def create_analytics_blueprint(*, svc, repo, sync):
 
             return jsonify({"ok": True, "data": payload}), 200
         except Exception as exc:
+            logger.exception("[ERROR] Failed to build items-added data")
             return jsonify({
                 "ok": False,
                 "message": f"Failed to build items-added data: {str(exc)}"
@@ -231,6 +237,7 @@ def create_analytics_blueprint(*, svc, repo, sync):
                 "data": stats
             }), 200
         except Exception as exc:
+            logger.exception("[ERROR] Failed to fetch library stats")
             return jsonify({
                 "ok": False,
                 "message": f"Failed to fetch library stats: {str(exc)}"
@@ -248,20 +255,29 @@ def create_analytics_blueprint(*, svc, repo, sync):
             heartbeat_every = 15
             last_heartbeat = time.time()
 
-            while True:
-                payload = _build_sync_progress_payload()
-                payload_json = json.dumps(payload, separators=(",", ":"))
+            try:
+                while True:
+                    try:
+                        payload = _build_sync_progress_payload()
+                        payload_json = json.dumps(payload, separators=(",", ":"))
 
-                if payload_json != last_payload:
-                    yield f"event: sync_progress\ndata: {payload_json}\n\n"
-                    last_payload = payload_json
+                        if payload_json != last_payload:
+                            yield f"event: sync_progress\ndata: {payload_json}\n\n"
+                            last_payload = payload_json
 
-                now = time.time()
-                if now - last_heartbeat >= heartbeat_every:
-                    yield "event: heartbeat\ndata: {}\n\n" # Keep browser connections alive
-                    last_heartbeat = now
+                        now = time.time()
+                        if now - last_heartbeat >= heartbeat_every:
+                            yield "event: heartbeat\ndata: {}\n\n"
+                            last_heartbeat = now
 
-                time.sleep(1)
+                        time.sleep(1)
+                    except Exception as e:
+                        logger.exception("[ERROR] Exception in sync progress stream")
+                        yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
+                        time.sleep(1)
+            except GeneratorExit:
+                logger.info("Sync progress stream closed by client")
+                raise
 
         headers = {
             "Content-Type": "text/event-stream",
@@ -286,6 +302,7 @@ def create_analytics_blueprint(*, svc, repo, sync):
             logs = repo.get_task_logs(limit=limit)
             return jsonify({"ok": True, "data": logs}), 200
         except Exception as exc:
+            logger.exception("[ERROR] Failed to fetch task logs")
             return jsonify({
                 "ok": False,
                 "message": f"Failed to fetch task logs: {str(exc)}"
@@ -336,6 +353,7 @@ def create_analytics_blueprint(*, svc, repo, sync):
             )
             return jsonify({"ok": True, "data": res}), 200
         except Exception as exc:
+            logger.exception("[ERROR] Failed to fetch activity logs")
             return jsonify({
                 "ok": False,
                 "message": f"Failed to fetch activity logs: {str(exc)}"
