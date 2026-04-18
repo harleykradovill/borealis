@@ -1,5 +1,4 @@
 # Project
-.vscode
 .idea
 .github/*
 !.github/workflows/
