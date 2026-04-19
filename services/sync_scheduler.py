@@ -20,6 +20,12 @@ class SyncScheduler:
     """
 
     def __init__(self, sync_service, interval_seconds: int = 1800):
+        """
+        Initialize background sync scheduler with configurable interval.
+
+        :param sync_service: SyncService instance to execute periodic syncs
+        :param interval_secconds: Interval between syncs in seconds (default 1800)
+        """
         self.sync_service = sync_service
         self.interval_seconds = int(interval_seconds)
         self._stop_event = threading.Event()
@@ -33,6 +39,11 @@ class SyncScheduler:
         self._next_run_at: int | None = None
 
     def start(self) -> None:
+        """
+        Start the background sync scheduler thread.
+
+        :returns: None
+        """
         if self._thread and self._thread.is_alive():
             return
 
@@ -46,7 +57,11 @@ class SyncScheduler:
         self._thread.start()
 
     def stop(self) -> None:
-        """Stop the background sync thread."""
+        """
+        Stop the background sync thread and wait for it to finish.
+        
+        :returns: None
+        """
         self._stop_event.set()
         self._wake_event.set()
         if self._thread:
@@ -54,6 +69,11 @@ class SyncScheduler:
         logging.info("[INFO] SyncScheduler stopped")
 
     def _run_loop(self) -> None:
+        """
+        Main scheduler loop that manages sync timing and execution.
+
+        :returns: None
+        """
         logging.info(
             "[INFO] SyncScheduler loop starting (interval=%s seconds)",
             self.interval_seconds,
@@ -115,6 +135,10 @@ class SyncScheduler:
     def set_interval(self, seconds: int) -> None:
         """
         Update the interval (in seconds) and reset the wait timer from now.
+
+        :param seconds: New interval duration in seconds
+        :returns: None
+        :raises ValueError: Raised if seconds is not a positive integer
         """
         try:
             sec = int(seconds)
@@ -133,6 +157,11 @@ class SyncScheduler:
         logging.info("[INFO] Sync interval updated to %s seconds", sec)
 
     def trigger_periodic_now(self) -> None:
+        """
+        Request an immediate manual sync to run on the next cycle.
+
+        :returns: None
+        """
         with self._state_lock:
             self._pending_manual_run = True
             self._next_run_at = int(time.time())
@@ -140,6 +169,11 @@ class SyncScheduler:
         logging.info("[INFO] Manual periodic sync requested")
 
     def get_status(self) -> dict:
+        """
+        Get current scheduler status including running state, timing, and next run info.
+
+        :returns: Dictionary with sync scheduler status
+        """
         with self._state_lock:
             return {
                 "is_running": self._is_running,

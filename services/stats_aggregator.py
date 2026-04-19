@@ -18,7 +18,10 @@ from services.data_models import (
 
 def _playback_event_kind(event_name: Optional[str]) -> str:
     """
-    Classify playback events using encoded event_name.
+    Classify playback events as start or stop using encoded event_name.
+
+    :param event_name: Encoded event name string with type prefix
+    :returns: Event classification as either "start" or "stop"
     """
     if not event_name:
         return "stop"
@@ -33,9 +36,11 @@ def _calculate_watch_seconds(
     session: Session,
 ) -> tuple[Dict[str, int], Dict[str, int]]:
     """
-    Pair start/stop playback rows and return:
-    - watch seconds by user_id
-    - watch seconds by item_id
+    Pair start/stop playback events and calculate total watch duration by user and item.
+
+    :param session: Active SQL session
+    :returns: Tuple of (watch_seconds_by_user dict, watch_seconds_by_item dict) with accumulated watch time in seconds
+    :raises Exception: Propagates SQLAlchemy query errors
     """
     rows = (
         session.query(
@@ -113,7 +118,9 @@ def _calculate_watch_seconds(
 
 def _stop_playback_filter():
     """
-    Include legacy rows (no typed prefix) and typed stop rows.
+    Generate filter condition for stop playback events including legacy untyped rows.
+
+    :returns: SQLAlchemy filter expression matching sotp events and legacy rows
     """
     return or_(
         PlaybackActivity.event_name.is_(None),
@@ -450,7 +457,11 @@ class StatsAggregator:
         limit: int = 10,
     ) -> List[Dict[str, Any]]:
         """
-        Retrieve the most played items across all libraries.
+        Retrieve the most played items across all libraries sorted by play count.
+
+        :param session: Active SQL session
+        :param limit: Maximum number of items to return (default 50)
+        :returns: List of dicts containing item_id, name, type, play_count, library_id, and library_name
         """
         rows = (
             session.query(Item, Library)
@@ -478,7 +489,11 @@ class StatsAggregator:
         limit: int = 10,
     ) -> List[Dict[str, Any]]:
         """
-        Retrieve the most active users by play count.
+        Retrieve the most active users sorted by play count.
+
+        :param session: Active SQL session
+        :param limit: Maximum number of users to return (default 10)
+        :returns: List of dicts containing user_id, name, and total_plays
         """
         users = (
             session.query(User)
@@ -501,7 +516,11 @@ class StatsAggregator:
         include_archived: bool = False,
     ) -> List[Dict[str, Any]]:
         """
-        Retrieve all libraries with their play counts.
+        Retrieve all libraries with aggregate play counts and item statistics.
+
+        :param session: Active SQL session
+        :param include_archive: Whether to include archived libraries (default False)
+        :returns: List of dicts containing library metadata, play stats, and item breakdown by type
         """
         query = session.query(Library)
         if not include_archived:
@@ -555,6 +574,9 @@ class StatsAggregator:
     def _extract_device_from_event_name(event_name: str) -> str | None:
         """
         Extract device name from playback event_name string.
+
+        :param event_name: Full event name string containing device information
+        :returns: Device name string or None if not found or invalid format
         """
         if not event_name or " on " not in event_name:
             return None
@@ -571,6 +593,13 @@ class StatsAggregator:
         session: Session,
         episode: Item,
     ) -> Optional[str]:
+        """
+        Resolve the series name for an episode by traversing parent relationships.
+
+        :param session: Active SQL session
+        :param episode: Item object with type "episode"
+        :returns: Series name string or None if episode has no series parent or lookup fails
+        """
         if not episode or (episode.type or "").lower() != "episode":
             return None
     
@@ -604,6 +633,13 @@ class StatsAggregator:
         session: Session,
         item: Item,
     ) -> Optional[str]:
+        """
+        Get display name for item, resolving to series name for episodes.
+
+        :param session: Active SQL session
+        :param item: Item object to resolve
+        :returns: Series name if item is episode, otherwise item name, or None of item is invalid
+        """
         if not item:
             return None
     
