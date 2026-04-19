@@ -138,19 +138,19 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             try:
                 sched.stop()
             except Exception:
-                logger.exception("Failed to stop sync scheduler during cleanup")
+                logger.exception("[ERROR] Failed to stop sync scheduler during cleanup")
 
         sessions = getattr(app, "sessions_service", None)
         if sessions:
             try:
                 sessions.stop()
             except Exception:
-                logger.exception("Failed to stop sessions service during cleanup")
+                logger.exception("[ERROR] Failed to stop sessions service during cleanup")
 
         try:
             repo.engine.dispose()
         except Exception:
-            logger.exception("Failed to dispose repository engine during cleanup")
+            logger.exception("[ERROR] Failed to dispose repository engine during cleanup")
 
     atexit.register(cleanup)
 
@@ -318,7 +318,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                     mapped = map_libraries(filtered)
                     repo.upsert_libraries(mapped)
                 except Exception:
-                    logger.exception("Failed to map/upsert libraries")
+                    logger.exception("[ERROR] Failed to map/upsert libraries")
 
         return jsonify(result), 200
         

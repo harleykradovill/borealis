@@ -27,13 +27,21 @@ from services.settings_store import Settings
 # -------------------------
 
 def _now() -> int:
-    """Return current Unix timestamp in seconds."""
+    """
+    Return current Unix timestamp in seconds.
+    
+    :returns: Current time as integer seconds since epoch
+    """
     return int(time.time())
 
 
 def _safe_int(value: Any, default: int = 0) -> int:
     """
     Safely coerce a value to int, returning default on failure.
+
+    :param value: Value to convert to integer
+    :param default: Default integer to return if conversion fails (default 0)
+    :returns: Converted integer or default value
     """
     try:
         return int(value)
@@ -49,6 +57,12 @@ def _load_existing_by_key(
 ) -> Dict[Any, Any]:
     """
     Load existing ORM rows keyed by a specific column.
+
+    :param session: Active SQL session
+    :param model: SQLAlchemy model class to query
+    :param key_field: Column field to use as dictionary key
+    :param keys: List of values to filter rows by
+    :returns: Dictionary mapping key values to ORM row instances
     """
     if not keys:
         return {}
@@ -58,13 +72,14 @@ def _load_existing_by_key(
 
 @dataclass
 class Repository:
-    """
-    Data access layer for all Borealis entities.
-    """
-
     database_url: str = "sqlite:///borealis.db"
 
     def __post_init__(self) -> None:
+        """
+        Initialize database engine and session factory, creating all tables.
+
+        :returns: None
+        """
         self.engine = create_engine(self.database_url, future=True)
         self.SessionLocal = sessionmaker(
             bind=self.engine, expire_on_commit=False
@@ -75,6 +90,8 @@ class Repository:
     def _session(self):
         """
         Context manager for database sessions with auto-commit.
+
+        :returns: Session context that auto-commits on success or rolls back on exceptions
         """
         session: Session = self.SessionLocal()
         try:
@@ -91,6 +108,8 @@ class Repository:
     ) -> Optional[Dict[str, Any]]:
         """
         Retrieve the most recent sync task log entry.
+
+        :returns: Dictionary with task metadata and log data, or None if no sync tasks exist
         """
         with self._session() as session:
             task = (
@@ -120,6 +139,10 @@ class Repository:
     ) -> None:
         """
         Merge progress fields into a RUNNING task log entry.
+
+        :param task_id: ID of the task log to update
+        :param log_data: Dictionary of progress fields to merge
+        :returns: None
         """
         if not log_data:
             return
@@ -145,7 +168,10 @@ class Repository:
 
     def upsert_users(self, user_dicts: List[Dict[str, Any]]) -> int:
         """
-        Upsert users by jellyfin_id. Updates name and admin status.
+        Upsert users by jellyfin_id, updating name and admin status.
+
+        :param user_dicts: List of user data dictionaries with jellyfin_id, name, is_admin
+        :returns: Count of users processed
         """
         if not user_dicts:
             return 0
@@ -187,6 +213,9 @@ class Repository:
     ) -> int:
         """
         Mark users as archived if not in active list.
+
+        :param active_jellyfin_ids: List of active Jellyfin user IDs
+        :returns: Count of users marked as archived
         """
         if not active_jellyfin_ids:
             return 0
@@ -204,6 +233,9 @@ class Repository:
     ) -> List[Dict[str, Any]]:
         """
         Retrieve all users as dictionaries.
+
+        :param include_archived: Whether to include archived users (default False)
+        :returns: List of user dicts with id, jellyfin_id, name, is_admin, and stats
         """
         with self._session() as session:
             query = session.query(User)
@@ -214,6 +246,12 @@ class Repository:
     def get_users_with_stats(
         self, include_archived: bool = False
     ) -> List[Dict[str, Any]]:
+        """
+        Retrieve users with computed play statistics and last activity info.
+
+        :param include_archived: Whether to include archived users (default False)
+        :returns: List of user dicts with total_plays, total_watch_time_seconds, last_watched_item_name, and last_device
+        """
         with self._session() as session:
             user_query = session.query(User)
             if not include_archived:
@@ -403,6 +441,9 @@ class Repository:
     ) -> int:
         """
         Upsert libraries by jellyfin_id.
+
+        :param library_dicts: List of library data dicts with jellyfin_id, name, type, image_url
+        :returns: Count of libraries processed
         """
         if not library_dicts:
             return 0
@@ -447,6 +488,9 @@ class Repository:
     ) -> int:
         """
         Mark libraries as archived if not in active list.
+
+        :param active_jellyfin_ids: List of active Jellyfin library ids
+        :returns: Count of libraries marked as archived
         """
         if not active_jellyfin_ids:
             return 0
@@ -464,6 +508,9 @@ class Repository:
     ) -> List[Dict[str, Any]]:
         """
         Retrieve all libraries as dictionaries.
+
+        :param include_archived: Whether to include archived libraries (default False)
+        :returns: List of library dicts with all metadata
         """
         with self._session() as session:
             query = session.query(Library)
@@ -478,6 +525,9 @@ class Repository:
     def upsert_items(self, item_dicts: List[Dict[str, Any]]) -> int:
         """
         Upsert media items by jellyfin_id.
+
+        :param item_dicts: List of item data dicts with jellyfin_id, library_id, name, type, runtime_seconds, size_bytes
+        :returns: Count of items processed
         """
         if not item_dicts:
             return 0
@@ -533,6 +583,10 @@ class Repository:
     ) -> int:
         """
         Mark items as archived if not in active list for a library.
+
+        :param library_id: ID of the library to filter items
+        :param active_jellyfin_ids: List of active Jellyfin item IDs
+        :returns: Count of items marked as archived
         """
         if not active_jellyfin_ids:
             return 0
@@ -548,7 +602,11 @@ class Repository:
 
     def _series_name_for_episode_in_session(self, session: Session, episode_jellyfin_id: str) -> Optional[str]:
         """
-        Resolve Episode -> Season -> Series and return the series name.
+        Resolve Episode -> Season -> Series hierarchy.
+
+        :param session: Active SQL session
+        :param episode_jellyfin_id: Jellyfin ID of the episode item
+        :returns: Series name string or None of episode has no series parent or lookup fails
         """
         if not episode_jellyfin_id:
             return None
@@ -593,6 +651,13 @@ class Repository:
         session: Session,
         item_jellyfin_id: str,
     ) -> Optional[str]:
+        """
+        Get display name for item within session, resolving to series name for episodes.
+
+        :param session: Active SQL session
+        :param item_jellyfin_id: Jellyfin ID of the item
+        :returns: Series name if item is episode, otherwise item name, or None if item not found
+        """
         if not item_jellyfin_id:
             return None
 
@@ -618,6 +683,12 @@ class Repository:
         self,
         episode_jellyfin_id: str,
     ) -> Optional[str]:
+        """
+        Retrieve series name or an episode using auto session management.
+
+        :param episode_jellyfin_id: Jellyfin ID of the episode item
+        :returns: Series name string or None if resolution fails
+        """
         with self._session() as session:
             return self._series_name_for_episode_in_session(
                 session, episode_jellyfin_id
@@ -628,6 +699,12 @@ class Repository:
         self,
         item_jellyfin_id: str,
     ) -> Optional[str]:
+        """
+        Retrieve display name for item using auto session management.
+
+        :param item_jellyfin_id: Jellyfin ID of the item
+        :returns: Series name for episodes or item name, or None if item not found
+        """
         with self._session() as session:
             return self._series_or_item_name_in_session(
                 session, item_jellyfin_id
@@ -639,8 +716,9 @@ class Repository:
 
     def refresh_play_stats(self) -> Dict[str, int]:
         """
-        Refresh all denormalized play count statistics from
-        PlaybackActivity records.
+        Refresh all denormalized play count statistics from PlaybackActivity records.
+
+        :returns: Dictionary with counts of processed libraries, items, and users
         """
         with self._session() as session:
             return StatsAggregator.refresh_all_stats(session)
@@ -650,6 +728,9 @@ class Repository:
     ) -> List[Dict[str, Any]]:
         """
         Retrieve the most played items across all libraries.
+
+        :param limit: Max number of items to return (default 10)
+        :returns: List of item dicts with id, name, type, play_count, library_id, library_name
         """
         with self._session() as session:
             return StatsAggregator.get_top_items_by_plays(session, limit)
@@ -659,6 +740,9 @@ class Repository:
     ) -> List[Dict[str, Any]]:
         """
         Retrieve the most active users by total play count.
+
+        :param limit: Maximum number of users to return (default 10)
+        :returns: List of user dicts with user_id, name, total_plays
         """
         with self._session() as session:
             return StatsAggregator.get_top_users_by_plays(session, limit)
@@ -668,6 +752,9 @@ class Repository:
     ) -> List[Dict[str, Any]]:
         """
         Retrieve all libraries with their play count statistics.
+
+        :param include_archived: Whether to include archived libraries (default False)
+        :returns: List of library dicts with metadata, play stats, and item breakdown by type
         """
         with self._session() as session:
             return StatsAggregator.get_library_stats(
@@ -684,6 +771,11 @@ class Repository:
     ) -> Dict[str, Any]:
         """
         Insert or update one dashboard stats section payload.
+
+        :param section_key: Key identifying the dashboard section
+        :param payload: Data payload to store as JSON
+        :returns: Dictionary with section_key, payload_json, and updated_at timestamp
+        :raises ValueError: Raised if section_key is empty or falsy
         """
         if not section_key:
             raise ValueError("section_key is required")
@@ -717,6 +809,9 @@ class Repository:
     ) -> List[Dict[str, Any]]:
         """
         Retrieve dashboard stats rows, optionally filtered by section.
+
+        :param section_keys: Optional list of section keys to filter by
+        :returns: List of dashboard stat dicts ordered by section_key
         """
         with self._session() as session:
             query = session.query(DashboardStat)
@@ -734,6 +829,9 @@ class Repository:
     ) -> Dict[str, Any]:
         """
         Retrieve dashboard stats keyed by section_key.
+
+        :param section_keys: Optional list of section keys to filter by
+        :returns: Dictionary mapping section_key to complete stat record
         """
         rows = self.get_dashboard_stats(section_keys=section_keys)
         return {row["section_key"]: row for row in rows}
@@ -741,6 +839,9 @@ class Repository:
     def refresh_dashboard_stats(self, limit: int = 5) -> Dict[str, int]:
         """
         Rebuild and persist all dashboard stat sections.
+
+        :param limit: Maximum items to include per section (default 5)
+        :returns: Dictionary with count of sections updated
         """
         from services.dashboard_stats import DashboardStatsBuilder
 
@@ -767,6 +868,9 @@ class Repository:
     ) -> int:
         """
         Insert playback activity records.
+
+        :param event_dicts: List of event dicts with activity_log_id, user_id, item_id, event_name, activity_at, username_denorm
+        :returns: Count of playback events processed
         """
         if not event_dicts:
             return 0
@@ -825,6 +929,13 @@ class Repository:
         """
         Return paginated activity logs ordered by newest first.
         Optionally filter by user IDs.
+
+        :param page: Page number starting at 1 (default 1)
+        :param per_page: Items per page, clamped 1-1000 (default 50)
+        :param user_ids: Optional list of user IDs to filter by
+        :param include_users: Whether to include user list in response (default True)
+        :param include_total: Whether to include total count in response (default True)
+        :returns: Dictionary with ok, items, users, selected_user_ids, page, per_page, total
         """
         page = max(1, int(page or 1))
         per_page = max(1, min(1000, int(per_page or 50)))
@@ -914,6 +1025,11 @@ class Repository:
     ) -> int:
         """
         Create a new task log entry with RUNNING status.
+
+        :param name: Task name for display
+        :param task_type: Type of task (e.g., "sync")
+        :param execution_type: Execution mode (e.g., "full", "incremental", "initial", "periodic")
+        :returns: Task ID as integer for use in updates and completion
         """
         with self._session() as session:
             task = TaskLog(
@@ -937,7 +1053,12 @@ class Repository:
         log_data: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
-        Mark a task log as complete with result.
+        Mark a task log as complete with final result and optional log data.
+
+        :param task_id: ID of the task log to complete
+        :param result: Final result status ("SUCCESS" or "FAILED")
+        :param log_data: Optional dictionary of final log data to persist as JSON
+        :returns: None
         """
         with self._session() as session:
             task = session.query(TaskLog).filter_by(id=task_id).first()
@@ -953,6 +1074,9 @@ class Repository:
     def get_task_logs(self, limit: int = 25) -> List[Dict[str, Any]]:
         """
         Retrieve recent task log entries ordered by start time (newest first).
+
+        :param limit: Maximum number of logs to return, clamped 1-500 (default 25)
+        :returns: List of task log dicts with metadata and log data
         """
         limit = min(max(int(limit or 25), 1), 500)
 

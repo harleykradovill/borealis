@@ -276,7 +276,7 @@ def create_analytics_blueprint(*, svc, repo, sync):
                         yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
                         time.sleep(1)
             except GeneratorExit:
-                logger.info("Sync progress stream closed by client")
+                logger.info("[INFO] Sync progress stream closed by client")
                 raise
 
         headers = {
