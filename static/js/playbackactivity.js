@@ -57,7 +57,7 @@
   }
 
   /**
-   * Disable pagnation navigation.
+   * Disable pagination navigation.
    * @param {boolean} disabled True to disable controls, false to enable
    * @returns {void}
    */
@@ -223,7 +223,7 @@
   }
 
   /**
-   * Render table and pagnation.
+   * Render table and pagination.
    * @param {*} data
    * @returns
    */
@@ -286,7 +286,7 @@
   }
 
   /**
-   * Render pagnation buttons.
+   * Render pagination buttons.
    * @param {number} current Current page number
    * @param {number} totalPages Total number of available pages
    * @returns {void}

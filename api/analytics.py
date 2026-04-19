@@ -290,7 +290,7 @@ def create_analytics_blueprint(*, svc, repo, sync):
     @bp.get("/analytics/task-logs")
     def api_analytics_task_logs() -> Response:
         """
-        Retrieve recent task log entries with pagnation and bounded result limit of 1-500.
+        Retrieve recent task log entries with pagination and bounded result limit of 1-500.
 
         :returns: JSON response with the task log records with HTTP 500, or error details with HTTP 500
         """
