@@ -1,6 +1,5 @@
 """
 Service for periodically syncing active Jellyfin sessions.
-Decoupled from activity log syncing.
 """
 
 from typing import Any, Dict, List, Optional
@@ -11,8 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 class SessionsService:
-    """Manages periodic collection of active Jellyfin sessions."""
-
     def __init__(
         self,
         jellyfin_client: Any,
@@ -24,6 +21,7 @@ class SessionsService:
 
         :param jellyfin_client: JellyfinClient instance
         :param sync_interval: Seconds between syncs (default 5)
+        :param repository: Optional repo instance for series name resolution
         """
         self._client = jellyfin_client
         self._sync_interval = sync_interval
@@ -33,7 +31,11 @@ class SessionsService:
         self._last_sessions: List[Dict[str, Any]] = []
 
     def start(self) -> None:
-        """Start background sync thread."""
+        """
+        Start background sync thread.
+        
+        :returns: None
+        """
         if self._thread and self._thread.is_alive():
             return
 
@@ -42,18 +44,30 @@ class SessionsService:
         self._thread.start()
 
     def stop(self) -> None:
-        """Stop background sync thread."""
+        """
+        Stop background sync thread.
+        
+        :returns: None
+        """
         self._stop_event.set()
         if self._thread:
             self._thread.join(timeout=2)
         logger.info("[INFO] Sessions service stopped")
 
     def get_sessions(self) -> List[Dict[str, Any]]:
-        """Get cached active sessions."""
+        """
+        Get cached active sessions from last sync.
+        
+        :returns: List of session dictionaries with sanitized session data
+        """
         return self._last_sessions.copy()
 
     def _sync_loop(self) -> None:
-        """Background thread loop for periodic syncing."""
+        """
+        Background thread loop that periodically fetches and caches sessions.
+        
+        :returns: None (runs until stop event is set)
+        """
         while not self._stop_event.is_set():
             try:
                 self._fetch_sessions()
@@ -63,7 +77,12 @@ class SessionsService:
             self._stop_event.wait(self._sync_interval)
 
     def _fetch_sessions(self) -> None:
-        """Fetch and cache active sessions from Jellyfin."""
+        """
+        Fetch and cache active sessions from Jellyfin.
+        
+        :returns: None
+        :raises Exception: Logs errors, continues operation on failure
+        """
         result = self._client.sessions()
         if not result.get("ok"):
             self._last_sessions = []
@@ -92,6 +111,9 @@ class SessionsService:
     ) -> List[Dict[str, Any]]:
         """
         Reduces session objects to essential fields for frontend display.
+
+        :param sessions: List of raw session dictionaries from Jellyfin API
+        :returns: List of sanitized session dicts with core metadata and resolved episode series names
         """
         root_keys = {
             "Id", "UserName", "Client", "DeviceName", "RemoteEndPoint",
@@ -125,6 +147,8 @@ class SessionsService:
     def _update_cache(self) -> None:
         """
         Polls Jellyfin for sessions and updates the sanitized cache.
+
+        :returns: None
         """
         result = self.jellyfin_client.sessions()
         if result.get("ok"):
@@ -135,6 +159,12 @@ class SessionsService:
         self,
         now_playing_item: Dict[str, Any]
     ) -> Optional[str]:
+        """
+        Resolve series name for episode items using repository lookup.
+
+        :param now_playing_item: Session now_playing_item dict from Jellyfin
+        :returns: Series name string or None of not an episode, no repo, or lookup fails
+        """
         if not self._repository:
             return None
 
