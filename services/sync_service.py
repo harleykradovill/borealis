@@ -30,6 +30,11 @@ class SyncResult:
     errors: List[str]
     
     def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert SyncResult data class to dictionary.
+
+        :returns: Dictionary containing success status, duration, sync counts, and errors
+        """
         return {
             "success": self.success,
             "duration_ms": self.duration_ms,
@@ -48,7 +53,10 @@ class SyncService:
     
     def sync_metadata(self) -> SyncResult:
         """
-        Perform a full sync: users → libraries → items.
+        Perform a full metadata sync: users → libraries → items.
+
+        :returns: SyncResult with success status, duration, and sync counts
+        :raises Exception: Re-raises any unexpected errors during sync phases
         """
         logging.info("[INFO] Starting Metadata Sync")
 
@@ -214,7 +222,10 @@ class SyncService:
 
     def sync_activity_log_full(self) -> SyncResult:
         """
-        Perform initial full activity log sync from Jellyfin.
+        Perform initial full activity log sync from Jellyfin to capture all historical playback data.
+
+        :returns: SyncResult with events synced count and any errors encountered
+        :raises Exception: Re-raises unexpected errors, continues on pagination failures
         """
         logging.info("[INFO] Starting Full Activity Log Sync")
 
@@ -391,6 +402,9 @@ class SyncService:
     def _ts_to_iso(self, ts: int) -> str:
         """
         Convert epoch seconds to Jellyfin-compatible ISO UTC string.
+
+        :param ts: Unix timestamp in seconds
+        :returns: ISO 8601 formatted UTC datetime string (YYYY-MM-DDTHH:MM:SSZ)
         """
         return datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -398,7 +412,12 @@ class SyncService:
         self, minutes_back: int = 30, page_limit: int = 100
     ) -> SyncResult:
         """
-        Perform incremental activity log sync for recent entries.
+        Perform incremental activity log sync for recent entries since last sync marker.
+
+        :param minutes_back: Fallback window in minutres if no previous sync marker exists (default 30)
+        :param page_imit: Number of events per API request (default 100)
+        :returns: SyncResult with event counts and any sync errors
+        :raises Exception: Re-raises unexpected errors, handles API failures
         """
         import time
 
@@ -528,6 +547,9 @@ class SyncService:
         """
         Perform initial server setup sync combining full data sync
         and full activity log pull.
+
+        :returns: SyncResult combining metrics from metadata, activity, and dashboard operations
+        :raises Exception: Continues execution on sub task failures, aggregates all errors
         """
         logging.info("[INFO] Starting Initial Sync")
 
@@ -653,6 +675,9 @@ class SyncService:
         """
         Perform periodic sync: full metadata sync (users/libraries/items),
         incremental activity log sync (if marker exists), and refresh play statistics.
+
+        :returns: SyncResult with aggregated metrics from all sync phases
+        :raises Exception: Continues on individual phase failures, aggregates all errors
         """
 
         logging.info("[INFO] Starting Periodic Sync")
@@ -790,5 +815,8 @@ class SyncService:
     def _refresh_dashboard_cache(self) -> None:
         """
         Refresh index dashboard stats cache from local DB data.
+
+        :returns: None
+        :raises Exception: Any database errors during cache refresh
         """
         self.repository.refresh_dashboard_stats(limit=5)
