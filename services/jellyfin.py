@@ -15,7 +15,7 @@ from services.settings_store import SettingsService
 from typing import Any, Dict, List, Optional, Tuple
 
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
+from urllib.parse import urlparse, quote
 from urllib.request import Request, urlopen
 
 HOSTNAME_RE = re.compile(
@@ -387,10 +387,19 @@ class JellyfinClient:
                 "content_type": "image/jpeg",
             }
 
+        if not re.match(r"^[a-zA-Z0-9\-_]+$", item_id):  # Validate item_id format
+            return {
+                "ok": False,
+                "status": 400,
+                "body": b"",
+                "content_type": "text/plain",
+            }
+
         scheme, host, port, token = conn
         path = f"/Items/{item_id}/Images/Primary"
         if tag:
-            path = f"{path}?tag={tag}"
+            encoded_tag = quote(tag, safe="")  # URL-encode tag
+            path = f"{path}?tag={encoded_tag}"
 
         url = self._build_url(scheme, host, port, path)
 
