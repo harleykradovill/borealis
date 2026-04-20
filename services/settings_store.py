@@ -4,16 +4,18 @@ Settings storage using SQLAlchemy with Fernet encryption for sensitive fields.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Dict, Any, Iterator
-from contextlib import contextmanager
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet
 
 from services.data_models import Base, Settings
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
+from typing import Any, Dict, Iterator, Optional
 
 
 @dataclass

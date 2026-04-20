@@ -3,6 +3,7 @@ Provides an application factory that constructs and configures a
 Flask instance used to server the Borealis site.
 """
 
+import concurrent.futures
 import logging
 import atexit
 from typing import Optional, Dict
@@ -92,9 +93,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             and settings.get("jf_api_key")
         )
     
-    current_settings = svc.get()
-    initial_interval = int(current_settings.get("sync_interval") or 1800)
-
     current_settings = svc.get()
     initial_interval = int(current_settings.get("sync_interval") or 1800)
 
@@ -268,8 +266,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
             if not use_temp_client:
                 try:
-                    import concurrent.futures
-
                     id_map = [
                         (idx, lib.get("Id"))
                         for idx, lib in enumerate(flat)

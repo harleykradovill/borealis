@@ -1,25 +1,26 @@
 from __future__ import annotations
 
-import time
 import json
-from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
-from contextlib import contextmanager
+import time
 
-from sqlalchemy import create_engine, func, or_
-from sqlalchemy.orm import sessionmaker, Session
+from contextlib import contextmanager
+from dataclasses import dataclass
 
 from services.data_models import (
     Base,
-    User,
-    Library,
+    DashboardStat,
     Item,
+    Library,
     PlaybackActivity,
     TaskLog,
-    DashboardStat,
+    User,
 )
 from services.stats_aggregator import StatsAggregator
-from services.settings_store import Settings
+
+from sqlalchemy import create_engine, func, or_
+from sqlalchemy.orm import Session, sessionmaker
+
+from typing import Any, Dict, List, Optional
 
 
 # -------------------------

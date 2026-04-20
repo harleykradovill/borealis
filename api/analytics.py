@@ -2,7 +2,7 @@ import json
 import logging
 import time
 
-from flask import Blueprint, Response, jsonify, request, current_app, stream_with_context
+from flask import Blueprint, Response, current_app, jsonify, request, stream_with_context
 
 logger = logging.getLogger(__name__)
 

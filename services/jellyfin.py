@@ -5,15 +5,18 @@ authenticated requests to the Jellyfin REST API.
 
 from __future__ import annotations
 
-import time
-from typing import Any, Dict, List, Optional, Tuple
-from urllib.request import Request, urlopen
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
-import re
 import ipaddress
+import json
+import re
+import time
 
 from services.settings_store import SettingsService
+
+from typing import Any, Dict, List, Optional, Tuple
+
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 
 HOSTNAME_RE = re.compile(
     r"^(?=.{1,255}$)"
@@ -146,7 +149,6 @@ class JellyfinClient:
                 with urlopen(req, timeout=5.0) as resp: # Execute HTTP request
                     status = getattr(resp, "status", 200)
                     data = resp.read() # Ready response body
-                    import json
                     try:
                         parsed = json.loads(data.decode("utf-8"))
                     except Exception:

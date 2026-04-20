@@ -1,9 +1,9 @@
 import json
 import logging
-import time
 import threading
+import time
 
-from flask import Blueprint, Response, jsonify, request, current_app
+from flask import Blueprint, Response, current_app, jsonify, request
 
 """
 Create the settings API blueprints with routes for configuration and sync management.

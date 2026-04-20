@@ -2,9 +2,9 @@
 Service for periodically syncing active Jellyfin sessions.
 """
 
-from typing import Any, Dict, List, Optional
-from threading import Thread, Event
 import logging
+from threading import Event, Thread
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

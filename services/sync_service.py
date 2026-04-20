@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-import time
-from datetime import datetime, timezone
-import traceback
-from dataclasses import dataclass
-from typing import Dict, Any, List, Optional
 import logging
+import time
+import traceback
+
+from dataclasses import dataclass
+from datetime import datetime, timezone
 
 from services.jellyfin import JellyfinClient
-from services.repository import Repository
 from services.mappers import (
-    map_users,
-    map_libraries,
     map_items,
-    map_playback_events
+    map_libraries,
+    map_playback_events,
+    map_users,
 )
-
+from services.repository import Repository
+from typing import Any, Dict, List, Optional
 
 @dataclass
 class SyncResult:

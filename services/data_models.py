@@ -3,20 +3,24 @@ Borealis analytics data.
 """
 
 from __future__ import annotations
-from typing import Dict, Any, Optional
+
+import json
+
+from cryptography.fernet import Fernet, InvalidToken
 
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Boolean,
     BigInteger,
-    Text,
+    Boolean,
+    Column,
     ForeignKey,
     Index,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.orm import declarative_base, relationship
-from cryptography.fernet import Fernet, InvalidToken
+
+from typing import Any, Dict, Optional
 
 Base = declarative_base()
 
@@ -236,7 +240,6 @@ class TaskLog(Base):
 
         :returns: Dictionary containing task metadata, timing, result, and log payload
         """
-        import json
         log_data = None
         if self.log_json:
             try:

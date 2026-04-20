@@ -5,16 +5,17 @@ playback activity events.
 
 from __future__ import annotations
 
-from typing import Dict, Any, List, Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import func, or_, and_
-
 from services.data_models import (
-    User,
     Item,
     Library,
     PlaybackActivity,
+    User,
 )
+
+from sqlalchemy import and_, func, or_
+from sqlalchemy.orm import Session
+
+from typing import Any, Dict, List, Optional
 
 def _playback_event_kind(event_name: Optional[str]) -> str:
     """

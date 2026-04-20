@@ -9,7 +9,6 @@ import threading
 import time
 import traceback
 
-
 class SyncScheduler:
     """
     Background thread that runs sync operations on an interval.
@@ -24,7 +23,7 @@ class SyncScheduler:
         Initialize background sync scheduler with configurable interval.
 
         :param sync_service: SyncService instance to execute periodic syncs
-        :param interval_secconds: Interval between syncs in seconds (default 1800)
+        :param interval_seconds: Interval between syncs in seconds (default 1800)
         """
         self.sync_service = sync_service
         self.interval_seconds = int(interval_seconds)
