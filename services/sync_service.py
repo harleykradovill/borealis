@@ -309,17 +309,13 @@ class SyncService:
                     count = self.repository.insert_playback_events(mapped_events)
                     events_count += count
 
-                    try:
+                    if mapped_events:
                         page_max = max(
                             int(ev.get("activity_at") or 0)
                             for ev in mapped_events
                         )
-                        if page_max and (
-                            latest_event_ts is None or page_max > latest_event_ts
-                        ):
+                        if not latest_event_ts or page_max > latest_event_ts:
                             latest_event_ts = page_max
-                    except Exception:
-                        pass
 
                 total_fetched += len(items)
                 start_index += page_size

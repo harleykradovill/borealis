@@ -75,7 +75,7 @@ class SettingsService:
         try:
             key_file.write_bytes(key)
         except OSError:
-            pass
+            pass # Key generated in memory, not-fatal failure
         return key
 
     def _get_or_create_row(self, session: Session) -> Settings:

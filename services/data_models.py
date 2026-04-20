@@ -326,8 +326,6 @@ class DashboardStat(Base):
 
         :returns: Dictionary containing section key, payload list, and last update timestamp
         """
-        import json
-
         payload = []
         try:
             payload = json.loads(self.payload_json) if self.payload_json else []
