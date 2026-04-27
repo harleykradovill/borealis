@@ -248,7 +248,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 return jsonify({
                     "ok": False,
                     "message": "Failed to retrieve libraries"
-                }), 400
+                }), 200
 
             data = result.get("data")
             if isinstance(data, dict) and isinstance(data.get("Items"), list):
@@ -326,7 +326,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             return jsonify({
                 "ok": False,
                 "message": "An error occurred while retrieving libraries"
-            }), 200
+            }), 400
         
     @app.post("/api/sync/periodic")
     def api_sync_periodic() -> Response:
