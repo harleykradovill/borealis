@@ -1,8 +1,4 @@
 const jf_helpers = (function () {
-  function getToastContainer() {
-    return document.getElementById("toast-container");
-  }
-
   function showToast(message, kind = "success") {
     if (window.Toast && typeof window.Toast.showToast === "function") {
       return window.Toast.showToast(message, kind, 5000);
