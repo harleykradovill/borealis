@@ -326,7 +326,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             return jsonify({
                 "ok": False,
                 "message": "An error occurred while retrieving libraries"
-            }), 500
+            }), 200
         
     @app.post("/api/sync/periodic")
     def api_sync_periodic() -> Response:
