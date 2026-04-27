@@ -251,79 +251,75 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 }), 400
 
             data = result.get("data")
-            if result and result.get("ok"):
-                if isinstance(data, dict) and isinstance(
-                    data.get("Items"), list
-                ):
-                    flat = data["Items"]
-                elif isinstance(data, list):
-                    flat = data
-                else:
-                    flat = []
+            if isinstance(data, dict) and isinstance(data.get("Items"), list):
+                flat = data["Items"]
+            elif isinstance(data, list):
+                flat = data
+            else:
+                flat = []
 
-                def _is_media_library(lib: dict) -> bool:
-                    t = (lib.get("CollectionType") or lib.get("Type") or "")
-                    t_norm = str(t).strip().lower()
-                    if not t_norm:
-                        return False
-                    return any(k in t_norm for k in ("movies", "tvshows"))
+            def _is_media_library(lib: dict) -> bool:
+                t = (lib.get("CollectionType") or lib.get("Type") or "")
+                t_norm = str(t).strip().lower()
+                if not t_norm:
+                    return False
+                return any(k in t_norm for k in ("movies", "tvshows"))
 
-                filtered = [l for l in flat if _is_media_library(l)]
-                result["data"] = filtered
+            filtered = [l for l in flat if _is_media_library(l)]
 
-                if not use_temp_client:
-                    try:
-                        id_map = [
-                            (idx, lib.get("Id"))
-                            for idx, lib in enumerate(flat)
-                            if lib.get("Id")
-                        ]
+            if not use_temp_client:
+                try:
+                    id_map = [
+                        (idx, lib.get("Id"))
+                        for idx, lib in enumerate(flat)
+                        if lib.get("Id")
+                    ]
 
-                        if id_map:
-                            max_workers = min(8, len(id_map))
-                            with concurrent.futures.ThreadPoolExecutor(
-                                max_workers=max_workers
-                            ) as ex:
-                                future_to_idx = {
-                                    ex.submit(jf.library_stats, jf_id): idx
-                                    for idx, jf_id in id_map
-                                }
+                    if id_map:
+                        max_workers = min(8, len(id_map))
+                        with concurrent.futures.ThreadPoolExecutor(
+                            max_workers=max_workers
+                        ) as ex:
+                            future_to_idx = {
+                                ex.submit(jf.library_stats, jf_id): idx
+                                for idx, jf_id in id_map
+                            }
 
-                                for fut in concurrent.futures.as_completed(
-                                    future_to_idx, timeout=None
-                                ):
-                                    idx = future_to_idx.get(fut)
-                                    try:
-                                        stats = fut.result(timeout=5)
-                                        flat[idx]["ItemCount"] = (
-                                            stats.get("item_count", 0)
-                                            if isinstance(
-                                                stats, dict
-                                            ) and stats.get("ok")
-                                            else 0
-                                        )
-                                    except Exception:
-                                        flat[idx]["ItemCount"] = 0
-                    except Exception:
-                        for lib in flat:
-                            lib_id = lib.get("Id")
-                            if lib_id:
-                                stats = jf.library_stats(lib_id)
-                                lib["ItemCount"] = (
-                                    stats.get("item_count", 0)
-                                    if stats.get("ok")
-                                    else 0
-                                )
+                            for fut in concurrent.futures.as_completed(
+                                future_to_idx, timeout=None
+                            ):
+                                idx = future_to_idx.get(fut)
+                                try:
+                                    stats = fut.result(timeout=5)
+                                    flat[idx]["ItemCount"] = (
+                                        stats.get("item_count", 0)
+                                        if isinstance(stats, dict) and stats.get("ok")
+                                        else 0
+                                    )
+                                except Exception:
+                                    flat[idx]["ItemCount"] = 0
+                except Exception:
+                    for lib in flat:
+                        lib_id = lib.get("Id")
+                        if lib_id:
+                            stats = jf.library_stats(lib_id)
+                            lib["ItemCount"] = (
+                                stats.get("item_count", 0)
+                                if stats.get("ok")
+                                else 0
+                            )
 
-                    try:
-                        from services.mappers import map_libraries
+                try:
+                    from services.mappers import map_libraries
+                    mapped = map_libraries(filtered)
+                    repo.upsert_libraries(mapped)
+                except Exception:
+                    logger.exception("[ERROR] Failed to map/upsert libraries")
 
-                        mapped = map_libraries(filtered)
-                        repo.upsert_libraries(mapped)
-                    except Exception:
-                        logger.exception("[ERROR] Failed to map/upsert libraries")
-
-            return jsonify(result), 200
+            return jsonify({
+                "ok": True,
+                "data": filtered
+            }), 200
 
         except Exception:
             logger.exception("[ERROR] Failed to retrieve libraries")
