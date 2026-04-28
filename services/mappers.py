@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import time
 
@@ -179,6 +180,30 @@ def map_item(
         if isinstance(src, dict)
     )
 
+    video_codec = None
+    resolution = None
+    media_sources = jf_item.get("MediaSources", [])
+    if media_sources and isinstance(media_sources[0], dict):
+        media_streams = media_sources[0].get("MediaStreams", [])
+        for stream in media_streams:
+            if isinstance(stream, dict) and stream.get("Type") == "Video":
+                video_codec = _clean_str(stream.get("Codec"))
+                width = stream.get("Width")
+                height = stream.get("Height")
+                if width and height:
+                    resolution = f"{width}x{height}"
+                break
+
+    # Extract languages from audio streams
+    languages = []
+    if media_sources and isinstance(media_sources[0], dict):
+        media_streams = media_sources[0].get("MediaStreams", [])
+        for stream in media_streams:
+            if isinstance(stream, dict) and stream.get("Type") == "Audio":
+                lang = _clean_str(stream.get("Language"))
+                if lang and lang not in languages:
+                    languages.append(lang)
+
     return {
         "jellyfin_id": jf_id,
         "library_id": library_internal_id,
@@ -188,6 +213,9 @@ def map_item(
         "runtime_seconds": runtime_seconds,
         "size_bytes": size_bytes,
         "date_created": _parse_jf_date(jf_item.get("DateCreated")),
+        "video_codec": video_codec,
+        "resolution": resolution,
+        "languages": json.dumps(languages) if languages else None,
     }
 
 

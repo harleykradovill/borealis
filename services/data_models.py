@@ -137,6 +137,9 @@ class Item(Base):
     runtime_seconds = Column(Integer, default=0)
     size_bytes = Column(BigInteger, default=0)
     date_created = Column(BigInteger, nullable=True)
+    video_codec = Column(String(64), nullable=True)
+    resolution = Column(String(32), nullable=True)
+    languages = Column(Text, nullable=True)
 
     library = relationship("Library", back_populates="items")
 
@@ -147,14 +150,17 @@ class Item(Base):
         Index("idx_item_play_count", "play_count"),
         Index("idx_item_runtime_seconds", "runtime_seconds"),
         Index("idx_item_size_bytes", "size_bytes"),
-        Index("idx_date_created", "date_created")
+        Index("idx_date_created", "date_created"),
+        Index("idx_video_codec", "video_codec"),
+        Index("idx_resolution", "resolution"),
+        Index("idx_languages", "languages")
     )
 
     def to_dict(self) -> Dict[str, Any]:
         """
         Serialize the media item record for API responses.
 
-        :returns: Dictionary containing item ID, library iD, playback stats, runtime, size, and archive state
+        :returns: Dictionary containing item ID, library ID, playback stats, runtime, size, codec, resolution, languages, and archive state
         """
         return {
             "id": self.id,
@@ -168,6 +174,9 @@ class Item(Base):
             "size_bytes": self.size_bytes,
             "archived": self.archived,
             "date_created": self.date_created,
+            "video_codec": self.video_codec,
+            "resolution": self.resolution,
+            "languages": self.languages,
         }
 
 
