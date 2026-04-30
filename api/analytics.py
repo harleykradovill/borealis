@@ -380,8 +380,8 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             "data": sessions
         }), 200
     
-    @bp.get("/api/jellyfin/libraries")
-    @bp.post("/api/jellyfin/libraries")
+    @bp.get("/jellyfin/libraries")
+    @bp.post("/jellyfin/libraries")
     def api_jf_libraries() -> Response:
         """
         Fetches libraries with item counts and upserts to repository.
