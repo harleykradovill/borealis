@@ -3,7 +3,6 @@ Provides an application factory that constructs and configures a
 Flask instance used to server the Borealis site.
 """
 
-import concurrent.futures
 import logging
 import atexit
 from typing import Optional, Dict
@@ -15,7 +14,7 @@ from api.analytics import create_analytics_blueprint
 logger = logging.getLogger(__name__)
 
 try:
-    from flask import Flask, Response, render_template, jsonify, request, send_from_directory
+    from flask import Flask, Response, render_template, request, send_from_directory
 except ImportError as exc:
     raise RuntimeError(
         "Flask is required to run the local config site. "
@@ -106,7 +105,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     ## Blueprints
 
     app.register_blueprint(create_settings_blueprint(svc=svc, repo=repo, sync=sync))
-    app.register_blueprint(create_analytics_blueprint(svc=svc, repo=repo, sync=sync))
+    app.register_blueprint(create_analytics_blueprint(svc=svc, repo=repo, sync=sync, jf=jf))
 
     from services.sessions import SessionsService
 
@@ -212,148 +211,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     @require_server
     def settings() -> Response:
         return render_template("settings.html"), 200
-
-    @app.get("/api/jellyfin/libraries")
-    @app.post("/api/jellyfin/libraries")
-    def api_jf_libraries() -> Response:
-        """
-        Fetches libraries with item counts and upserts to repository.
-        Accepts credentials in POST body for setup flow.
-        """
-        try:
-            payload = request.get_json(silent=True) or {}
-            host = (payload.get("jf_host") or "").strip()
-            port = (payload.get("jf_port") or "").strip()
-            token = (payload.get("jf_api_key") or "").strip()
-
-            use_temp_client = bool(host and port and token)
-
-            if use_temp_client:
-                from services.jellyfin import JellyfinClient
-
-                class TempSettings:
-                    def get(self):
-                        return {
-                            "jf_host": host,
-                            "jf_port": port,
-                            "jf_api_key": token,
-                        }
-
-                temp_jf = JellyfinClient(TempSettings())
-                result = temp_jf.libraries()
-            else:
-                result = jf.libraries()
-
-            if not isinstance(result, dict) or not result.get("ok"):
-                return jsonify({
-                    "ok": False,
-                    "message": "Failed to retrieve libraries"
-                }), 200
-
-            data = result.get("data")
-            if isinstance(data, dict) and isinstance(data.get("Items"), list):
-                flat = data["Items"]
-            elif isinstance(data, list):
-                flat = data
-            else:
-                flat = []
-
-            def _is_media_library(lib: dict) -> bool:
-                t = (lib.get("CollectionType") or lib.get("Type") or "")
-                t_norm = str(t).strip().lower()
-                if not t_norm:
-                    return False
-                return any(k in t_norm for k in ("movies", "tvshows"))
-
-            filtered = [l for l in flat if _is_media_library(l)]
-
-            if not use_temp_client:
-                try:
-                    id_map = [
-                        (idx, lib.get("Id"))
-                        for idx, lib in enumerate(flat)
-                        if lib.get("Id")
-                    ]
-
-                    if id_map:
-                        max_workers = min(8, len(id_map))
-                        with concurrent.futures.ThreadPoolExecutor(
-                            max_workers=max_workers
-                        ) as ex:
-                            future_to_idx = {
-                                ex.submit(jf.library_stats, jf_id): idx
-                                for idx, jf_id in id_map
-                            }
-
-                            for fut in concurrent.futures.as_completed(
-                                future_to_idx, timeout=None
-                            ):
-                                idx = future_to_idx.get(fut)
-                                try:
-                                    stats = fut.result(timeout=5)
-                                    flat[idx]["ItemCount"] = (
-                                        stats.get("item_count", 0)
-                                        if isinstance(stats, dict) and stats.get("ok")
-                                        else 0
-                                    )
-                                except Exception:
-                                    flat[idx]["ItemCount"] = 0
-                except Exception:
-                    for lib in flat:
-                        lib_id = lib.get("Id")
-                        if lib_id:
-                            stats = jf.library_stats(lib_id)
-                            lib["ItemCount"] = (
-                                stats.get("item_count", 0)
-                                if stats.get("ok")
-                                else 0
-                            )
-
-                try:
-                    from services.mappers import map_libraries
-                    mapped = map_libraries(filtered)
-                    repo.upsert_libraries(mapped)
-                except Exception:
-                    logger.exception("[ERROR] Failed to map/upsert libraries")
-
-            return jsonify({
-                "ok": True,
-                "data": filtered
-            }), 200
-
-        except Exception:
-            logger.exception("[ERROR] Failed to retrieve libraries")
-            return jsonify({
-                "ok": False,
-                "message": "An error occurred while retrieving libraries"
-            }), 400
-        
-    @app.post("/api/sync/periodic")
-    def api_sync_periodic() -> Response:
-        """
-        Trigger the same sync path used by interval scheduling and reset timer.
-        """
-        sched = getattr(app, "sync_scheduler", None)
-        if sched and hasattr(sched, "trigger_periodic_now"):
-            sched.trigger_periodic_now()
-            return jsonify({
-                "ok": True,
-                "message": "Periodic sync started; timer reset."
-            }), 200
-    
-        import threading
-    
-        def run_sync():
-            try:
-                sync.sync_periodic()
-            except Exception:
-                logging.exception("[ERROR] Manual periodic sync failed")
-    
-        threading.Thread(target=run_sync, daemon=True).start()
-        return jsonify({
-            "ok": True,
-            "message": "Periodic sync started."
-        }), 200
         
     @app.get("/api/jellyfin/items/<item_id>/images/primary")
     def api_jellyfin_item_primary_image(item_id: str) -> Response:
