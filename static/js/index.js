@@ -630,3 +630,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("DOMContentLoaded", loadWatchStatistics);
 })();
+
+(function () {
+  const group = document.querySelector(".statistics-group");
+  if (!group) return;
+
+  const track = group.querySelector("[data-carousel-track]");
+  const prevBtn = group.querySelector('[data-carousel-action="prev"]');
+  const nextBtn = group.querySelector('[data-carousel-action="next"]');
+
+  if (!track || !prevBtn || !nextBtn) return;
+
+  const listCards = () =>
+    Array.from(track.children).filter((el) =>
+      el.classList.contains("statistics-card"),
+    );
+
+  let pageIndex = 0;
+
+  function updateCarousel() {
+    const cards = listCards();
+    if (!cards.length) return;
+
+    const perView = 3;
+    const pages = Math.max(1, Math.ceil(cards.length / perView));
+    pageIndex = Math.max(0, Math.min(pageIndex, pages - 1));
+
+    const cardWidth = cards[0].getBoundingClientRect().width;
+    const gap = parseFloat(getComputedStyle(track).gap || "0");
+    const offset = (cardWidth + gap) * pageIndex * perView;
+
+    track.style.transform = `translateX(-${offset}px)`;
+    prevBtn.disabled = pageIndex === 0;
+    nextBtn.disabled = pageIndex >= pages - 1;
+  }
+
+  prevBtn.addEventListener("click", () => {
+    pageIndex -= 1;
+    updateCarousel();
+  });
+
+  nextBtn.addEventListener("click", () => {
+    pageIndex += 1;
+    updateCarousel();
+  });
+
+  window.addEventListener("resize", updateCarousel);
+  updateCarousel();
+})();

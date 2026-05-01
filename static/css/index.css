@@ -235,6 +235,54 @@
   color: var(--white);
 }
 
+.statistics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 1rem 0;
+}
+
+.statistics-header h2 {
+  margin: 0;
+}
+
+.statistics-carousel-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.carousel-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.6rem;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.carousel-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.statistics-carousel {
+  overflow: hidden;
+}
+
+.statistics-grid.statistics-track {
+  display: flex;
+  gap: 1rem;
+  transition: transform 200ms ease;
+  will-change: transform;
+}
+
+.statistics-grid.statistics-track .statistics-card {
+  flex: 0 0 calc((100% - 2rem) / 3);
+}
+
 .statistics-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
