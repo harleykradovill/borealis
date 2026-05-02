@@ -338,12 +338,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!sessions || sessions.length === 0) {
-      container.hidden = true;
+      if (cardsContainer) cardsContainer.hidden = true;
       if (empty) empty.hidden = false;
       return;
     }
 
-    container.hidden = false;
+    if (cardsContainer) cardsContainer.hidden = false;
     if (empty) empty.hidden = true;
     cardsContainer.innerHTML = "";
 

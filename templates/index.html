@@ -23,29 +23,27 @@
       {% include '_sidebar.html' %}
       <main id="content" class="content" tabindex="-1">
         <section id="sessions-section">
-          <h2 style="margin: 0 0 1rem 0; color: var(--white)">
-            Active Sessions
-          </h2>
+          <div id="sessions-container">
+            <h2>Active Sessions</h2>
 
-          <div id="sessions-loading" class="skeleton">
-            <div class="wrapper sessions-cards" style="margin-bottom: 2rem">
-              <div class="session-card" style="min-height: 320px"></div>
-              <div class="session-card" style="min-height: 320px"></div>
-              <div class="session-card" style="min-height: 320px"></div>
+            <div id="sessions-loading" class="skeleton">
+              <div class="wrapper sessions-cards">
+                <div class="session-card" style="min-height: 320px"></div>
+                <div class="session-card" style="min-height: 320px"></div>
+                <div class="session-card" style="min-height: 320px"></div>
+              </div>
             </div>
-          </div>
 
-          <div id="sessions-container" hidden>
-            <div id="sessions-cards" class="sessions-cards"></div>
-          </div>
+            <div id="sessions-cards" class="sessions-cards" hidden></div>
 
-          <div
-            id="sessions-empty"
-            class="settings-placeholder"
-            style="margin-bottom: 2rem"
-            hidden
-          >
-            <p>No active sessions.</p>
+            <div
+              id="sessions-empty"
+              class="settings-placeholder"
+              style="margin-bottom: 2rem"
+              hidden
+            >
+              <p>No active sessions.</p>
+            </div>
           </div>
         </section>
 

@@ -2,13 +2,13 @@
   box-sizing: border-box;
   flex: 1 1 0;
   min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
 }
 
 .matrix-chart-group .matrix-card {
   background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0.75rem;
   height: 250px;
   box-sizing: border-box;
   display: flex;
@@ -16,11 +16,6 @@
   align-items: stretch;
   gap: 0.5rem;
   padding-bottom: 3rem;
-}
-
-.matrix-chart-group h2 {
-  margin: 0 0 1rem 0;
-  color: var(--white);
 }
 
 .matrix-labels-wrapper {
@@ -208,6 +203,17 @@
 
 #sessions-container {
   margin-bottom: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+
+.matrix-chart-group h2,
+#sessions-container > h2,
+.statistics-group h2 {
+  margin: 0 0 0.75rem 0;
+  color: var(--white);
+  font-size: 1rem;
 }
 
 #sessions-cards,
@@ -228,11 +234,9 @@
 .statistics-group {
   max-width: 1500px;
   margin: 1.5rem auto;
-}
-
-.statistics-group h2 {
-  margin: 0 0 1rem 0;
-  color: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
 }
 
 .statistics-header {
@@ -241,10 +245,6 @@
   justify-content: space-between;
   gap: 1rem;
   margin: 0 0 1rem 0;
-}
-
-.statistics-header h2 {
-  margin: 0;
 }
 
 .statistics-carousel-controls {
