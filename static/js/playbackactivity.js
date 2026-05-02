@@ -81,12 +81,6 @@
     const selectedCount = getSelectedUserIdsArray().length;
     const totalCount = allUsers.length;
     const allSelected = totalCount > 0 && selectedCount === totalCount;
-    filterBtn.setAttribute(
-      "aria-label",
-      allSelected
-        ? "Filter by user (all users selected)"
-        : `Filter by user (${selectedCount}/${totalCount} selected)`,
-    );
   }
 
   function renderFilterOptions() {
@@ -147,13 +141,11 @@
     filterMenu.style.left = `${btnRect.left - containerRect.left}px`;
     filterMenu.style.top = `${btnRect.bottom - containerRect.top + 6}px`;
     filterMenu.hidden = false;
-    filterBtn.setAttribute("aria-expanded", "true");
   }
 
   function closeFilterMenu() {
     if (!filterBtn || !filterMenu) return;
     filterMenu.hidden = true;
-    filterBtn.setAttribute("aria-expanded", "false");
   }
 
   function syncUsersFromPayload(data) {
