@@ -757,8 +757,39 @@ class Repository:
             )
         
     # -------------------------
-    # Dashboard Watch Statistics
+    # Dashboard
     # -------------------------
+
+    def get_glance_totals(self) -> Dict[str, int]:
+        """
+        Aggregate at-a-glance totals for active libraries and users.
+
+        :returns: Dictionary with total_plays, total_items, total_size_bytes, total_users
+        :raises Exception: Raised when database queries fail
+        """
+        with self._session() as session:
+            total_plays, total_items, total_size_bytes = (
+                session.query(
+                    func.coalesce(func.sum(Library.total_plays), 0),
+                    func.coalesce(func.sum(Library.total_files), 0),
+                    func.coalesce(func.sum(Library.size_bytes), 0),
+                )
+                .filter(Library.archived.is_(False))  # Active libraries only
+                .one()
+            )
+
+            total_users = (
+                session.query(func.count(User.id))
+                .filter(User.archived.is_(False))  # Active users only
+                .scalar()
+            )
+
+        return {
+            "total_plays": int(total_plays or 0),
+            "total_items": int(total_items or 0),
+            "total_size_bytes": int(total_size_bytes or 0),
+            "total_users": int(total_users or 0),
+        }
 
     def upsert_dashboard_stat(
         self, section_key: str, payload: Any

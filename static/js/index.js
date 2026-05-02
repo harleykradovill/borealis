@@ -303,6 +303,70 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 (function () {
+  const loading = document.getElementById("glance-loading");
+  const grid = document.getElementById("glance-grid");
+
+  const elActiveSessions = document.getElementById("glance-active-sessions");
+  const elTotalPlays = document.getElementById("glance-total-plays");
+  const elTotalItems = document.getElementById("glance-total-items");
+  const elTotalSize = document.getElementById("glance-total-size");
+  const elTotalUsers = document.getElementById("glance-total-users");
+
+  if (!grid) return;
+
+  const numberFmt = new Intl.NumberFormat();
+
+  function humanBytes(bytes) {
+    if (!bytes || bytes === 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${units[i]}`;
+  }
+
+  function setText(el, value) {
+    if (!el) return;
+    el.textContent = value;
+  }
+
+  async function loadGlance() {
+    if (loading) loading.hidden = false;
+    if (grid) grid.hidden = true;
+
+    try {
+      const resp = await fetch("/api/analytics/stats/glance");
+      if (!resp.ok) throw new Error("Network error");
+
+      const payload = await resp.json();
+      if (!payload?.ok) throw new Error(payload?.message || "API error");
+
+      const data = payload.data || {};
+
+      setText(
+        elActiveSessions,
+        numberFmt.format(Number(data.active_sessions || 0)),
+      );
+      setText(elTotalPlays, numberFmt.format(Number(data.total_plays || 0)));
+      setText(elTotalItems, numberFmt.format(Number(data.total_items || 0)));
+      setText(elTotalSize, humanBytes(Number(data.total_size_bytes || 0)));
+      setText(elTotalUsers, numberFmt.format(Number(data.total_users || 0)));
+
+      if (grid) grid.hidden = false;
+    } catch (err) {
+      console.error("Failed to load glance totals", err);
+      setText(elActiveSessions, "-");
+      setText(elTotalPlays, "-");
+      setText(elTotalItems, "-");
+      setText(elTotalSize, "-");
+      setText(elTotalUsers, "-");
+    } finally {
+      if (loading) loading.hidden = true;
+    }
+  }
+
+  loadGlance();
+})();
+
+(function () {
   const container = document.getElementById("sessions-container");
   const empty = document.getElementById("sessions-empty");
   const cardsContainer = document.getElementById("sessions-cards");

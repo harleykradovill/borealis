@@ -156,6 +156,34 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
                 ),
             }), 500
         
+    @bp.get("/analytics/stats/glance")
+    def api_analytics_stats_glance() -> Response:
+        """
+        Retrieve at-a-glance totals for the index dashboard.
+
+        :returns: JSON response with totals and HTTP 200, or error details with HTTP 500
+        """
+        try:
+            totals = repo.get_glance_totals()
+
+            sessions_svc = getattr(current_app, "sessions_service", None)
+            sessions = sessions_svc.get_sessions() if sessions_svc else []
+            active_sessions = len(sessions or [])
+
+            return jsonify({
+                "ok": True,
+                "data": {
+                    "active_sessions": active_sessions,
+                    **totals,
+                },
+            }), 200
+        except Exception as exc:
+            logger.exception("[ERROR] Failed to fetch glance totals")
+            return jsonify({
+                "ok": False,
+                "message": f"Failed to fetch glance totals: {str(exc)}"
+            }), 500
+        
     @bp.get("/analytics/items/added-last-30-days")
     def api_analytics_items_added_last_30_days() -> Response:
         """

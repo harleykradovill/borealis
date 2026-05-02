@@ -22,7 +22,42 @@
     <div class="app-shell">
       {% include '_sidebar.html' %}
       <main id="content" class="content" tabindex="-1">
-        <section id="glance-section"></section>
+        <section id="glance-section" class="glance-section">
+          <h2>At A Glance</h2>
+
+          <div id="glance-loading" class="skeleton">
+            <div class="wrapper glance-grid">
+              <div class="glance-card"></div>
+              <div class="glance-card"></div>
+              <div class="glance-card"></div>
+              <div class="glance-card"></div>
+              <div class="glance-card"></div>
+            </div>
+          </div>
+
+          <div id="glance-grid" class="glance-grid" hidden>
+            <div class="glance-card" data-glance-key="active_sessions">
+              <div class="glance-label">Active Sessions</div>
+              <div class="glance-value" id="glance-active-sessions">-</div>
+            </div>
+            <div class="glance-card" data-glance-key="total_plays">
+              <div class="glance-label">Total Plays</div>
+              <div class="glance-value" id="glance-total-plays">-</div>
+            </div>
+            <div class="glance-card" data-glance-key="total_items">
+              <div class="glance-label">Total Items</div>
+              <div class="glance-value" id="glance-total-items">-</div>
+            </div>
+            <div class="glance-card" data-glance-key="total_size_bytes">
+              <div class="glance-label">Storage Used</div>
+              <div class="glance-value" id="glance-total-size">-</div>
+            </div>
+            <div class="glance-card" data-glance-key="total_users">
+              <div class="glance-label">Users</div>
+              <div class="glance-value" id="glance-total-users">-</div>
+            </div>
+          </div>
+        </section>
 
         <section id="sessions-section">
           <div id="sessions-container">
