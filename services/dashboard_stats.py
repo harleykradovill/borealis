@@ -15,15 +15,6 @@ SECTION_WATCH_TIME_BY_USER = "top_users_by_watch_time"
 SECTION_MOST_ACTIVE_DAY = "most_active_weekdays"
 SECTION_RECENTLY_WATCHED = "recently_watched"
 
-ALL_SECTIONS = (
-    SECTION_TOP_USERS,
-    SECTION_TOP_ITEMS,
-    SECTION_TOP_LIBRARIES,
-    SECTION_WATCH_TIME_BY_USER,
-    SECTION_MOST_ACTIVE_DAY,
-    SECTION_RECENTLY_WATCHED,
-)
-
 
 def _weekday_name(monday_zero_index: int) -> str:
     """

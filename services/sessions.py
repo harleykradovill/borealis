@@ -144,17 +144,6 @@ class SessionsService:
             sanitized.append(clean)
         return sanitized
 
-    def _update_cache(self) -> None:
-        """
-        Polls Jellyfin for sessions and updates the sanitized cache.
-
-        :returns: None
-        """
-        result = self.jellyfin_client.sessions()
-        if result.get("ok"):
-            raw_data = result.get("data", [])
-            self._cached_sessions = self._sanitize_sessions(raw_data)
-
     def _resolve_episode_series_name(
         self,
         now_playing_item: Dict[str, Any]

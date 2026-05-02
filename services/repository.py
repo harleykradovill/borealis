@@ -741,30 +741,6 @@ class Repository:
         with self._session() as session:
             return StatsAggregator.refresh_all_stats(session)
 
-    def get_top_items_by_plays(
-        self, limit: int = 10
-    ) -> List[Dict[str, Any]]:
-        """
-        Retrieve the most played items across all libraries.
-
-        :param limit: Max number of items to return (default 10)
-        :returns: List of item dicts with id, name, type, play_count, library_id, library_name
-        """
-        with self._session() as session:
-            return StatsAggregator.get_top_items_by_plays(session, limit)
-
-    def get_top_users_by_plays(
-        self, limit: int = 10
-    ) -> List[Dict[str, Any]]:
-        """
-        Retrieve the most active users by total play count.
-
-        :param limit: Maximum number of users to return (default 10)
-        :returns: List of user dicts with user_id, name, total_plays
-        """
-        with self._session() as session:
-            return StatsAggregator.get_top_users_by_plays(session, limit)
-
     def get_library_stats(
         self, include_archived: bool = False
     ) -> List[Dict[str, Any]]:

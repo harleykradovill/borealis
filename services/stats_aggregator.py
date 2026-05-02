@@ -453,65 +453,6 @@ class StatsAggregator:
         }
 
     @staticmethod
-    def get_top_items_by_plays(
-        session: Session,
-        limit: int = 10,
-    ) -> List[Dict[str, Any]]:
-        """
-        Retrieve the most played items across all libraries sorted by play count.
-
-        :param session: Active SQL session
-        :param limit: Maximum number of items to return (default 50)
-        :returns: List of dicts containing item_id, name, type, play_count, library_id, and library_name
-        """
-        rows = (
-            session.query(Item, Library)
-            .join(Library, Item.library_id == Library.id)
-            .order_by(Item.play_count.desc())
-            .limit(limit)
-            .all()
-        )
-
-        out: List[Dict[str, Any]] = []
-        for item, library in rows:
-            out.append({
-                "item_id": item.jellyfin_id,
-                "name": item.name,
-                "type": item.type,
-                "play_count": int(item.play_count or 0),
-                "library_id": library.id,
-                "library_name": library.name,
-            })
-        return out
-
-    @staticmethod
-    def get_top_users_by_plays(
-        session: Session,
-        limit: int = 10,
-    ) -> List[Dict[str, Any]]:
-        """
-        Retrieve the most active users sorted by play count.
-
-        :param session: Active SQL session
-        :param limit: Maximum number of users to return (default 10)
-        :returns: List of dicts containing user_id, name, and total_plays
-        """
-        users = (
-            session.query(User)
-            .order_by(User.total_plays.desc())
-            .limit(limit)
-            .all()
-        )
-        return [
-            {
-                "user_id": u.jellyfin_id,
-                "name": u.name,
-                "total_plays": int(u.total_plays or 0),
-            }
-            for u in users
-        ]
-
-    @staticmethod
     def get_library_stats(
         session: Session,
         include_archived: bool = False,

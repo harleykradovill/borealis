@@ -156,11 +156,6 @@ class SyncService:
                             active_item_ids = [it["jellyfin_id"] for it in mapped_items]
                             self.repository.archive_missing_items(lib_internal_id, active_item_ids)
 
-                            type_counts: Dict[str, int] = {}
-                            for it in items_list:
-                                t = (it.get("Type") or it.get("TypeName") or "Unknown")
-                                type_counts[t] = type_counts.get(t, 0) + 1
-
                         except Exception:
                             traceback.print_exc()
                             errors.append(

@@ -232,13 +232,6 @@ class JellyfinClient:
             return None
         return scheme, host, pnum, token
 
-
-    def validate_connection(self) -> Dict[str, Any]:
-        """
-        Calls /System/Info to validate connectivity and credentials.
-        """
-        return self._get("/System/Info")
-
     def system_info(self) -> Dict[str, Any]:
         """
         Returns Jellyfin system info.
