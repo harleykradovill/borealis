@@ -632,7 +632,7 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 (function () {
-  const group = document.querySelector(".statistics-group");
+  const group = document.querySelector(".statistics-section");
   if (!group) return;
 
   const track = group.querySelector("[data-carousel-track]");

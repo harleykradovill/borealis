@@ -1,4 +1,10 @@
-.matrix-chart-group {
+.heatmap-section,
+.sessions-section,
+.statistics-section {
+  margin: 1.5rem 0;
+}
+
+.heatmap-section {
   box-sizing: border-box;
   flex: 1 1 0;
   min-width: 0;
@@ -7,7 +13,7 @@
   padding: 0.75rem;
 }
 
-.matrix-chart-group .matrix-card {
+.heatmap-section .matrix-card {
   background: var(--bg);
   height: 250px;
   box-sizing: border-box;
@@ -15,7 +21,6 @@
   flex-direction: column;
   align-items: stretch;
   gap: 0.5rem;
-  padding-bottom: 3rem;
 }
 
 .matrix-labels-wrapper {
@@ -202,15 +207,14 @@
 }
 
 #sessions-container {
-  margin-bottom: 2rem;
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.75rem;
 }
 
-.matrix-chart-group h2,
+.heatmap-section h2,
 #sessions-container > h2,
-.statistics-group h2 {
+.statistics-section h2 {
   margin: 0 0 0.75rem 0;
   color: var(--white);
   font-size: 1rem;
@@ -231,9 +235,8 @@
   border-radius: 12px;
 }
 
-.statistics-group {
+.statistics-section {
   max-width: 1500px;
-  margin: 1.5rem auto;
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.75rem;
