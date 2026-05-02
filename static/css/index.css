@@ -1,3 +1,4 @@
+/* Spacing between sections */
 .heatmap-section,
 .sessions-section,
 .statistics-section,
@@ -5,77 +6,22 @@
   margin: 1.5rem 0;
 }
 
-.heatmap-section {
-  box-sizing: border-box;
-  flex: 1 1 0;
-  min-width: 0;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0.75rem;
+/* Section Headers */
+.heatmap-section h2,
+#sessions-container > h2,
+.statistics-section h2 {
+  margin: 0 0 0.75rem 0;
+  color: var(--white);
+  font-size: 1rem;
 }
 
-.heatmap-section .matrix-card {
-  background: var(--bg);
-  height: 250px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.5rem;
-}
+/* ============== */
+/* Glance Section */
+/* ============== */
 
-.matrix-labels-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.matrix-top-labels {
-  display: flex;
-  align-items: flex-end;
-  padding-left: 60px;
-}
-
-.matrix-month-label {
-  flex: 1 1 auto;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  height: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 2px;
-  min-width: 0;
-}
-
-.matrix-content {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.matrix-left-labels {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-  width: 40px;
-}
-
-.matrix-day-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  text-align: right;
-  padding-right: 0.5rem;
-  height: calc((260px - 3.5rem - 0.5rem) / 7);
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-.matrix-canvas-wrapper {
-  flex: 1;
-}
+/* ================ */
+/* Sessions Section */
+/* ================ */
 
 .session-card {
   position: relative;
@@ -213,14 +159,6 @@
   padding: 0.75rem;
 }
 
-.heatmap-section h2,
-#sessions-container > h2,
-.statistics-section h2 {
-  margin: 0 0 0.75rem 0;
-  color: var(--white);
-  font-size: 1rem;
-}
-
 #sessions-cards,
 .sessions-cards {
   display: grid;
@@ -236,6 +174,86 @@
   border-radius: 12px;
   background-color: var(--surface);
 }
+
+/* =============== */
+/* Heatmap Section */
+/* =============== */
+
+.heatmap-section {
+  box-sizing: border-box;
+  flex: 1 1 0;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+
+.heatmap-section .matrix-card {
+  background: var(--bg);
+  height: 250px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.matrix-labels-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.matrix-top-labels {
+  display: flex;
+  align-items: flex-end;
+  padding-left: 60px;
+}
+
+.matrix-month-label {
+  flex: 1 1 auto;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  height: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  min-width: 0;
+}
+
+.matrix-content {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.matrix-left-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 40px;
+}
+
+.matrix-day-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-align: right;
+  padding-right: 0.5rem;
+  height: calc((260px - 3.5rem - 0.5rem) / 7);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.matrix-canvas-wrapper {
+  flex: 1;
+}
+
+/* ======================== */
+/* Watch Statistics Section */
+/* ======================== */
 
 .statistics-section {
   max-width: 1500px;
