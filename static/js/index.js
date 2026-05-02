@@ -338,7 +338,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!sessions || sessions.length === 0) {
-      if (cardsContainer) cardsContainer.hidden = true;
+      if (cardsContainer) {
+        cardsContainer.hidden = true;
+        cardsContainer.innerHTML = "";
+      }
       if (empty) empty.hidden = false;
       return;
     }

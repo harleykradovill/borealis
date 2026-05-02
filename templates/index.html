@@ -22,6 +22,8 @@
     <div class="app-shell">
       {% include '_sidebar.html' %}
       <main id="content" class="content" tabindex="-1">
+        <section id="glance-section"></section>
+
         <section id="sessions-section">
           <div id="sessions-container">
             <h2>Active Sessions</h2>
@@ -36,12 +38,7 @@
 
             <div id="sessions-cards" class="sessions-cards" hidden></div>
 
-            <div
-              id="sessions-empty"
-              class="settings-placeholder"
-              style="margin-bottom: 2rem"
-              hidden
-            >
+            <div id="sessions-empty" class="settings-placeholder" hidden>
               <p>No active sessions.</p>
             </div>
           </div>
