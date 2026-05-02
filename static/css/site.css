@@ -3,7 +3,7 @@
   --surface: #191e27;
   --text: #f0f0f0;
   --text-muted: #b3b3b3;
-  --border: #272735;
+  --border: #29293b;
   --positive: #2da30c;
   --negative: #8f1616;
   --white: #ffffff;
@@ -149,22 +149,6 @@ body {
   width: 40px;
   height: 40px;
   object-fit: contain;
-}
-
-.hero {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 2.5rem;
-}
-.hero h1 {
-  margin: 0 0 0.5rem 0;
-  font-size: 2rem;
-  color: var(--white);
-}
-.subtitle {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 1rem;
 }
 
 .btn-danger {
