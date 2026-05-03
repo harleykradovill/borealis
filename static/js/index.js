@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const matrixLoading = document.getElementById("matrix-loading");
   if (!canvas) return;
 
-  async function loadActivity(days = 365) {
+  async function loadActivity(days = 182) {
     try {
       const perPage = 1000;
       const maxPages = 20;
@@ -25,7 +25,11 @@ document.addEventListener("DOMContentLoaded", () => {
           : [];
         if (!pageItems.length) break;
 
-        all.push(...pageItems);
+        const stopOnlyItems = pageItems.filter((it) =>
+          (it.event_name || "").startsWith("VideoPlaybackStopped||"),
+        );
+
+        all.push(...stopOnlyItems);
 
         const minTsSec = Math.min(
           ...pageItems.map((it) => Number(it.activity_at || 0)),
