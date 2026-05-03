@@ -242,6 +242,11 @@
   height: 100%;
 }
 
+#plays-trend-loading .wrapper > div {
+  height: 250px;
+  border-radius: 12px;
+}
+
 .heatmap-section {
   box-sizing: border-box;
   flex: 0 0 58%;

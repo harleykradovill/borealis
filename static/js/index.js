@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("plays-matrix");
   const emptyEl = document.getElementById("matrix-chart-empty-files");
   const matrixLoading = document.getElementById("matrix-loading");
+  const trendLoading = document.getElementById("plays-trend-loading");
   if (!canvas) return;
 
   async function loadActivity(days = 182) {
@@ -345,85 +346,92 @@ document.addEventListener("DOMContentLoaded", () => {
     const trendCanvas = document.getElementById("plays-trend-chart");
     if (!trendCanvas) return;
 
-    const items = await loadActivity(14);
-    const { labels, values } = buildTrendSeries(items, 14);
+    if (trendLoading) trendLoading.hidden = false;
+    trendCanvas.style.display = "none";
 
-    const minV = Math.min(...values);
-    const maxV = Math.max(...values);
-    const span = Math.max(1, maxV - minV);
-    const pad = Math.max(1, Math.round(span * 0.2));
-    const yMin = Math.max(0, minV - pad);
-    const yMax = maxV + pad;
+    try {
+      const items = await loadActivity(14);
+      const { labels, values } = buildTrendSeries(items, 14);
 
-    const ctx = trendCanvas.getContext("2d");
+      const minV = Math.min(...values);
+      const maxV = Math.max(...values);
+      const span = Math.max(1, maxV - minV);
+      const pad = Math.max(1, Math.round(span * 0.2));
+      const yMin = Math.max(0, minV - pad);
+      const yMax = maxV + pad;
 
-    const config = {
-      type: "line",
-      data: {
-        labels,
-        datasets: [
-          {
-            data: values,
-            borderColor: "#2a73c7",
-            backgroundColor: "rgba(42, 115, 199, 0.12)",
-            fill: true,
-            tension: 0.5,
-            pointRadius: 3,
-            pointHoverRadius: 4,
-            pointBackgroundColor: "#e7ecf3",
-            pointBorderColor: "#2a73c7",
-            borderWidth: 2,
-          },
-        ],
-      },
-      options: {
-        animation: { duration: 200 },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctxArg) => `Plays: ${ctxArg.raw}`,
+      const ctx = trendCanvas.getContext("2d");
+
+      const config = {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              data: values,
+              borderColor: "#2a73c7",
+              backgroundColor: "rgba(42, 115, 199, 0.12)",
+              fill: true,
+              tension: 0.5,
+              pointRadius: 3,
+              pointHoverRadius: 4,
+              pointBackgroundColor: "#e7ecf3",
+              pointBorderColor: "#2a73c7",
+              borderWidth: 2,
             },
-          },
+          ],
         },
-        scales: {
-          x: {
-            display: true,
-            title: { display: false },
-            ticks: {
-              color: "#b3b3b3",
-              autoSkip: false,
-              maxRotation: 0,
-              minRotation: 0,
-              padding: 6,
+        options: {
+          animation: { duration: 200 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctxArg) => `Plays: ${ctxArg.raw}`,
+              },
             },
-
-            grid: { display: false },
           },
-          y: {
-            display: true,
-            title: { display: false },
-            ticks: {
-              color: "#b3b3b3",
-              precision: 0,
+          scales: {
+            x: {
+              display: true,
+              title: { display: false },
+              ticks: {
+                color: "#b3b3b3",
+                autoSkip: false,
+                maxRotation: 0,
+                minRotation: 0,
+                padding: 6,
+              },
+              grid: { display: false },
             },
-            grid: { display: false },
-            min: yMin,
-            max: yMax,
+            y: {
+              display: true,
+              title: { display: false },
+              ticks: {
+                color: "#b3b3b3",
+                precision: 0,
+              },
+              grid: { display: false },
+              min: yMin,
+              max: yMax,
+            },
           },
+          maintainAspectRatio: false,
+          responsive: true,
         },
-        maintainAspectRatio: false,
-        responsive: true,
-      },
-    };
+      };
 
-    if (window.__playsTrendChart) {
-      try {
-        window.__playsTrendChart.destroy();
-      } catch (e) {}
-      window.__playsTrendChart = null;
+      if (window.__playsTrendChart) {
+        try {
+          window.__playsTrendChart.destroy();
+        } catch (e) {}
+        window.__playsTrendChart = null;
+      }
+      window.__playsTrendChart = new Chart(ctx, config);
+      trendCanvas.style.display = "";
+    } finally {
+      if (trendLoading) trendLoading.hidden = true;
     }
-    window.__playsTrendChart = new Chart(ctx, config);
   }
 
   function scheduleTrendRender() {
