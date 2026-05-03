@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function buildMatrix(items, days = 365) {
+  function buildMatrix(items, days = 182) {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
@@ -115,8 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function render() {
     try {
-      const items = await loadActivity(365);
-      const { data, maxV, weeks } = buildMatrix(items, 365);
+      const items = await loadActivity(182);
+      const { data, maxV, weeks } = buildMatrix(items, 182);
       if (!data.length || maxV === 0) {
         if (emptyEl) emptyEl.hidden = false;
         canvas.style.display = "none";

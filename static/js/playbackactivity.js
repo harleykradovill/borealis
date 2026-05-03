@@ -80,7 +80,6 @@
     if (!filterBtn) return;
     const selectedCount = getSelectedUserIdsArray().length;
     const totalCount = allUsers.length;
-    const allSelected = totalCount > 0 && selectedCount === totalCount;
   }
 
   function renderFilterOptions() {

@@ -79,30 +79,37 @@
           </div>
         </section>
 
-        <div class="heatmap-section">
-          <h2>Plays Heatmap</h2>
-          <div class="matrix-card">
-            <div id="matrix-loading" class="skeleton">
-              <div class="wrapper">
-                <div style="height: 225px; border-radius: 8px"></div>
+        <div class="plays-overview-row">
+          <div class="heatmap-section">
+            <h2>Plays Heatmap</h2>
+            <div class="matrix-card">
+              <div id="matrix-loading" class="skeleton">
+                <div class="wrapper">
+                  <div style="height: 225px; border-radius: 8px"></div>
+                </div>
+              </div>
+
+              <canvas
+                id="plays-matrix"
+                width="750"
+                height="200"
+                role="img"
+              ></canvas>
+
+              <div
+                id="matrix-chart-empty-files"
+                class="settings-placeholder"
+                hidden
+              >
+                <p>No data to display.</p>
               </div>
             </div>
-
-            <canvas
-              id="plays-matrix"
-              width="800"
-              height="200"
-              role="img"
-            ></canvas>
-
-            <div
-              id="matrix-chart-empty-files"
-              class="settings-placeholder"
-              hidden
-            >
-              <p>No data to display.</p>
-            </div>
           </div>
+
+          <section class="plays-trend-section">
+            <h2>Plays Trend</h2>
+            <div class="plays-trend-card"></div>
+          </section>
         </div>
 
         <div class="statistics-section">
