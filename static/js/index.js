@@ -304,6 +304,144 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   scheduleHeatmapRender();
+
+  function buildTrendSeries(items, days = 14) {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const toLocalISO = (d) => {
+      const yr = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, "0");
+      const da = String(d.getDate()).padStart(2, "0");
+      return `${yr}-${mo}-${da}`;
+    };
+
+    const counts = {};
+    items.forEach((it) => {
+      const ts = Number(it.activity_at || 0) * 1000;
+      if (!ts) return;
+      const d = new Date(ts);
+      const iso = toLocalISO(d);
+      counts[iso] = (counts[iso] || 0) + 1;
+    });
+
+    const labels = [];
+    const values = [];
+    const cursor = new Date(now);
+    cursor.setDate(cursor.getDate() - (days - 1));
+
+    while (cursor <= now) {
+      const iso = toLocalISO(cursor);
+      const label = `${cursor.getMonth() + 1}/${cursor.getDate()}`;
+      labels.push(label);
+      values.push(counts[iso] || 0);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return { labels, values };
+  }
+
+  async function renderTrend() {
+    const trendCanvas = document.getElementById("plays-trend-chart");
+    if (!trendCanvas) return;
+
+    const items = await loadActivity(14);
+    const { labels, values } = buildTrendSeries(items, 14);
+
+    const minV = Math.min(...values);
+    const maxV = Math.max(...values);
+    const span = Math.max(1, maxV - minV);
+    const pad = Math.max(1, Math.round(span * 0.2));
+    const yMin = Math.max(0, minV - pad);
+    const yMax = maxV + pad;
+
+    const ctx = trendCanvas.getContext("2d");
+
+    const config = {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            borderColor: "#2a73c7",
+            backgroundColor: "rgba(42, 115, 199, 0.12)",
+            fill: true,
+            tension: 0.5,
+            pointRadius: 3,
+            pointHoverRadius: 4,
+            pointBackgroundColor: "#e7ecf3",
+            pointBorderColor: "#2a73c7",
+            borderWidth: 2,
+          },
+        ],
+      },
+      options: {
+        animation: { duration: 200 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctxArg) => `Plays: ${ctxArg.raw}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            display: true,
+            title: { display: false },
+            ticks: {
+              color: "#b3b3b3",
+              autoSkip: false,
+              maxRotation: 0,
+              minRotation: 0,
+              padding: 6,
+            },
+
+            grid: { display: false },
+          },
+          y: {
+            display: true,
+            title: { display: false },
+            ticks: {
+              color: "#b3b3b3",
+              precision: 0,
+            },
+            grid: { display: false },
+            min: yMin,
+            max: yMax,
+          },
+        },
+        maintainAspectRatio: false,
+        responsive: true,
+      },
+    };
+
+    if (window.__playsTrendChart) {
+      try {
+        window.__playsTrendChart.destroy();
+      } catch (e) {}
+      window.__playsTrendChart = null;
+    }
+    window.__playsTrendChart = new Chart(ctx, config);
+  }
+
+  function scheduleTrendRender() {
+    const run = () => {
+      renderTrend().catch((err) => {
+        console.error("Failed to render plays trend:", err);
+      });
+    };
+
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(run, { timeout: 100 });
+      return;
+    }
+
+    window.setTimeout(run, 0);
+  }
+
+  scheduleTrendRender();
 });
 
 (function () {

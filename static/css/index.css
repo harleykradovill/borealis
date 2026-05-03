@@ -233,10 +233,13 @@
 }
 
 .plays-trend-card {
-  background: var(--surface);
   height: 250px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+}
+
+.plays-trend-card canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .heatmap-section {
