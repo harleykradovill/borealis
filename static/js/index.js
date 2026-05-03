@@ -371,6 +371,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const empty = document.getElementById("sessions-empty");
   const cardsContainer = document.getElementById("sessions-cards");
   const loading = document.getElementById("sessions-loading");
+  const elGlanceActiveSessions = document.getElementById(
+    "glance-active-sessions",
+  );
+  const glanceNumberFmt = new Intl.NumberFormat();
   let firstLoadDone = false;
 
   if (!container || !cardsContainer) return;
@@ -539,14 +543,22 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const resp = await fetch("/api/analytics/sessions");
       if (!resp.ok) {
+        if (elGlanceActiveSessions) elGlanceActiveSessions.textContent = "-";
         renderSessions([]);
         return;
       }
 
       const result = await resp.json();
       if (!result.ok || !Array.isArray(result.data)) {
+        if (elGlanceActiveSessions) elGlanceActiveSessions.textContent = "-";
         renderSessions([]);
         return;
+      }
+
+      if (elGlanceActiveSessions) {
+        elGlanceActiveSessions.textContent = glanceNumberFmt.format(
+          Number(result.data.length || 0),
+        );
       }
 
       renderSessions(result.data);
