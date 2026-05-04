@@ -53,6 +53,15 @@
     fetchSyncSnapshot();
   }
 
+  function disconnectSyncStream() {
+    stopFallbackPolling();
+
+    if (source) {
+      source.close();
+      source = null;
+    }
+  }
+
   function stopFallbackPolling() {
     if (!fallbackTimer) return;
     clearInterval(fallbackTimer);
@@ -60,6 +69,8 @@
   }
 
   function connectSyncStream() {
+    disconnectSyncStream();
+
     if (!window.EventSource) {
       startFallbackPolling();
       return;
@@ -88,6 +99,9 @@
       fetchSyncSnapshot();
     }
   });
+
+  window.addEventListener("pagehide", disconnectSyncStream);
+  window.addEventListener("beforeunload", disconnectSyncStream);
 
   connectSyncStream();
   fetchSyncSnapshot();
