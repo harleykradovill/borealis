@@ -223,7 +223,7 @@ body {
   height: 16px;
   border: 2px solid rgba(0, 0, 0, 0.1);
   border-top: 2px solid var(--black);
-  border-radius: 50%;
+  border-radius: 100px;
   animation: spin 0.5s linear infinite;
   flex-shrink: 0;
   order: 1;

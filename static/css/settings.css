@@ -99,7 +99,7 @@
   text-decoration: none;
   color: var(--black);
   background: var(--white);
-  border-radius: 999px;
+  border-radius: 100px;
   padding: 0.35rem 0.65rem;
   line-height: 0.8;
 }
@@ -178,17 +178,6 @@
   max-height: 20rem;
   overflow-y: auto;
   padding-right: 0.35rem;
-}
-
-#tasklog-list::-webkit-scrollbar {
-  width: 10px;
-}
-#tasklog-list::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 12px;
-}
-#tasklog-list::-webkit-scrollbar-track {
-  background: transparent;
 }
 
 #tasklog-list > li {

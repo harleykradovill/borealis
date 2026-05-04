@@ -109,7 +109,7 @@
 .progress-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: 100px;
   background: var(--border);
   transition: background-color 0.2s ease;
 }

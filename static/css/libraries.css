@@ -43,18 +43,13 @@
   margin: 0 auto;
 }
 
-#libraries-container {
-  display: block;
-}
-
-.libraries-scroll-container {
-  overflow-x: auto;
-  overflow-y: hidden;
+.libraries-container {
+  margin-bottom: 1.5rem;
 }
 
 .libraries-cards {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
   min-width: min-content;
   justify-content: space-between;
 }
@@ -101,17 +96,4 @@
   white-space: normal;
   overflow: visible;
   text-overflow: clip;
-}
-
-.libraries-scroll-container::-webkit-scrollbar {
-  height: 8px;
-}
-
-.libraries-scroll-container::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 12px;
-}
-
-.libraries-scroll-container::-webkit-scrollbar-track {
-  background: transparent;
 }
