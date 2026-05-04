@@ -100,7 +100,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             logger.exception("[ERROR] Failed to fetch users")
             return jsonify({
                 "ok": False,
-                "message": f"Failed to fetch users: {str(exc)}"
+                "message": "Failed to fetch users"
             }), 500
         
     @bp.get("/analytics/stats/dashboard")
@@ -152,7 +152,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             return jsonify({
                 "ok": False,
                 "message": (
-                    f"Failed to fetch dashboard stats: {str(exc)}"
+                    "Failed to fetch dashboard stats"
                 ),
             }), 500
         
@@ -181,7 +181,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             logger.exception("[ERROR] Failed to fetch glance totals")
             return jsonify({
                 "ok": False,
-                "message": f"Failed to fetch glance totals: {str(exc)}"
+                "message": "Failed to fetch glance totals"
             }), 500
         
     @bp.get("/analytics/items/added-last-30-days")
@@ -249,7 +249,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             logger.exception("[ERROR] Failed to build items-added data")
             return jsonify({
                 "ok": False,
-                "message": f"Failed to build items-added data: {str(exc)}"
+                "message": "Failed to build items-added data"
             }), 500
         
     @bp.get("/analytics/stats/libraries")
@@ -269,7 +269,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             logger.exception("[ERROR] Failed to fetch library stats")
             return jsonify({
                 "ok": False,
-                "message": f"Failed to fetch library stats: {str(exc)}"
+                "message": "Failed to fetch library stats"
             }), 500
         
     @bp.get("/analytics/server/sync-progress/stream")
@@ -334,7 +334,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             logger.exception("[ERROR] Failed to fetch task logs")
             return jsonify({
                 "ok": False,
-                "message": f"Failed to fetch task logs: {str(exc)}"
+                "message": "Failed to fetch task logs"
             }), 500
 
     @bp.get("/analytics/activitylog")
@@ -385,7 +385,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             logger.exception("[ERROR] Failed to fetch activity logs")
             return jsonify({
                 "ok": False,
-                "message": f"Failed to fetch activity logs: {str(exc)}"
+                "message": "Failed to fetch activity logs"
             }), 500
         
     @bp.get("/analytics/sessions")

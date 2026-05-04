@@ -196,7 +196,7 @@ class SyncService:
             
         except Exception as exc:
             duration_ms = int((time.time() - start_time) * 1000)
-            errors.append(f"Unexpected error: {str(exc)}")
+            errors.append("Unexpected error")
             
             result = SyncResult(
                 success=False,
@@ -367,7 +367,7 @@ class SyncService:
 
         except Exception as exc:
             duration_ms = int((time.time() - start_time) * 1000)
-            errors.append(f"Unexpected error: {str(exc)}")
+            errors.append("Unexpected error")
 
             result = SyncResult(
                 success=False,
@@ -483,7 +483,7 @@ class SyncService:
                         inserted = self.repository.insert_playback_events(mapped)
                         processed += inserted
                     except Exception as exc:
-                        errors.append(f"Failed to insert events: {str(exc)}")
+                        errors.append("Failed to insert events")
                         logging.error("[ERROR] Failed to insert mapped playback events on page %s", page_num)
 
                     for ev in mapped:
@@ -523,7 +523,7 @@ class SyncService:
 
         except Exception as exc:
             duration_ms = int((time.time() - start_time) * 1000)
-            errors.append(f"Unexpected error during incremental sync: {str(exc)}")
+            errors.append("Unexpected error during incremental sync")
             result = SyncResult(
                 success=False,
                 duration_ms=duration_ms,
@@ -605,7 +605,7 @@ class SyncService:
                 self._refresh_dashboard_cache()
             except Exception as exc:
                 errors.append(
-                    f"Failed to refresh dashboard stats: {str(exc)}"
+                    "Failed to refresh dashboard stats"
                 )
 
             duration_ms = int((time.time() - start_time) * 1000)
@@ -638,7 +638,7 @@ class SyncService:
 
         except Exception as exc:
             duration_ms = int((time.time() - start_time) * 1000)
-            error_msg = f"Unexpected error during initial sync: {str(exc)}"
+            error_msg = "Unexpected error during initial sync"
             errors.append(error_msg)
 
             result = SyncResult(
@@ -730,7 +730,7 @@ class SyncService:
             try:
                 self.repository.refresh_play_stats()
             except Exception as exc:
-                errors.append(f"Failed to refresh play stats: {str(exc)}")
+                errors.append("Failed to refresh play stats")
 
             self.repository.update_task_log_progress(
                 task_id,
@@ -746,7 +746,7 @@ class SyncService:
                 self._refresh_dashboard_cache()
             except Exception as exc:
                 errors.append(
-                    f"Failed to refresh dashboard stats: {str(exc)}"
+                    "Failed to refresh dashboard stats"
                 )
 
             duration_ms = int((time.time() - start_time) * 1000)
@@ -779,7 +779,7 @@ class SyncService:
 
         except Exception as exc:
             duration_ms = int((time.time() - start_time) * 1000)
-            error_msg = f"Unexpected error during periodic sync: {str(exc)}"
+            error_msg = "Unexpected error during periodic sync"
             errors.append(error_msg)
 
             result = SyncResult(

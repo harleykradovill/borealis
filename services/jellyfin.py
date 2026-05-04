@@ -183,7 +183,7 @@ class JellyfinClient:
                 return {
                     "ok": False,
                     "status": 0,
-                    "message": f"Unexpected error: {str(exc)}",
+                    "message": "Unexpected error",
                 }
 
             if attempt < max_retries - 1: # Exp backoff before retry

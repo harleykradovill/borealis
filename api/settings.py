@@ -168,7 +168,7 @@ def create_settings_blueprint(*, svc, repo, sync):
             return jsonify({
                 "ok": False,
                 "status": 0,
-                "message": f"Unexpected error: {str(exc)}"
+                "message": "Unexpected error"
             }), 200
     
     @bp.get("/settings")
@@ -293,7 +293,7 @@ def create_settings_blueprint(*, svc, repo, sync):
         except Exception as exc:
             return jsonify({
                 "ok": False,
-                "message": f"Failed to fetch sync progress: {str(exc)}"
+                "message": "Failed to fetch sync progress"
             }), 500
         
     @bp.post("/sync/periodic")
