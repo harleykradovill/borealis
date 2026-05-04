@@ -67,7 +67,7 @@
 }
 
 .activitylog-filter-btn.active {
-  background: #262e3d;
+  background: var(--highlight);
 }
 
 .activitylog-filter-icon {

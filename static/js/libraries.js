@@ -263,15 +263,15 @@
             legend: {
               position: "bottom",
               labels: {
-                color: textColor.trim() || "#fff",
+                color: textColor.trim() || "#f0f0f0",
                 boxWidth: 12,
                 padding: 8,
                 usePointStyle: true,
               },
             },
             tooltip: {
-              bodyColor: textColor.trim() || "#fff",
-              titleColor: textColor.trim() || "#fff",
+              bodyColor: textColor.trim() || "#f0f0f0",
+              titleColor: textColor.trim() || "#f0f0f0",
               backgroundColor: bgColor || "#121212",
               borderColor: borderColor.trim() || "#333",
               borderWidth: 1,
@@ -281,7 +281,7 @@
             x: {
               grid: { color: borderColor.trim() || "#333", drawBorder: true },
               ticks: {
-                color: textColor.trim() || "#fff",
+                color: textColor.trim() || "#f0f0f0",
                 maxRotation: 45,
                 minRotation: 0,
               },
@@ -289,7 +289,7 @@
             y: {
               beginAtZero: true,
               grid: { color: borderColor.trim() || "#333", drawBorder: true },
-              ticks: { color: textColor.trim() || "#fff", stepSize: 1 },
+              ticks: { color: textColor.trim() || "#f0f0f0", stepSize: 1 },
             },
           },
         },
@@ -358,14 +358,14 @@
             legend: {
               position: "bottom",
               labels: {
-                color: textColor.trim() || "#fff",
+                color: textColor.trim() || "#f0f0f0",
                 boxWidth: 12,
                 padding: 8,
               },
             },
             tooltip: {
-              bodyColor: textColor.trim() || "#fff",
-              titleColor: textColor.trim() || "#fff",
+              bodyColor: textColor.trim() || "#f0f0f0",
+              titleColor: textColor.trim() || "#f0f0f0",
               backgroundColor:
                 getComputedStyle(document.documentElement).getPropertyValue(
                   "--bg",
@@ -418,14 +418,14 @@
           legend: {
             position: "bottom",
             labels: {
-              color: textColor2.trim() || "#fff",
+              color: textColor2.trim() || "#f0f0f0",
               boxWidth: 12,
               padding: 8,
             },
           },
           tooltip: {
-            bodyColor: textColor2.trim() || "#fff",
-            titleColor: textColor2.trim() || "#fff",
+            bodyColor: textColor2.trim() || "#f0f0f0",
+            titleColor: textColor2.trim() || "#f0f0f0",
             backgroundColor:
               getComputedStyle(document.documentElement).getPropertyValue(
                 "--bg",

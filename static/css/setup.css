@@ -17,7 +17,7 @@
   align-items: center;
   width: 100%;
   text-align: center;
-  color: var(--white);
+  color: var(--text);
   font-size: 1.5rem;
   margin-top: 1rem;
 }
@@ -166,7 +166,7 @@
 .libraries-tracking h3 {
   margin: 0 0 1rem 0;
   font-size: 1rem;
-  color: var(--white);
+  color: var(--text);
 }
 
 .library-item {
