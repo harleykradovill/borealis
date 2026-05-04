@@ -3,7 +3,18 @@ const jf_helpers = (function () {
     if (window.Toast && typeof window.Toast.showToast === "function") {
       return window.Toast.showToast(message, kind, 5000);
     }
-    return jf_helpers.showToast(message, kind);
+
+    const container = document.getElementById("toast-container");
+    if (!container) return null;
+
+    const el = document.createElement("div");
+    el.className = `toast ${kind}`;
+    el.setAttribute("role", "status");
+    el.textContent = message;
+    container.appendChild(el);
+
+    setTimeout(() => el.remove(), 5000);
+    return null;
   }
 
   async function fetchJson(path, opts = {}) {
