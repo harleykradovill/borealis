@@ -1,7 +1,8 @@
 /* Spacing between sections */
+.glance-section,
 .plays-overview-row,
 .statistics-section,
-.glance-section {
+.media-overview-row {
   margin: 1.5rem 0;
 }
 
@@ -10,7 +11,10 @@
 #sessions-container > h2,
 .statistics-section h2,
 .glance-section h2,
-.plays-trend-section h2 {
+.plays-trend-section h2,
+.resolutions-section h2,
+.codecs-section h2,
+.languages-section h2 {
   margin: 0 0 0.75rem 0;
   color: var(--white);
   font-size: 1rem;
@@ -218,7 +222,8 @@
 /* Heatmap & Trend Section */
 /* =============== */
 
-.plays-overview-row {
+.plays-overview-row,
+.media-overview-row {
   display: flex;
   gap: 1.5rem;
   align-items: stretch;
@@ -454,4 +459,22 @@
   color: var(--text);
   font-weight: 500;
   min-width: 4rem;
+}
+
+/* ====================== */
+/* Media Overview Section */
+/* ====================== */
+
+.media-overview-row {
+  gap: 1.5rem;
+}
+
+.resolutions-section,
+.codecs-section,
+.languages-section {
+  flex: 1 1 0;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
 }
