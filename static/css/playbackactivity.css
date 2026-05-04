@@ -66,9 +66,13 @@
   outline-offset: 2px;
 }
 
+.activitylog-filter-btn.active {
+  background: #262e3d;
+}
+
 .activitylog-filter-icon {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   display: block;
 }
 

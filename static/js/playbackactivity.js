@@ -78,8 +78,23 @@
 
   function updateFilterButtonState() {
     if (!filterBtn) return;
+
     const selectedCount = getSelectedUserIdsArray().length;
     const totalCount = allUsers.length;
+    const hasFilter = totalCount > 0 && selectedCount !== totalCount;
+
+    filterBtn.title = hasFilter
+      ? `Filter by User (${selectedCount}/${totalCount} selected)`
+      : "Filter by User";
+
+    filterBtn.classList.toggle("active", hasFilter);
+
+    const icon = filterBtn.querySelector(".activitylog-filter-icon");
+    if (icon) {
+      icon.src = hasFilter
+        ? "/assets/icons/filter.png"
+        : "/assets/icons/filter_off.png";
+    }
   }
 
   function renderFilterOptions() {
