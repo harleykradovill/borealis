@@ -128,6 +128,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
                 "top_users_by_watch_time",
                 "most_active_weekdays",
                 "recently_watched",
+                "resolutions",
             ]
 
             rows_by_key = repo.get_dashboard_stats_map(section_keys=section_keys)

@@ -13,6 +13,7 @@ SECTION_TOP_LIBRARIES = "top_libraries_by_plays"
 SECTION_WATCH_TIME_BY_USER = "top_users_by_watch_time"
 SECTION_MOST_ACTIVE_DAY = "most_active_weekdays"
 SECTION_RECENTLY_WATCHED = "recently_watched"
+SECTION_RESOLUTIONS = "resolutions"
 
 
 def _weekday_name(monday_zero_index: int) -> str:
@@ -91,6 +92,7 @@ class DashboardStatsBuilder:
                 n,
                 name_resolver=name_resolver,
             ),
+            SECTION_RESOLUTIONS: DashboardStatsBuilder.resolutions(session, limit=8),
         }
 
     @staticmethod
@@ -284,5 +286,48 @@ class DashboardStatsBuilder:
 
             if len(out) >= limit:
                 break
+
+        return out
+
+    @staticmethod
+    def resolutions(session: Session, limit: int) -> List[Dict[str, Any]]:
+        """
+        Return resolution counts for Episode/Movie items with an "Others" bucket.
+
+        :param session: Active SQL session
+        :param limit: Max number of rows to return including Others
+        :returns: List of resolution rows with name and count
+        """
+        max_rows = max(2, int(limit or 8))  # Reserve a row for Others
+        primary_limit = max_rows - 1  # Keep top N-1 before Others
+
+        rows = (
+            session.query(
+                Item.resolution,
+                func.count(Item.id).label("total"),
+            )
+            .filter(
+                Item.archived.is_(False),
+                func.lower(Item.type).in_(["episode", "movie"]),
+                Item.resolution.isnot(None),
+                func.trim(Item.resolution) != "",
+            )
+            .group_by(Item.resolution)
+            .order_by(func.count(Item.id).desc(), Item.resolution.asc())
+            .all()
+        )
+
+        trimmed = rows[:primary_limit]
+        others_rows = rows[primary_limit:]
+        others_total = sum(int(r.total or 0) for r in others_rows)  # Aggregate rest
+
+        out = [
+            {"resolution": str(resolution), "count": int(total or 0)}
+            for resolution, total in trimmed
+            if resolution
+        ]
+
+        if others_total > 0:
+            out.append({"resolution": "Others", "count": others_total})
 
         return out
