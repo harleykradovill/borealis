@@ -133,6 +133,7 @@ def test_primary_image_proxy_returns_404_when_not_configured(client):
     response = client.get("/api/jellyfin/items/123/images/primary")
     assert response.status_code == 404
 
+
 def test_primary_image_proxy_uses_client_method(monkeypatch, client):
     def fake_item_primary_image(self, item_id, tag=None):
         assert item_id == "abc123"
@@ -149,9 +150,7 @@ def test_primary_image_proxy_uses_client_method(monkeypatch, client):
         fake_item_primary_image,
     )
 
-    response = client.get(
-        "/api/jellyfin/items/abc123/images/primary?tag=xyz"
-    )
+    response = client.get("/api/jellyfin/items/abc123/images/primary?tag=xyz")
 
     assert response.status_code == 200
     assert response.data == b"image-bytes"

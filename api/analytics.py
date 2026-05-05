@@ -3,7 +3,14 @@ import json
 import logging
 import time
 
-from flask import Blueprint, Response, current_app, jsonify, request, stream_with_context
+from flask import (
+    Blueprint,
+    Response,
+    current_app,
+    jsonify,
+    request,
+    stream_with_context,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +22,8 @@ Create the analytics API blueprint and register all analytics routes.
 :param sync: SyncService coordinating metadata syncs with Jellyfin
 :returns: Configured Flask blueprint
 """
+
+
 def create_analytics_blueprint(*, svc, repo, sync, jf):
     bp = Blueprint("analytics_api", __name__, url_prefix="/api")
 
@@ -47,7 +56,9 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             try:
                 log_data = json.loads(raw_log)
             except Exception as e:
-                logger.warning(f"[WARN] Failed to parse task log JSON for task_id {task_id}: {str(e)}")
+                logger.warning(
+                    f"[WARN] Failed to parse task log JSON for task_id {task_id}: {str(e)}"
+                )
                 log_data = {}
 
         processed = int(log_data.get("items_synced") or 0)
@@ -55,9 +66,13 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
 
         phase_from_log = str(log_data.get("phase") or "").strip().lower()
         message_from_log = str(log_data.get("message") or "").strip()
-        
+
         if result == "RUNNING":
-            phase = phase_from_log if phase_from_log in {"starting", "running"} else "running"
+            phase = (
+                phase_from_log
+                if phase_from_log in {"starting", "running"}
+                else "running"
+            )
             return {
                 "ok": True,
                 "syncing": True,
@@ -67,9 +82,11 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
                 "total_events": total,
                 "message": message_from_log or "Sync in progress",
             }
-        
-        phase = phase_from_log if phase_from_log in {"complete", "failed"} else (
-            "complete" if result == "SUCCESS" else "failed"
+
+        phase = (
+            phase_from_log
+            if phase_from_log in {"complete", "failed"}
+            else ("complete" if result == "SUCCESS" else "failed")
         )
         return {
             "ok": True,
@@ -78,9 +95,8 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             "task_id": task_id,
             "processed_events": processed,
             "total_events": total,
-            "message": message_from_log or (
-                "Sync complete" if phase == "complete" else "Sync failed"
-            ),
+            "message": message_from_log
+            or ("Sync complete" if phase == "complete" else "Sync failed"),
         }
 
     @bp.get("/analytics/stats/users")
@@ -92,17 +108,11 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
         """
         try:
             users = repo.get_users_with_stats(include_archived=False)
-            return jsonify({
-                "ok": True,
-                "data": users
-            }), 200
+            return jsonify({"ok": True, "data": users}), 200
         except Exception as exc:
             logger.exception("[ERROR] Failed to fetch users")
-            return jsonify({
-                "ok": False,
-                "message": "Failed to fetch users"
-            }), 500
-        
+            return jsonify({"ok": False, "message": "Failed to fetch users"}), 500
+
     @bp.get("/analytics/stats/dashboard")
     def api_analytics_stats_dashboard() -> Response:
         """
@@ -120,9 +130,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
                 "recently_watched",
             ]
 
-            rows_by_key = repo.get_dashboard_stats_map(
-                section_keys=section_keys
-            )
+            rows_by_key = repo.get_dashboard_stats_map(section_keys=section_keys)
 
             sections = {}
             latest_updated_at = 0
@@ -138,24 +146,32 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
                 else:
                     sections[key] = []
 
-            return jsonify({
-                "ok": True,
-                "data": {
-                    "limit": 5,
-                    "generated_at": latest_updated_at or None,
-                    "sections": sections,
-                },
-            }), 200
+            return (
+                jsonify(
+                    {
+                        "ok": True,
+                        "data": {
+                            "limit": 5,
+                            "generated_at": latest_updated_at or None,
+                            "sections": sections,
+                        },
+                    }
+                ),
+                200,
+            )
 
         except Exception as exc:
             logger.exception("[ERROR] Failed to fetch dashboard stats")
-            return jsonify({
-                "ok": False,
-                "message": (
-                    "Failed to fetch dashboard stats"
+            return (
+                jsonify(
+                    {
+                        "ok": False,
+                        "message": ("Failed to fetch dashboard stats"),
+                    }
                 ),
-            }), 500
-        
+                500,
+            )
+
     @bp.get("/analytics/stats/glance")
     def api_analytics_stats_glance() -> Response:
         """
@@ -170,20 +186,25 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             sessions = sessions_svc.get_sessions() if sessions_svc else []
             active_sessions = len(sessions or [])
 
-            return jsonify({
-                "ok": True,
-                "data": {
-                    "active_sessions": active_sessions,
-                    **totals,
-                },
-            }), 200
+            return (
+                jsonify(
+                    {
+                        "ok": True,
+                        "data": {
+                            "active_sessions": active_sessions,
+                            **totals,
+                        },
+                    }
+                ),
+                200,
+            )
         except Exception as exc:
             logger.exception("[ERROR] Failed to fetch glance totals")
-            return jsonify({
-                "ok": False,
-                "message": "Failed to fetch glance totals"
-            }), 500
-        
+            return (
+                jsonify({"ok": False, "message": "Failed to fetch glance totals"}),
+                500,
+            )
+
     @bp.get("/analytics/items/added-last-30-days")
     def api_analytics_items_added_last_30_days() -> Response:
         """
@@ -211,6 +232,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
                 counts_by_lib[lib["jellyfin_id"]] = {d: 0 for d in dates}
 
             from services.data_models import Item
+
             with repo._session() as session:
                 rows = (
                     session.query(Item.library_id, Item.date_created)
@@ -237,7 +259,10 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
                 "libraries": [
                     {
                         "jellyfin_id": jf,
-                        "name": next((l["name"] for l in libraries if l["jellyfin_id"] == jf), None),
+                        "name": next(
+                            (l["name"] for l in libraries if l["jellyfin_id"] == jf),
+                            None,
+                        ),
                         "counts": [counts_by_lib[jf].get(d, 0) for d in dates],
                     }
                     for jf in counts_by_lib.keys()
@@ -247,11 +272,11 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             return jsonify({"ok": True, "data": payload}), 200
         except Exception as exc:
             logger.exception("[ERROR] Failed to build items-added data")
-            return jsonify({
-                "ok": False,
-                "message": "Failed to build items-added data"
-            }), 500
-        
+            return (
+                jsonify({"ok": False, "message": "Failed to build items-added data"}),
+                500,
+            )
+
     @bp.get("/analytics/stats/libraries")
     def api_analytics_stats_libraries() -> Response:
         """
@@ -261,17 +286,14 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
         """
         try:
             stats = repo.get_library_stats(include_archived=False)
-            return jsonify({
-                "ok": True,
-                "data": stats
-            }), 200
+            return jsonify({"ok": True, "data": stats}), 200
         except Exception as exc:
             logger.exception("[ERROR] Failed to fetch library stats")
-            return jsonify({
-                "ok": False,
-                "message": "Failed to fetch library stats"
-            }), 500
-        
+            return (
+                jsonify({"ok": False, "message": "Failed to fetch library stats"}),
+                500,
+            )
+
     @bp.get("/analytics/server/sync-progress/stream")
     def api_analytics_server_sync_progress_stream() -> Response:
         """
@@ -279,6 +301,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
 
         :returns: Streaming Response with text/event-stream MIME type
         """
+
         def event_stream():
             last_payload = None
             heartbeat_every = 15
@@ -315,7 +338,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             "X-Accel-Buffering": "no",
         }
         return Response(stream_with_context(event_stream()), headers=headers)
-    
+
     @bp.get("/analytics/task-logs")
     def api_analytics_task_logs() -> Response:
         """
@@ -332,10 +355,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             return jsonify({"ok": True, "data": logs}), 200
         except Exception as exc:
             logger.exception("[ERROR] Failed to fetch task logs")
-            return jsonify({
-                "ok": False,
-                "message": "Failed to fetch task logs"
-            }), 500
+            return jsonify({"ok": False, "message": "Failed to fetch task logs"}), 500
 
     @bp.get("/analytics/activitylog")
     def api_analytics_activity_log() -> Response:
@@ -366,12 +386,8 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             ]
 
             disabled_values = {"0", "false", "no", "off"}
-            include_users = (
-                include_users_raw.strip().lower() not in disabled_values
-            )
-            include_total = (
-                include_total_raw.strip().lower() not in disabled_values
-            )
+            include_users = include_users_raw.strip().lower() not in disabled_values
+            include_total = include_total_raw.strip().lower() not in disabled_values
 
             res = repo.get_activity_logs(
                 page=page,
@@ -383,11 +399,11 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
             return jsonify({"ok": True, "data": res}), 200
         except Exception as exc:
             logger.exception("[ERROR] Failed to fetch activity logs")
-            return jsonify({
-                "ok": False,
-                "message": "Failed to fetch activity logs"
-            }), 500
-        
+            return (
+                jsonify({"ok": False, "message": "Failed to fetch activity logs"}),
+                500,
+            )
+
     @bp.get("/analytics/sessions")
     def api_analytics_sessions() -> Response:
         """
@@ -397,17 +413,14 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
         """
         sessions_svc = getattr(current_app, "sessions_service", None)
         if not sessions_svc:
-            return jsonify({
-                "ok": False,
-                "message": "Sessions service not available"
-            }), 500
+            return (
+                jsonify({"ok": False, "message": "Sessions service not available"}),
+                500,
+            )
 
         sessions = sessions_svc.get_sessions()
-        return jsonify({
-            "ok": True,
-            "data": sessions
-        }), 200
-    
+        return jsonify({"ok": True, "data": sessions}), 200
+
     @bp.get("/jellyfin/libraries")
     @bp.post("/jellyfin/libraries")
     def api_jf_libraries() -> Response:
@@ -440,10 +453,10 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
                 result = jf.libraries()
 
             if not isinstance(result, dict) or not result.get("ok"):
-                return jsonify({
-                    "ok": False,
-                    "message": "Failed to retrieve libraries"
-                }), 200
+                return (
+                    jsonify({"ok": False, "message": "Failed to retrieve libraries"}),
+                    200,
+                )
 
             data = result.get("data")
             if isinstance(data, dict) and isinstance(data.get("Items"), list):
@@ -454,7 +467,7 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
                 flat = []
 
             def _is_media_library(lib: dict) -> bool:
-                t = (lib.get("CollectionType") or lib.get("Type") or "")
+                t = lib.get("CollectionType") or lib.get("Type") or ""
                 t_norm = str(t).strip().lower()
                 if not t_norm:
                     return False
@@ -499,28 +512,29 @@ def create_analytics_blueprint(*, svc, repo, sync, jf):
                         if lib_id:
                             stats = jf.library_stats(lib_id)
                             lib["ItemCount"] = (
-                                stats.get("item_count", 0)
-                                if stats.get("ok")
-                                else 0
+                                stats.get("item_count", 0) if stats.get("ok") else 0
                             )
 
                 try:
                     from services.mappers import map_libraries
+
                     mapped = map_libraries(filtered)
                     repo.upsert_libraries(mapped)
                 except Exception:
                     logger.exception("[ERROR] Failed to map/upsert libraries")
 
-            return jsonify({
-                "ok": True,
-                "data": filtered
-            }), 200
+            return jsonify({"ok": True, "data": filtered}), 200
 
         except Exception:
             logger.exception("[ERROR] Failed to retrieve libraries")
-            return jsonify({
-                "ok": False,
-                "message": "An error occurred while retrieving libraries"
-            }), 400
-    
+            return (
+                jsonify(
+                    {
+                        "ok": False,
+                        "message": "An error occurred while retrieving libraries",
+                    }
+                ),
+                400,
+            )
+
     return bp

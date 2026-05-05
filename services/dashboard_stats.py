@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from typing import Any, Callable, Dict, List, Optional
 
-
 SECTION_TOP_USERS = "top_users_by_plays"
 SECTION_TOP_ITEMS = "top_items_by_plays"
 SECTION_TOP_LIBRARIES = "top_libraries_by_plays"
@@ -57,6 +56,7 @@ class DashboardStatsBuilder:
     """
     Build dashboard statistic sections from database models.
     """
+
     @staticmethod
     def build_all(
         session: Session,
@@ -75,12 +75,8 @@ class DashboardStatsBuilder:
         """
         n = max(1, int(limit or 5))
         return {
-            SECTION_TOP_USERS: DashboardStatsBuilder.top_users_by_plays(
-                session, n
-            ),
-            SECTION_TOP_ITEMS: DashboardStatsBuilder.top_items_by_plays(
-                session, n
-            ),
+            SECTION_TOP_USERS: DashboardStatsBuilder.top_users_by_plays(session, n),
+            SECTION_TOP_ITEMS: DashboardStatsBuilder.top_items_by_plays(session, n),
             SECTION_TOP_LIBRARIES: (
                 DashboardStatsBuilder.top_libraries_by_plays(session, n)
             ),
@@ -98,9 +94,7 @@ class DashboardStatsBuilder:
         }
 
     @staticmethod
-    def top_users_by_plays(
-        session: Session, limit: int
-    ) -> List[Dict[str, Any]]:
+    def top_users_by_plays(session: Session, limit: int) -> List[Dict[str, Any]]:
         """
         Return highest-play users, excluding archived.
 
@@ -125,9 +119,7 @@ class DashboardStatsBuilder:
         ]
 
     @staticmethod
-    def top_items_by_plays(
-        session: Session, limit: int
-    ) -> List[Dict[str, Any]]:
+    def top_items_by_plays(session: Session, limit: int) -> List[Dict[str, Any]]:
         """
         Return highest-play items with their library names.
 
@@ -155,9 +147,7 @@ class DashboardStatsBuilder:
         ]
 
     @staticmethod
-    def top_libraries_by_plays(
-        session: Session, limit: int
-    ) -> List[Dict[str, Any]]:
+    def top_libraries_by_plays(session: Session, limit: int) -> List[Dict[str, Any]]:
         """
         Return libraries ordered by total plays, excluding archived.
 
@@ -182,9 +172,7 @@ class DashboardStatsBuilder:
         ]
 
     @staticmethod
-    def top_users_by_watch_time(
-        session: Session, limit: int
-    ) -> List[Dict[str, Any]]:
+    def top_users_by_watch_time(session: Session, limit: int) -> List[Dict[str, Any]]:
         """
         Return users ordered by total watch time.
 
@@ -209,9 +197,7 @@ class DashboardStatsBuilder:
         ]
 
     @staticmethod
-    def most_active_weekdays(
-        session: Session, limit: int
-    ) -> List[Dict[str, Any]]:
+    def most_active_weekdays(session: Session, limit: int) -> List[Dict[str, Any]]:
         """
         Return weekdays ranked by playback activity.
 
@@ -283,10 +269,9 @@ class DashboardStatsBuilder:
                 {
                     "item_id": item.jellyfin_id,
                     "name": (
-                        name_resolver(item.jellyfin_id)
-                        if name_resolver
-                        else item.name
-                    ) or item.name,
+                        name_resolver(item.jellyfin_id) if name_resolver else item.name
+                    )
+                    or item.name,
                     "user_id": activity.user_id,
                     "user_name": (
                         user.name

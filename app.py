@@ -30,7 +30,9 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     if not root_logger.handlers:
         logging.basicConfig(level=logging.INFO)
     logger.setLevel(logging.INFO)
-    logging.getLogger("werkzeug").setLevel(logging.CRITICAL) # Disable annoying flask logs
+    logging.getLogger("werkzeug").setLevel(
+        logging.CRITICAL
+    )  # Disable annoying flask logs
 
     app = Flask(
         __name__,
@@ -42,7 +44,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     app.config.setdefault("PORT", 2929)
     app.config.setdefault("DATABASE_URL", "sqlite:///borealis.db")
     app.config.setdefault("ENCRYPTION_KEY_PATH", "secret.key")
-    app.config['TEMPLATES_AUTO_RELOAD'] = True #TODO: TURN OFF IN PROD
+    app.config["TEMPLATES_AUTO_RELOAD"] = True  # TODO: TURN OFF IN PROD
 
     logging.info("-=-=-=-=-=-=-=-=-=-=-=-=-")
     logging.info("         Borealis        ")
@@ -57,25 +59,23 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
                 app.config["ENCRYPTION_KEY_PATH"] = ":memory:"
 
     from services.settings_store import SettingsService
+
     svc = SettingsService(
         database_url=app.config["DATABASE_URL"],
         encryption_key_path=app.config["ENCRYPTION_KEY_PATH"],
     )
 
     from services.repository import Repository
-    repo = Repository(
-        database_url=app.config["DATABASE_URL"]
-    )
+
+    repo = Repository(database_url=app.config["DATABASE_URL"])
 
     from services.jellyfin import create_client
+
     jf = create_client(svc)
 
     from services.sync_service import SyncService
-    sync = SyncService(
-        jellyfin_client=jf,
-        repository=repo,
-        settings_service=svc
-    )
+
+    sync = SyncService(jellyfin_client=jf, repository=repo, settings_service=svc)
 
     from services.sync_scheduler import SyncScheduler
 
@@ -91,21 +91,20 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             and settings.get("jf_port")
             and settings.get("jf_api_key")
         )
-    
+
     current_settings = svc.get()
     initial_interval = int(current_settings.get("sync_interval") or 1800)
 
-    sync_scheduler = SyncScheduler(
-        sync_service=sync,
-        interval_seconds=initial_interval
-    )
+    sync_scheduler = SyncScheduler(sync_service=sync, interval_seconds=initial_interval)
 
     app.sync_scheduler = sync_scheduler
 
     ## Blueprints
 
     app.register_blueprint(create_settings_blueprint(svc=svc, repo=repo, sync=sync))
-    app.register_blueprint(create_analytics_blueprint(svc=svc, repo=repo, sync=sync, jf=jf))
+    app.register_blueprint(
+        create_analytics_blueprint(svc=svc, repo=repo, sync=sync, jf=jf)
+    )
 
     from services.sessions import SessionsService
 
@@ -115,7 +114,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         respository=repo,
     )
     app.sessions_service = sessions_svc
-    
+
     has_server = _has_server_config(current_settings)
     app.config["HAS_SERVER_CONFIGURED"] = has_server
 
@@ -142,12 +141,16 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             try:
                 sessions.stop()
             except Exception:
-                logger.exception("[ERROR] Failed to stop sessions service during cleanup")
+                logger.exception(
+                    "[ERROR] Failed to stop sessions service during cleanup"
+                )
 
         try:
             repo.engine.dispose()
         except Exception:
-            logger.exception("[ERROR] Failed to dispose repository engine during cleanup")
+            logger.exception(
+                "[ERROR] Failed to dispose repository engine during cleanup"
+            )
 
     atexit.register(cleanup)
 
@@ -159,13 +162,14 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         :returns: Wrapped route handler that redirects to setup when unconfigured
         :raises Exception: Propagates exceptions raised by the wrapped handler
         """
+
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not bool(app.config.get("HAS_SERVER_CONFIGURED")):
                 return redirect("/setup")
             return f(*args, **kwargs)
+
         return decorated_function
-    
 
     @app.get("/assets/<path:filename>")
     def assets(filename: str) -> Response:
@@ -177,10 +181,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         :raises NotFound: Returns by Flask if the asset path does not exist
         """
         if filename.startswith("js/"):
-            return send_from_directory(
-                "static/js",
-                filename.removeprefix("js/")
-            )
+            return send_from_directory("static/js", filename.removeprefix("js/"))
         return send_from_directory("assets", filename)
 
     @app.get("/")
@@ -211,7 +212,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     @require_server
     def settings() -> Response:
         return render_template("settings.html"), 200
-        
+
     @app.get("/api/jellyfin/items/<item_id>/images/primary")
     def api_jellyfin_item_primary_image(item_id: str) -> Response:
         """
@@ -238,7 +239,4 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
 if __name__ == "__main__":
     application = create_app()
-    application.run(
-        host="127.0.0.1",
-        port=application.config["PORT"]
-    )
+    application.run(host="127.0.0.1", port=application.config["PORT"])

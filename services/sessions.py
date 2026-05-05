@@ -33,7 +33,7 @@ class SessionsService:
     def start(self) -> None:
         """
         Start background sync thread.
-        
+
         :returns: None
         """
         if self._thread and self._thread.is_alive():
@@ -46,7 +46,7 @@ class SessionsService:
     def stop(self) -> None:
         """
         Stop background sync thread.
-        
+
         :returns: None
         """
         self._stop_event.set()
@@ -57,7 +57,7 @@ class SessionsService:
     def get_sessions(self) -> List[Dict[str, Any]]:
         """
         Get cached active sessions from last sync.
-        
+
         :returns: List of session dictionaries with sanitized session data
         """
         return self._last_sessions.copy()
@@ -65,7 +65,7 @@ class SessionsService:
     def _sync_loop(self) -> None:
         """
         Background thread loop that periodically fetches and caches sessions.
-        
+
         :returns: None (runs until stop event is set)
         """
         while not self._stop_event.is_set():
@@ -79,7 +79,7 @@ class SessionsService:
     def _fetch_sessions(self) -> None:
         """
         Fetch and cache active sessions from Jellyfin.
-        
+
         :returns: None
         :raises Exception: Logs errors, continues operation on failure
         """
@@ -93,21 +93,15 @@ class SessionsService:
             self._last_sessions = []
             return
 
-        playing_sessions = [
-            s for s in data
-            if s.get("NowPlayingItem")
-        ]
-        
+        playing_sessions = [s for s in data if s.get("NowPlayingItem")]
+
         sanitized = self._sanitize_sessions(playing_sessions)
 
-        sanitized.sort(
-            key=lambda x: (x.get("UserName") or "", x.get("Id") or "")
-        )
+        sanitized.sort(key=lambda x: (x.get("UserName") or "", x.get("Id") or ""))
         self._last_sessions = sanitized
 
     def _sanitize_sessions(
-        self,
-        sessions: List[Dict[str, Any]]
+        self, sessions: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """
         Reduces session objects to essential fields for frontend display.
@@ -116,8 +110,14 @@ class SessionsService:
         :returns: List of sanitized session dicts with core metadata and resolved episode series names
         """
         root_keys = {
-            "Id", "UserName", "Client", "DeviceName", "RemoteEndPoint",
-            "PlayState", "NowPlayingItem", "TranscodingInfo"
+            "Id",
+            "UserName",
+            "Client",
+            "DeviceName",
+            "RemoteEndPoint",
+            "PlayState",
+            "NowPlayingItem",
+            "TranscodingInfo",
         }
         item_keys = {"Name", "RunTimeTicks", "Id", "Type", "ImageTags"}
 
@@ -135,7 +135,7 @@ class SessionsService:
 
                 episode_name = (clean_item.get("Name") or "").strip()
                 series_name = self._resolve_episode_series_name(clean_item)
-                
+
                 if series_name and episode_name:
                     clean_item["Name"] = f"{series_name} - {episode_name}"
                 elif series_name:
@@ -145,8 +145,7 @@ class SessionsService:
         return sanitized
 
     def _resolve_episode_series_name(
-        self,
-        now_playing_item: Dict[str, Any]
+        self, now_playing_item: Dict[str, Any]
     ) -> Optional[str]:
         """
         Resolve series name for episode items using repository lookup.

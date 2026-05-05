@@ -24,10 +24,12 @@ from typing import Any, Dict, Optional
 
 Base = declarative_base()
 
+
 class User(Base):
     """
     Persisted Jellyfin user account and aggregate viewing statistics.
     """
+
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
@@ -69,6 +71,7 @@ class Library(Base):
     """
     Persisted Jellyfin library with playback, file, and storage aggregates.
     """
+
     __tablename__ = "libraries"
 
     id = Column(Integer, primary_key=True)
@@ -120,14 +123,13 @@ class Item(Base):
     """
     Persisted Jellyfin media items linked to a parent library.
     """
+
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True)
     jellyfin_id = Column(String(128), nullable=False, unique=True)
     library_id = Column(
-        Integer,
-        ForeignKey("libraries.id", ondelete="CASCADE"),
-        nullable=False
+        Integer, ForeignKey("libraries.id", ondelete="CASCADE"), nullable=False
     )
     parent_id = Column(String(128), nullable=True)
     name = Column(String(512), nullable=False)
@@ -153,7 +155,7 @@ class Item(Base):
         Index("idx_date_created", "date_created"),
         Index("idx_video_codec", "video_codec"),
         Index("idx_resolution", "resolution"),
-        Index("idx_languages", "languages")
+        Index("idx_languages", "languages"),
     )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -184,14 +186,11 @@ class PlaybackActivity(Base):
     """
     Persisted playback activity event sourced from the Jellyfin activity log.
     """
+
     __tablename__ = "playback_activity"
 
     id = Column(Integer, primary_key=True)
-    activity_log_id = Column(
-        Integer,
-        nullable=False,
-        unique=True
-    )
+    activity_log_id = Column(Integer, nullable=False, unique=True)
     user_id = Column(String(128), nullable=False)
     item_id = Column(String(128), nullable=False)
     event_name = Column(String(512), nullable=True)
@@ -226,6 +225,7 @@ class TaskLog(Base):
     """
     Persisted background task execution record for sync and maintenance jobs.
     """
+
     __tablename__ = "task_logging"
 
     id = Column(Integer, primary_key=True)
@@ -267,11 +267,13 @@ class TaskLog(Base):
             "result": self.result,
             "log": log_data,
         }
-    
+
+
 class Settings(Base):
     """
     Persisted Borealis application and Jellyfin connection settings.
     """
+
     __tablename__ = "settings"
 
     id = Column(Integer, primary_key=True)
@@ -312,11 +314,13 @@ class Settings(Base):
             "jf_server_version": self.jf_server_version,
             "sync_interval": self.sync_interval,
         }
-    
+
+
 class DashboardStat(Base):
     """
     Persisted cached dashboard section payload and last update timestamp.
     """
+
     __tablename__ = "dashboard_stats"
 
     id = Column(Integer, primary_key=True)

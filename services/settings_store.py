@@ -61,10 +61,7 @@ class SettingsService:
 
         :returns: Fernet key bytes used for encryption and decryption
         """
-        if (
-            not self.encryption_key_path
-            or self.encryption_key_path == ":memory:"
-        ):
+        if not self.encryption_key_path or self.encryption_key_path == ":memory:":
             return Fernet.generate_key()
 
         key_file = Path(self.encryption_key_path)
@@ -75,7 +72,7 @@ class SettingsService:
         try:
             key_file.write_bytes(key)
         except OSError:
-            pass # Key generated in memory, not-fatal failure
+            pass  # Key generated in memory, not-fatal failure
         return key
 
     def _get_or_create_row(self, session: Session) -> Settings:
@@ -129,9 +126,7 @@ class SettingsService:
             if "jf_api_key" in values:
                 key = values["jf_api_key"]
                 settings.jf_api_key_encrypted = (
-                    self.fernet.encrypt(key.encode("utf-8")).decode(
-                        "utf-8"
-                    )
+                    self.fernet.encrypt(key.encode("utf-8")).decode("utf-8")
                     if key
                     else None
                 )

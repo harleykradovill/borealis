@@ -23,15 +23,15 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from typing import Any, Dict, List, Optional
 
-
 # -------------------------
 # Helpers
 # -------------------------
 
+
 def _now() -> int:
     """
     Return current Unix timestamp in seconds.
-    
+
     :returns: Current time as integer seconds since epoch
     """
     return int(time.time())
@@ -72,6 +72,7 @@ def _load_existing_by_key(
     rows = session.query(model).filter(key_field.in_(keys)).all()
     return {getattr(r, key_field.key): r for r in rows}
 
+
 @dataclass
 class Repository:
     database_url: str = "sqlite:///borealis.db"
@@ -83,9 +84,7 @@ class Repository:
         :returns: None
         """
         self.engine = create_engine(self.database_url, future=True)
-        self.SessionLocal = sessionmaker(
-            bind=self.engine, expire_on_commit=False
-        )
+        self.SessionLocal = sessionmaker(bind=self.engine, expire_on_commit=False)
         Base.metadata.create_all(self.engine)
 
         try:
@@ -115,9 +114,7 @@ class Repository:
         finally:
             session.close()
 
-    def get_latest_sync_task(
-        self
-    ) -> Optional[Dict[str, Any]]:
+    def get_latest_sync_task(self) -> Optional[Dict[str, Any]]:
         """
         Retrieve the most recent sync task log entry.
 
@@ -143,7 +140,7 @@ class Repository:
                     "log_json": task.log_json,
                 }
             return None
-        
+
     def update_task_log_progress(
         self,
         task_id: int,
@@ -158,19 +155,19 @@ class Repository:
         """
         if not log_data:
             return
-    
+
         with self._session() as session:
             task = session.query(TaskLog).filter_by(id=task_id).first()
             if not task or task.result != "RUNNING":
                 return
-    
+
             current: Dict[str, Any] = {}
             if task.log_json:
                 try:
                     current = json.loads(task.log_json)
                 except Exception:
                     current = {}
-    
+
             current.update(log_data)
             task.log_json = json.dumps(current)
 
@@ -220,9 +217,7 @@ class Repository:
 
             return processed
 
-    def archive_missing_users(
-        self, active_jellyfin_ids: List[str]
-    ) -> int:
+    def archive_missing_users(self, active_jellyfin_ids: List[str]) -> int:
         """
         Mark users as archived if not in active list.
 
@@ -240,9 +235,7 @@ class Repository:
                 .update({"archived": True}, synchronize_session=False)
             )
 
-    def list_users(
-        self, include_archived: bool = False
-    ) -> List[Dict[str, Any]]:
+    def list_users(self, include_archived: bool = False) -> List[Dict[str, Any]]:
         """
         Retrieve all users as dictionaries.
 
@@ -254,7 +247,7 @@ class Repository:
             if not include_archived:
                 query = query.filter(User.archived.is_(False))
             return [u.to_dict() for u in query.all()]
-        
+
     def get_users_with_stats(
         self, include_archived: bool = False
     ) -> List[Dict[str, Any]]:
@@ -279,7 +272,7 @@ class Repository:
                 ~PlaybackActivity.event_name.like("VideoPlayback||%"),
                 PlaybackActivity.event_name.like("VideoPlaybackStopped||%"),
             )
-            
+
             total_rows = (
                 session.query(
                     PlaybackActivity.user_id,
@@ -293,9 +286,7 @@ class Repository:
                 .all()
             )
             total_plays_by_user = {
-                user_id: int(total or 0)
-                for user_id, total in total_rows
-                if user_id
+                user_id: int(total or 0) for user_id, total in total_rows if user_id
             }
 
             latest_ts_subq = (
@@ -321,8 +312,7 @@ class Repository:
                     latest_ts_subq,
                     (PlaybackActivity.user_id == latest_ts_subq.c.user_id)
                     & (
-                        PlaybackActivity.activity_at
-                        == latest_ts_subq.c.max_activity_at
+                        PlaybackActivity.activity_at == latest_ts_subq.c.max_activity_at
                     ),
                 )
                 .order_by(PlaybackActivity.id.desc())
@@ -338,9 +328,7 @@ class Repository:
                     }
 
             last_item_ids = [
-                row["item_id"]
-                for row in latest_by_user.values()
-                if row.get("item_id")
+                row["item_id"] for row in latest_by_user.values() if row.get("item_id")
             ]
 
             item_rows = (
@@ -415,10 +403,9 @@ class Repository:
                         if item_meta["type"] == "episode":
                             season_id = item_meta.get("parent_id")
                             series_id = season_to_series.get(season_id or "")
-                            item_name = (
-                                series_name_by_id.get(series_id or "")
-                                or item_meta.get("name")
-                            )
+                            item_name = series_name_by_id.get(
+                                series_id or ""
+                            ) or item_meta.get("name")
                         else:
                             item_name = item_meta.get("name")
 
@@ -436,9 +423,7 @@ class Repository:
                         ),
                         "last_watched_item_name": item_name,
                         "last_device": user.last_device,
-                        "last_seen_at": (
-                            latest.get("activity_at") if latest else None
-                        ),
+                        "last_seen_at": (latest.get("activity_at") if latest else None),
                     }
                 )
 
@@ -448,9 +433,7 @@ class Repository:
     # Libraries
     # -------------------------
 
-    def upsert_libraries(
-        self, library_dicts: List[Dict[str, Any]]
-    ) -> int:
+    def upsert_libraries(self, library_dicts: List[Dict[str, Any]]) -> int:
         """
         Upsert libraries by jellyfin_id.
 
@@ -495,9 +478,7 @@ class Repository:
 
             return processed
 
-    def archive_missing_libraries(
-        self, active_jellyfin_ids: List[str]
-    ) -> int:
+    def archive_missing_libraries(self, active_jellyfin_ids: List[str]) -> int:
         """
         Mark libraries as archived if not in active list.
 
@@ -515,9 +496,7 @@ class Repository:
                 .update({"archived": True}, synchronize_session=False)
             )
 
-    def list_libraries(
-        self, include_archived: bool = False
-    ) -> List[Dict[str, Any]]:
+    def list_libraries(self, include_archived: bool = False) -> List[Dict[str, Any]]:
         """
         Retrieve all libraries as dictionaries.
 
@@ -618,7 +597,9 @@ class Repository:
                 .update({"archived": True}, synchronize_session=False)
             )
 
-    def _series_name_for_episode_in_session(self, session: Session, episode_jellyfin_id: str) -> Optional[str]:
+    def _series_name_for_episode_in_session(
+        self, session: Session, episode_jellyfin_id: str
+    ) -> Optional[str]:
         """
         Resolve Episode -> Season -> Series hierarchy.
 
@@ -630,9 +611,7 @@ class Repository:
             return None
 
         episode = (
-            session.query(Item)
-            .filter(Item.jellyfin_id == episode_jellyfin_id)
-            .first()
+            session.query(Item).filter(Item.jellyfin_id == episode_jellyfin_id).first()
         )
         if not episode:
             return None
@@ -644,17 +623,13 @@ class Repository:
             return None
 
         season = (
-            session.query(Item)
-            .filter(Item.jellyfin_id == episode.parent_id)
-            .first()
+            session.query(Item).filter(Item.jellyfin_id == episode.parent_id).first()
         )
         if not season or not season.parent_id:
             return None
 
         series = (
-            session.query(Item)
-            .filter(Item.jellyfin_id == season.parent_id)
-            .first()
+            session.query(Item).filter(Item.jellyfin_id == season.parent_id).first()
         )
         if not series:
             return None
@@ -663,7 +638,7 @@ class Repository:
             return None
 
         return series.name
-    
+
     def _series_or_item_name_in_session(
         self,
         session: Session,
@@ -679,24 +654,18 @@ class Repository:
         if not item_jellyfin_id:
             return None
 
-        item = (
-            session.query(Item)
-            .filter(Item.jellyfin_id == item_jellyfin_id)
-            .first()
-        )
+        item = session.query(Item).filter(Item.jellyfin_id == item_jellyfin_id).first()
         if not item:
             return None
 
         if (item.type or "").lower() == "episode":
             return (
-                self._series_name_for_episode_in_session(
-                    session, item_jellyfin_id
-                )
+                self._series_name_for_episode_in_session(session, item_jellyfin_id)
                 or item.name
             )
 
         return item.name
-    
+
     def get_series_name_for_episode(
         self,
         episode_jellyfin_id: str,
@@ -712,7 +681,6 @@ class Repository:
                 session, episode_jellyfin_id
             )
 
-
     def get_series_or_item_name(
         self,
         item_jellyfin_id: str,
@@ -724,9 +692,7 @@ class Repository:
         :returns: Series name for episodes or item name, or None if item not found
         """
         with self._session() as session:
-            return self._series_or_item_name_in_session(
-                session, item_jellyfin_id
-            )
+            return self._series_or_item_name_in_session(session, item_jellyfin_id)
 
     # -------------------------
     # Stats & Activity
@@ -741,9 +707,7 @@ class Repository:
         with self._session() as session:
             return StatsAggregator.refresh_all_stats(session)
 
-    def get_library_stats(
-        self, include_archived: bool = False
-    ) -> List[Dict[str, Any]]:
+    def get_library_stats(self, include_archived: bool = False) -> List[Dict[str, Any]]:
         """
         Retrieve all libraries with their play count statistics.
 
@@ -755,7 +719,7 @@ class Repository:
                 session,
                 include_archived=include_archived,
             )
-        
+
     # -------------------------
     # Dashboard
     # -------------------------
@@ -791,9 +755,7 @@ class Repository:
             "total_users": int(total_users or 0),
         }
 
-    def upsert_dashboard_stat(
-        self, section_key: str, payload: Any
-    ) -> Dict[str, Any]:
+    def upsert_dashboard_stat(self, section_key: str, payload: Any) -> Dict[str, Any]:
         """
         Insert or update one dashboard stats section payload.
 
@@ -842,9 +804,7 @@ class Repository:
             query = session.query(DashboardStat)
 
             if section_keys:
-                query = query.filter(
-                    DashboardStat.section_key.in_(section_keys)
-                )
+                query = query.filter(DashboardStat.section_key.in_(section_keys))
 
             rows = query.order_by(DashboardStat.section_key.asc()).all()
             return [row.to_dict() for row in rows]
@@ -860,7 +820,7 @@ class Repository:
         """
         rows = self.get_dashboard_stats(section_keys=section_keys)
         return {row["section_key"]: row for row in rows}
-    
+
     def refresh_dashboard_stats(self, limit: int = 5) -> Dict[str, int]:
         """
         Rebuild and persist all dashboard stat sections.
@@ -888,9 +848,7 @@ class Repository:
     # Playback Activity
     # -------------------------
 
-    def insert_playback_events(
-        self, event_dicts: List[Dict[str, Any]]
-    ) -> int:
+    def insert_playback_events(self, event_dicts: List[Dict[str, Any]]) -> int:
         """
         Insert playback activity records.
 
@@ -924,9 +882,7 @@ class Repository:
                     pa.item_id = d.get("item_id", pa.item_id)
                     pa.event_name = d.get("event_name", pa.event_name)
                     pa.activity_at = d.get("activity_at", pa.activity_at)
-                    pa.username_denorm = d.get(
-                        "username_denorm", pa.username_denorm
-                    )
+                    pa.username_denorm = d.get("username_denorm", pa.username_denorm)
                 else:
                     session.add(
                         PlaybackActivity(
@@ -985,15 +941,12 @@ class Repository:
             total = None
             if include_total:
                 total = (
-                    base_query.with_entities(
-                        func.count(PlaybackActivity.id)
-                    ).scalar()
+                    base_query.with_entities(func.count(PlaybackActivity.id)).scalar()
                     or 0
                 )
 
             rows = (
-                base_query
-                .order_by(
+                base_query.order_by(
                     PlaybackActivity.activity_at.desc(),
                     PlaybackActivity.id.desc(),
                 )
@@ -1045,9 +998,7 @@ class Repository:
     # Task Logging
     # -------------------------
 
-    def create_task_log(
-        self, name: str, task_type: str, execution_type: str
-    ) -> int:
+    def create_task_log(self, name: str, task_type: str, execution_type: str) -> int:
         """
         Create a new task log entry with RUNNING status.
 

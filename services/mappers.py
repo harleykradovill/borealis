@@ -7,15 +7,15 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-
 # -------------------------
 # Generic helpers
 # -------------------------
 
+
 def _clean_str(value: Any) -> str:
     """
     Convert a value to a trimmed string.
-    
+
     :param value: Any value to convert to string
     :returns: A str with leading/trailing whitespace removed
     """
@@ -25,7 +25,7 @@ def _clean_str(value: Any) -> str:
 def _parse_jf_date(value: Any) -> Optional[int]:
     """
     Parse various Jellyfin DateCreated formats into epoch seconds.
-    
+
     :param value: The date value from Jellyfin
     :returns: Epoch seconds as an int, or None if cannot be parsed
     """
@@ -66,7 +66,7 @@ def _map_many(
 ) -> List[Dict[str, Any]]:
     """
     Map a list of Jellyfin objects to table row dicts.
-    
+
     :param items: Iterable of dict-like Jellyfin objects
     :param fn: A function that accepts a single item
     :returns: A list of mapped dicts produced by fn for each item
@@ -78,10 +78,11 @@ def _map_many(
 # Users
 # -------------------------
 
+
 def map_user(jf_user: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
     Tranform a Jellyfin user object into a User table row dict.
-    
+
     :param jf_user: Jellyfin user object
     :returns: Mapped user row dict, or None when required fields are missing
     """
@@ -101,7 +102,7 @@ def map_user(jf_user: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 def map_users(jf_users: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Transform a list of Jellyfin users into User table row dicts.
-    
+
     :param jf_users: List of Jellyfin user dicts
     :returns: List of mapped user dicts
     """
@@ -112,10 +113,11 @@ def map_users(jf_users: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 # Libraries
 # -------------------------
 
+
 def map_library(jf_library: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
     Transform a Jellyfin library/media folder into a Library table row dict.
-    
+
     :param jf_library: Jellyfin library object
     :returns: A dict containing 'jellyfin_id', 'name', 'type', 'image_url'
     """
@@ -126,11 +128,7 @@ def map_library(jf_library: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         return None
 
     image_tag = jf_library.get("ImageTags", {}).get("Primary")
-    image_url = (
-        f"/Items/{jf_id}/Images/Primary?tag={image_tag}"
-        if image_tag
-        else None
-    )
+    image_url = f"/Items/{jf_id}/Images/Primary?tag={image_tag}" if image_tag else None
 
     return {
         "jellyfin_id": jf_id,
@@ -143,7 +141,7 @@ def map_library(jf_library: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 def map_libraries(jf_libraries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Transform a list of Jellyfin libraries into Library table row dicts.
-    
+
     :param jf_libraries: List of Jellyfin library dicts
     :returns: List of mapped library dicts
     """
@@ -154,13 +152,14 @@ def map_libraries(jf_libraries: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 # Items
 # -------------------------
 
+
 def map_item(
     jf_item: Dict[str, Any],
     library_internal_id: int,
 ) -> Optional[Dict[str, Any]]:
     """
     Transform a Jellyfin media item into an Item table row dict.
-    
+
     :param jf_item: Jellyfin item object
     :param library_internal_id: Internal database ID for libary
     :returns: Mapped item row dict, or None when required fields are missing
@@ -172,7 +171,9 @@ def map_item(
         return None
 
     runtime_ticks = jf_item.get("RunTimeTicks") or jf_item.get("RunTimeTick") or 0
-    runtime_seconds = int(runtime_ticks) // 10_000_000 if str(runtime_ticks).isdigit() else 0
+    runtime_seconds = (
+        int(runtime_ticks) // 10_000_000 if str(runtime_ticks).isdigit() else 0
+    )
 
     size_bytes = sum(
         int(src.get("Size") or src.get("size") or 0)
@@ -225,21 +226,18 @@ def map_items(
 ) -> List[Dict[str, Any]]:
     """
     Transform a list of Jellyfin items into Item table row dicts.
-    
+
     :param jf_items: List of Jellyfin item dicts
     :param library_internal_id: Internal database ID for library
     :returns: List of mapped item dicts
     """
-    return [
-        m
-        for item in jf_items or []
-        if (m := map_item(item, library_internal_id))
-    ]
+    return [m for item in jf_items or [] if (m := map_item(item, library_internal_id))]
 
 
 # -------------------------
 # Playback events
 # -------------------------
+
 
 def _encode_playback_event_name(jf_event: Dict[str, Any]) -> str:
     """
@@ -257,13 +255,14 @@ def _encode_playback_event_name(jf_event: Dict[str, Any]) -> str:
         return event_type
     return event_name
 
+
 def map_playback_event(
     jf_event: Dict[str, Any],
     username: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """
     Transform a Jellyfin playback event into a PlaybackActivity table row dict.
-    
+
     :param jf_event: Jellyfin playback event object
     :param username: Optional username to include with activity row
     :returns: A dict representing the playback activity row
@@ -274,10 +273,9 @@ def map_playback_event(
     if not user_id or not item_id:
         return None
 
-    activity_at = (
-        _parse_jf_date(jf_event.get("Date") or jf_event.get("ActivityDate"))
-        or int(time.time())
-    )
+    activity_at = _parse_jf_date(
+        jf_event.get("Date") or jf_event.get("ActivityDate")
+    ) or int(time.time())
 
     return {
         "activity_log_id": jf_event.get("Id") or jf_event.get("ActivityId"),
@@ -288,6 +286,7 @@ def map_playback_event(
         "username_denorm": username,
     }
 
+
 def map_playback_events(
     jf_events: List[Dict[str, Any]],
     user_lookup: Optional[Dict[str, str]] = None,
@@ -295,7 +294,7 @@ def map_playback_events(
     """
     Transform a list of Jellyfin playback events into PlaybackActivity
     table row dicts.
-    
+
     :param jf_events: List of Jellyfin playback event dicts
     :param user_lookup: Optional mapping of user_id -> username
     :returns: List of mapped playback activity dicts

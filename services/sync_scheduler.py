@@ -9,6 +9,7 @@ import threading
 import time
 import traceback
 
+
 class SyncScheduler:
     """
     Background thread that runs sync operations on an interval.
@@ -58,7 +59,7 @@ class SyncScheduler:
     def stop(self) -> None:
         """
         Stop the background sync thread and wait for it to finish.
-        
+
         :returns: None
         """
         self._stop_event.set()

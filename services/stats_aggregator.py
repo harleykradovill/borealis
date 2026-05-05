@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 from typing import Any, Dict, List, Optional
 
+
 def _playback_event_kind(event_name: Optional[str]) -> str:
     """
     Classify playback events as start or stop using encoded event_name.
@@ -84,7 +85,7 @@ def _calculate_watch_seconds(
         if kind == "start":
             open_starts.setdefault(key, []).append(ts)
             continue
-        
+
         starts = open_starts.get(key)
         start_ts = starts.pop() if starts else None
         if not starts:
@@ -93,7 +94,7 @@ def _calculate_watch_seconds(
         if start_ts is None:
             continue
 
-        if ts > 1_000_000_000_000: # Normalize possible ms timestamps to seconds.
+        if ts > 1_000_000_000_000:  # Normalize possible ms timestamps to seconds.
             ts //= 1000
         if start_ts > 1_000_000_000_000:
             start_ts //= 1000
@@ -102,7 +103,7 @@ def _calculate_watch_seconds(
         if duration <= 0:
             continue
 
-        if duration > 12 * 60 * 60: # Ignore impossible sessions.
+        if duration > 12 * 60 * 60:  # Ignore impossible sessions.
             continue
 
         cap = int(runtime_seconds or 0)
@@ -117,6 +118,7 @@ def _calculate_watch_seconds(
 
     return by_user, by_item
 
+
 def _stop_playback_filter():
     """
     Generate filter condition for stop playback events including legacy untyped rows.
@@ -128,6 +130,7 @@ def _stop_playback_filter():
         ~PlaybackActivity.event_name.like("VideoPlayback||%"),
         PlaybackActivity.event_name.like("VideoPlaybackStopped||%"),
     )
+
 
 class StatsAggregator:
 
@@ -178,25 +181,17 @@ class StatsAggregator:
             .all()
         )
 
-        watch_seconds_by_user, watch_seconds_by_item = _calculate_watch_seconds(
-            session
-        )
+        watch_seconds_by_user, watch_seconds_by_item = _calculate_watch_seconds(session)
 
         users_processed = 0
         user_ids = [uid for uid in user_counts.keys() if uid]
         if user_ids:
-            users = (
-                session.query(User)
-                .filter(User.jellyfin_id.in_(user_ids))
-                .all()
-            )
+            users = session.query(User).filter(User.jellyfin_id.in_(user_ids)).all()
 
             latest_user_ts = (
                 session.query(
                     PlaybackActivity.user_id.label("user_id"),
-                    func.max(PlaybackActivity.activity_at).label(
-                        "max_activity_at"
-                    ),
+                    func.max(PlaybackActivity.activity_at).label("max_activity_at"),
                 )
                 .filter(
                     PlaybackActivity.user_id.in_(user_ids),
@@ -238,9 +233,7 @@ class StatsAggregator:
                 if user.total_plays != new_total:
                     user.total_plays = new_total
 
-                watch_seconds = int(
-                    watch_seconds_by_user.get(user.jellyfin_id, 0)
-                )
+                watch_seconds = int(watch_seconds_by_user.get(user.jellyfin_id, 0))
                 if user.total_watch_time_seconds != watch_seconds:
                     user.total_watch_time_seconds = watch_seconds
 
@@ -330,8 +323,7 @@ class StatsAggregator:
                 latest_lib_ts,
                 and_(
                     Item.library_id == latest_lib_ts.c.library_id,
-                    PlaybackActivity.activity_at
-                    == latest_lib_ts.c.max_activity_at,
+                    PlaybackActivity.activity_at == latest_lib_ts.c.max_activity_at,
                 ),
             )
             .order_by(PlaybackActivity.id.desc())
@@ -398,10 +390,9 @@ class StatsAggregator:
             if meta.get("type") == "episode":
                 season_id = meta.get("parent_id")
                 series_id = season_to_series.get(season_id or "")
-                last_played_name_by_library[library_id] = (
-                    series_name_by_id.get(series_id or "")
-                    or meta.get("name")
-                )
+                last_played_name_by_library[library_id] = series_name_by_id.get(
+                    series_id or ""
+                ) or meta.get("name")
             else:
                 last_played_name_by_library[library_id] = meta.get("name")
 
@@ -492,26 +483,28 @@ class StatsAggregator:
                 elif item_type == "episode":
                     episode_count = int(cnt)
 
-            out.append({
-                "id": lib.id,
-                "jellyfin_id": lib.jellyfin_id,
-                "name": lib.name,
-                "type": lib.type,
-                "image_url": lib.image_url,
-                "total_plays": lib.total_plays,
-                "total_time_seconds": lib.total_time_seconds,
-                "total_files": lib.total_files,
-                "size_bytes": lib.size_bytes,
-                "total_playback_seconds": lib.total_playback_seconds,
-                "last_played_item_name": lib.last_played_item_name,
-                "archived": lib.archived,
-                "item_count": int(lib.total_files or 0),
-                "series_count": series_count,
-                "episode_count": episode_count,
-            })
+            out.append(
+                {
+                    "id": lib.id,
+                    "jellyfin_id": lib.jellyfin_id,
+                    "name": lib.name,
+                    "type": lib.type,
+                    "image_url": lib.image_url,
+                    "total_plays": lib.total_plays,
+                    "total_time_seconds": lib.total_time_seconds,
+                    "total_files": lib.total_files,
+                    "size_bytes": lib.size_bytes,
+                    "total_playback_seconds": lib.total_playback_seconds,
+                    "last_played_item_name": lib.last_played_item_name,
+                    "archived": lib.archived,
+                    "item_count": int(lib.total_files or 0),
+                    "series_count": series_count,
+                    "episode_count": episode_count,
+                }
+            )
 
         return out
-    
+
     @staticmethod
     def _extract_device_from_event_name(event_name: str) -> str | None:
         """
@@ -529,7 +522,7 @@ class StatsAggregator:
             return device if device else None
 
         return None
-    
+
     @staticmethod
     def _series_name_for_episode(
         session: Session,
@@ -544,32 +537,27 @@ class StatsAggregator:
         """
         if not episode or (episode.type or "").lower() != "episode":
             return None
-    
+
         if not episode.parent_id:
             return None
-    
+
         season = (
-            session.query(Item)
-            .filter(Item.jellyfin_id == episode.parent_id)
-            .first()
+            session.query(Item).filter(Item.jellyfin_id == episode.parent_id).first()
         )
         if not season or not season.parent_id:
             return None
-    
+
         series = (
-            session.query(Item)
-            .filter(Item.jellyfin_id == season.parent_id)
-            .first()
+            session.query(Item).filter(Item.jellyfin_id == season.parent_id).first()
         )
         if not series:
             return None
-    
+
         if (series.type or "").lower() != "series":
             return None
-    
+
         return series.name
-    
-    
+
     @staticmethod
     def _series_or_item_name(
         session: Session,
@@ -584,8 +572,8 @@ class StatsAggregator:
         """
         if not item:
             return None
-    
+
         if (item.type or "").lower() == "episode":
             return StatsAggregator._series_name_for_episode(session, item) or item.name
-    
+
         return item.name
