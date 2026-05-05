@@ -98,9 +98,7 @@
         label.textContent = attr.label;
 
         const value = document.createElement("span");
-        value.className = `library-card-attr-value ${
-          attr.isName ? "name" : ""
-        }`;
+        value.className = `library-card-attr-value ${attr.isName ? "name" : ""}`;
         value.textContent = attr.value;
 
         div.appendChild(label);
@@ -193,13 +191,10 @@
       const resp = await fetch("/api/analytics/items/added-last-30-days");
       if (!resp.ok) throw new Error("Network error");
       const payload = await resp.json();
-      if (!payload || !payload.ok)
-        throw new Error(payload?.message || "API error");
+      if (!payload || !payload.ok) throw new Error(payload?.message || "API error");
 
       const data = payload.data || {};
-      const dates = Array.isArray(data.dates)
-        ? data.dates
-        : generateDateRange(30);
+      const dates = Array.isArray(data.dates) ? data.dates : generateDateRange(30);
 
       const itemsByDate = initializeItemsByDatePerLibrary(libs, dates);
 
@@ -216,9 +211,8 @@
       });
 
       const borderColor =
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--border",
-        ) || "#333";
+        getComputedStyle(document.documentElement).getPropertyValue("--border") ||
+        "#333";
       const textColor =
         getComputedStyle(document.documentElement).getPropertyValue("--text") ||
         "#f0f0f0";
@@ -330,9 +324,8 @@
       filesChartCanvas.style.display = "";
       const bgColors = paletteFor(labels.length);
       const borderColor =
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--border",
-        ) || "#333";
+        getComputedStyle(document.documentElement).getPropertyValue("--border") ||
+        "#333";
       const textColor =
         getComputedStyle(document.documentElement).getPropertyValue("--text") ||
         "#f0f0f0";
@@ -367,9 +360,8 @@
               bodyColor: textColor.trim() || "#f0f0f0",
               titleColor: textColor.trim() || "#f0f0f0",
               backgroundColor:
-                getComputedStyle(document.documentElement).getPropertyValue(
-                  "--bg",
-                ) || "#121212",
+                getComputedStyle(document.documentElement).getPropertyValue("--bg") ||
+                "#121212",
             },
           },
         },
@@ -391,8 +383,7 @@
     playsChartCanvas.style.display = "";
     const bgColors2 = paletteFor(labels.length);
     const borderColor2 =
-      getComputedStyle(document.documentElement).getPropertyValue("--border") ||
-      "#333";
+      getComputedStyle(document.documentElement).getPropertyValue("--border") || "#333";
     const textColor2 =
       getComputedStyle(document.documentElement).getPropertyValue("--text") ||
       "#f0f0f0";
@@ -427,9 +418,8 @@
             bodyColor: textColor2.trim() || "#f0f0f0",
             titleColor: textColor2.trim() || "#f0f0f0",
             backgroundColor:
-              getComputedStyle(document.documentElement).getPropertyValue(
-                "--bg",
-              ) || "#121212",
+              getComputedStyle(document.documentElement).getPropertyValue("--bg") ||
+              "#121212",
           },
         },
       },

@@ -21,9 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const payload = await resp.json();
         if (!payload?.ok) break;
 
-        const pageItems = Array.isArray(payload.data?.items)
-          ? payload.data.items
-          : [];
+        const pageItems = Array.isArray(payload.data?.items) ? payload.data.items : [];
         if (!pageItems.length) break;
 
         const stopOnlyItems = pageItems.filter((it) =>
@@ -491,10 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = payload.data || {};
 
-      setText(
-        elActiveSessions,
-        numberFmt.format(Number(data.active_sessions || 0)),
-      );
+      setText(elActiveSessions, numberFmt.format(Number(data.active_sessions || 0)));
       setText(elTotalPlays, numberFmt.format(Number(data.total_plays || 0)));
       setText(elTotalItems, numberFmt.format(Number(data.total_items || 0)));
       setText(elTotalSize, humanBytes(Number(data.total_size_bytes || 0)));
@@ -521,9 +516,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const empty = document.getElementById("sessions-empty");
   const cardsContainer = document.getElementById("sessions-cards");
   const loading = document.getElementById("sessions-loading");
-  const elGlanceActiveSessions = document.getElementById(
-    "glance-active-sessions",
-  );
+  const elGlanceActiveSessions = document.getElementById("glance-active-sessions");
   const glanceNumberFmt = new Intl.NumberFormat();
   let firstLoadDone = false;
 
@@ -581,9 +574,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const itemId = nowPlayingItem.Id || "";
 
       const primaryTag =
-        nowPlayingItem.PrimaryImageTag ||
-        nowPlayingItem.ImageTags?.Primary ||
-        "";
+        nowPlayingItem.PrimaryImageTag || nowPlayingItem.ImageTags?.Primary || "";
 
       if (itemId) {
         const imageUrl = primaryTag
@@ -643,10 +634,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const safeRuntimeTicks = Number(runtimeTicks) || 0;
       const rawPercent =
         safeRuntimeTicks > 0 ? (safeProgressTicks / safeRuntimeTicks) * 100 : 0;
-      const progressPercent = Math.max(
-        0,
-        Math.min(100, Math.round(rawPercent)),
-      );
+      const progressPercent = Math.max(0, Math.min(100, Math.round(rawPercent)));
       const progressDiv = document.createElement("div");
       progressDiv.className = "session-card-progress";
 
@@ -797,9 +785,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sections.top_users_by_plays,
         (r) => r?.name ?? "",
         (r) =>
-          r?.plays === null || r?.plays === undefined
-            ? ""
-            : String(Number(r.plays)),
+          r?.plays === null || r?.plays === undefined ? "" : String(Number(r.plays)),
       );
 
       renderRows(
@@ -808,9 +794,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sections.top_items_by_plays,
         (r) => r?.name ?? "",
         (r) =>
-          r?.plays === null || r?.plays === undefined
-            ? ""
-            : String(Number(r.plays)),
+          r?.plays === null || r?.plays === undefined ? "" : String(Number(r.plays)),
       );
 
       renderRows(
@@ -819,9 +803,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sections.top_libraries_by_plays,
         (r) => r?.name ?? "",
         (r) =>
-          r?.plays === null || r?.plays === undefined
-            ? ""
-            : String(Number(r.plays)),
+          r?.plays === null || r?.plays === undefined ? "" : String(Number(r.plays)),
       );
 
       renderRows(
@@ -838,9 +820,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sections.most_active_weekdays,
         (r) => r?.weekday ?? "",
         (r) =>
-          r?.plays === null || r?.plays === undefined
-            ? ""
-            : String(Number(r.plays)),
+          r?.plays === null || r?.plays === undefined ? "" : String(Number(r.plays)),
       );
 
       renderRows(
@@ -871,9 +851,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!track || !prevBtn || !nextBtn) return;
 
   const listCards = () =>
-    Array.from(track.children).filter((el) =>
-      el.classList.contains("statistics-card"),
-    );
+    Array.from(track.children).filter((el) => el.classList.contains("statistics-card"));
 
   let pageIndex = 0;
 

@@ -29,11 +29,7 @@ const jf_helpers = (function () {
           data: null,
         };
       }
-      if (
-        data &&
-        typeof data === "object" &&
-        ("ok" in data || "data" in data)
-      ) {
+      if (data && typeof data === "object" && ("ok" in data || "data" in data)) {
         return data;
       }
       return { ok: true, status: resp.status, data };
@@ -63,11 +59,7 @@ const jf_helpers = (function () {
           data: null,
         };
       }
-      if (
-        data &&
-        typeof data === "object" &&
-        ("ok" in data || "data" in data)
-      ) {
+      if (data && typeof data === "object" && ("ok" in data || "data" in data)) {
         return data;
       }
       return { ok: true, status: resp.status, data };
@@ -176,9 +168,7 @@ function maskKey(key) {
     hour_format: document.getElementById("hour-format"),
     language: document.getElementById("language"),
     sync_interval: document.getElementById("sync-interval"),
-    manual_periodic_sync_btn: document.getElementById(
-      "manual-periodic-sync-btn",
-    ),
+    manual_periodic_sync_btn: document.getElementById("manual-periodic-sync-btn"),
     sync_next_at: document.getElementById("sync-next-at"),
     sync_next_eta: document.getElementById("sync-next-eta"),
   };
@@ -243,8 +233,7 @@ function maskKey(key) {
   async function refreshSyncStatus() {
     var result = await fetchJson("/api/settings/sync-status");
     if (!result || !result.ok) return;
-    var payload =
-      result.data && typeof result.data === "object" ? result.data : result;
+    var payload = result.data && typeof result.data === "object" ? result.data : result;
     renderSyncStatus(payload);
   }
 
@@ -262,15 +251,12 @@ function maskKey(key) {
       if (!resp.ok) throw new Error(`GET failed: ${resp.status}`);
       const data = await resp.json();
 
-      if (fields.hour_format)
-        fields.hour_format.value = data.hour_format || "12";
+      if (fields.hour_format) fields.hour_format.value = data.hour_format || "12";
       if (fields.language) fields.language.value = data.language || "en";
       if (fields.sync_interval)
         fields.sync_interval.value = String(data.sync_interval || "1800");
 
-      lastKnown.hour_format = fields.hour_format
-        ? fields.hour_format.value
-        : null;
+      lastKnown.hour_format = fields.hour_format ? fields.hour_format.value : null;
       lastKnown.language = fields.language ? fields.language.value : null;
       lastKnown.sync_interval = fields.sync_interval
         ? fields.sync_interval.value
@@ -304,9 +290,7 @@ function maskKey(key) {
       }
 
       const updated =
-        result && result.data && typeof result.data === "object"
-          ? result.data
-          : result;
+        result && result.data && typeof result.data === "object" ? result.data : result;
 
       if (fields.hour_format && "hour_format" in updated) {
         fields.hour_format.value = updated.hour_format;
@@ -352,13 +336,11 @@ function maskKey(key) {
     if (fields.sync_interval) {
       fields.sync_interval.addEventListener("blur", () => {
         const v = String(fields.sync_interval.value);
-        if (v !== lastKnown.sync_interval)
-          scheduleSave({ sync_interval: Number(v) });
+        if (v !== lastKnown.sync_interval) scheduleSave({ sync_interval: Number(v) });
       });
       fields.sync_interval.addEventListener("change", () => {
         const v = String(fields.sync_interval.value);
-        if (v !== lastKnown.sync_interval)
-          scheduleSave({ sync_interval: Number(v) });
+        if (v !== lastKnown.sync_interval) scheduleSave({ sync_interval: Number(v) });
       });
     }
   }
@@ -501,12 +483,7 @@ function maskKey(key) {
 
       if (hasServer) {
         updateServerState(true);
-        displayServer(
-          data.jf_server_name,
-          data.jf_host,
-          data.jf_port,
-          data.jf_api_key,
-        );
+        displayServer(data.jf_server_name, data.jf_host, data.jf_port, data.jf_api_key);
       } else {
         updateServerState(false);
       }
@@ -587,12 +564,9 @@ function maskKey(key) {
         li.classList.add("task-log-item");
         const res = (l.result || "").toString().toUpperCase();
         if (res === "SUCCESS") li.classList.add("success");
-        else if (res === "FAILED" || res === "ERROR")
-          li.classList.add("failed");
+        else if (res === "FAILED" || res === "ERROR") li.classList.add("failed");
 
-        const started = l.started_at
-          ? new Date(Number(l.started_at) * 1000)
-          : null;
+        const started = l.started_at ? new Date(Number(l.started_at) * 1000) : null;
         li.innerHTML = `
           <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
             <div>

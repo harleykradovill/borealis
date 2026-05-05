@@ -72,9 +72,7 @@
 
       const watchTimeCell = document.createElement("td");
       watchTimeCell.className = "align-right cell-value";
-      watchTimeCell.textContent = formatWatchTime(
-        user.total_watch_time_seconds || 0,
-      );
+      watchTimeCell.textContent = formatWatchTime(user.total_watch_time_seconds || 0);
 
       const lastSeenCell = document.createElement("td");
       lastSeenCell.className = "align-right cell-muted";

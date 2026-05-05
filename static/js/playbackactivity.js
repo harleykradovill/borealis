@@ -13,9 +13,7 @@
 
   const filterBtn = document.getElementById("activitylog-user-filter-btn");
   const filterMenu = document.getElementById("activitylog-user-filter-menu");
-  const filterOptions = document.getElementById(
-    "activitylog-user-filter-options",
-  );
+  const filterOptions = document.getElementById("activitylog-user-filter-options");
 
   const PER_PAGE = 25;
   const MAX_PAGE_BUTTONS = 7;
@@ -101,8 +99,7 @@
     if (!filterOptions) return;
 
     filterOptions.innerHTML = "";
-    const selected =
-      selectedUserIds instanceof Set ? selectedUserIds : new Set();
+    const selected = selectedUserIds instanceof Set ? selectedUserIds : new Set();
 
     for (const user of allUsers) {
       const userId = String(user.user_id || "").trim();
@@ -135,8 +132,7 @@
       });
 
       const nameSpan = document.createElement("span");
-      nameSpan.textContent =
-        user.username_denorm || user.user_id || "(unknown)";
+      nameSpan.textContent = user.username_denorm || user.user_id || "(unknown)";
 
       label.appendChild(input);
       label.appendChild(nameSpan);
@@ -352,9 +348,7 @@
         params.set("user_ids", selectedIds.join(","));
       }
 
-      const resp = await fetch(
-        `/api/analytics/activitylog?${params.toString()}`,
-      );
+      const resp = await fetch(`/api/analytics/activitylog?${params.toString()}`);
       if (!resp.ok) throw new Error("Network error");
 
       const payload = await resp.json();
@@ -364,10 +358,7 @@
 
       render(payload.data || {});
     } catch (err) {
-      safeShowToast(
-        `Failed to load activity log: ${err?.message || err}`,
-        "error",
-      );
+      safeShowToast(`Failed to load activity log: ${err?.message || err}`, "error");
       renderEmpty();
     } finally {
       setNavigationDisabled(false);

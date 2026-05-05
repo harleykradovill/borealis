@@ -3,20 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <title>Borealis</title>
-    <link
-      rel="icon"
-      type="image/x-icon"
-      href="../assets/images/borealis_small.png"
-    />
+    <link rel="icon" type="image/x-icon" href="../assets/images/borealis_small.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/site.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/index.css') }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
   </head>
   <body>
     <div class="app-shell">
@@ -89,18 +79,9 @@
                 </div>
               </div>
 
-              <canvas
-                id="plays-matrix"
-                width="750"
-                height="200"
-                role="img"
-              ></canvas>
+              <canvas id="plays-matrix" width="750" height="200" role="img"></canvas>
 
-              <div
-                id="matrix-chart-empty-files"
-                class="settings-placeholder"
-                hidden
-              >
+              <div id="matrix-chart-empty-files" class="settings-placeholder" hidden>
                 <p>No data to display.</p>
               </div>
             </div>
@@ -123,18 +104,10 @@
           <div class="statistics-header">
             <h2>Watch Statistics</h2>
             <div class="statistics-carousel-controls">
-              <button
-                type="button"
-                class="carousel-btn"
-                data-carousel-action="prev"
-              >
+              <button type="button" class="carousel-btn" data-carousel-action="prev">
                 <
               </button>
-              <button
-                type="button"
-                class="carousel-btn"
-                data-carousel-action="next"
-              >
+              <button type="button" class="carousel-btn" data-carousel-action="next">
                 >
               </button>
             </div>
@@ -381,16 +354,10 @@
               </div>
 
               <!-- Top Libraries -->
-              <div
-                class="statistics-card"
-                data-stat-card="top_libraries_by_plays"
-              >
+              <div class="statistics-card" data-stat-card="top_libraries_by_plays">
                 <div class="statistics-card-content">
                   <h3 class="statistics-card-title">Top Libraries</h3>
-                  <ul
-                    id="stat-top-libraries-names"
-                    class="statistics-card-list"
-                  >
+                  <ul id="stat-top-libraries-names" class="statistics-card-list">
                     <li class="statistics-item">
                       <div class="skeleton">
                         <div class="wrapper">
@@ -430,10 +397,7 @@
                 </div>
                 <div class="statistics-card-values">
                   <div class="statistics-card-header">Plays</div>
-                  <ul
-                    id="stat-top-libraries-values"
-                    class="statistics-values-list"
-                  >
+                  <ul id="stat-top-libraries-values" class="statistics-values-list">
                     <li class="statistics-value">
                       <div class="skeleton">
                         <div class="wrapper">
@@ -509,10 +473,7 @@
               </div>
 
               <!-- Watch Time by User -->
-              <div
-                class="statistics-card"
-                data-stat-card="top_users_by_watch_time"
-              >
+              <div class="statistics-card" data-stat-card="top_users_by_watch_time">
                 <div class="statistics-card-content">
                   <h3 class="statistics-card-title">Watch Time by User</h3>
                   <ul id="stat-watch-time-names" class="statistics-card-list">
@@ -555,10 +516,7 @@
                 </div>
                 <div class="statistics-card-values">
                   <div class="statistics-card-header">Hours</div>
-                  <ul
-                    id="stat-watch-time-values"
-                    class="statistics-values-list"
-                  >
+                  <ul id="stat-watch-time-values" class="statistics-values-list">
                     <li class="statistics-value">
                       <div class="skeleton">
                         <div class="wrapper">
@@ -634,10 +592,7 @@
               </div>
 
               <!-- Most Active Day -->
-              <div
-                class="statistics-card"
-                data-stat-card="most_active_weekdays"
-              >
+              <div class="statistics-card" data-stat-card="most_active_weekdays">
                 <div class="statistics-card-content">
                   <h3 class="statistics-card-title">Most Active Day</h3>
                   <ul id="stat-active-day-names" class="statistics-card-list">
@@ -680,10 +635,7 @@
                 </div>
                 <div class="statistics-card-values">
                   <div class="statistics-card-header">Plays</div>
-                  <ul
-                    id="stat-active-day-values"
-                    class="statistics-values-list"
-                  >
+                  <ul id="stat-active-day-values" class="statistics-values-list">
                     <li class="statistics-value">
                       <div class="skeleton">
                         <div class="wrapper">

@@ -3,16 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <title>Borealis | Playback Activity</title>
-    <link
-      rel="icon"
-      type="image/x-icon"
-      href="../assets/images/borealis_small.png"
-    />
+    <link rel="icon" type="image/x-icon" href="../assets/images/borealis_small.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/site.css') }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}" />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/playbackactivity.css') }}"
@@ -22,121 +15,96 @@
     <div class="app-shell">
       {% include '_sidebar.html' %}
       <main id="content" class="content" tabindex="-1" role="main">
-          <div id="activitylog-empty" class="settings-placeholder" hidden>
-            <p>No playback activity available.</p>
+        <div id="activitylog-empty" class="settings-placeholder" hidden>
+          <p>No playback activity available.</p>
+        </div>
+
+        <div id="activitylog-container" hidden>
+          <div style="overflow-x: auto">
+            <table
+              id="activitylog-table"
+              class="table"
+              style="width: 100%; border-collapse: collapse"
+            >
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 0.5rem">
+                    <span class="activitylog-user-heading">
+                      <span>User</span>
+                      <button
+                        id="activitylog-user-filter-btn"
+                        class="activitylog-filter-btn"
+                        type="button"
+                      >
+                        <img
+                          src="../assets/icons/filter_off.png"
+                          alt=""
+                          class="activitylog-filter-icon"
+                        />
+                      </button>
+                    </span>
+                  </th>
+                  <th style="text-align: left; padding: 0.5rem">Event</th>
+                  <th style="text-align: right; padding: 0.5rem">Date</th>
+                </tr>
+              </thead>
+              <tbody id="activitylog-tbody"></tbody>
+            </table>
           </div>
 
-          <div id="activitylog-container" hidden>
-            <div style="overflow-x: auto">
-              <table
-                id="activitylog-table"
-                class="table"
-                style="width: 100%; border-collapse: collapse"
-              >
-                <thead>
-                  <tr>
-                    <th style="text-align: left; padding: 0.5rem">
-                      <span class="activitylog-user-heading">
-                        <span>User</span>
-                        <button
-                          id="activitylog-user-filter-btn"
-                          class="activitylog-filter-btn"
-                          type="button"
-                        >
-                          <img
-                            src="../assets/icons/filter_off.png"
-                            alt=""
-                            class="activitylog-filter-icon"
-                          />
-                        </button>
-                      </span>
-                    </th>
-                    <th style="text-align: left; padding: 0.5rem">Event</th>
-                    <th style="text-align: right; padding: 0.5rem">Date</th>
-                  </tr>
-                </thead>
-                <tbody id="activitylog-tbody"></tbody>
-              </table>
-            </div>
+          <div
+            id="activitylog-user-filter-menu"
+            class="activitylog-filter-menu"
+            hidden
+            role="dialog"
+          >
+            <div class="activitylog-filter-title">Filter by User</div>
+            <div
+              id="activitylog-user-filter-options"
+              class="activitylog-filter-options"
+            ></div>
+          </div>
+
+          <nav
+            id="activitylog-pagination"
+            class="pagination"
+            role="navigation"
+            style="
+              margin-top: 1rem;
+              display: flex;
+              gap: 0.5rem;
+              align-items: center;
+              flex-wrap: wrap;
+            "
+          >
+            <button id="activitylog-first" class="btn btn-ghost" type="button" disabled>
+              &laquo;
+            </button>
+            <button id="activitylog-prev" class="btn btn-ghost" type="button" disabled>
+              &lt;
+            </button>
 
             <div
-              id="activitylog-user-filter-menu"
-              class="activitylog-filter-menu"
-              hidden
-              role="dialog"
+              id="activitylog-pages"
+              style="display: flex; gap: 0.35rem; align-items: center"
+            ></div>
+
+            <button id="activitylog-next" class="btn btn-ghost" type="button" disabled>
+              &gt;
+            </button>
+            <button id="activitylog-last" class="btn btn-ghost" type="button" disabled>
+              &raquo;
+            </button>
+
+            <div
+              style="margin-left: auto; color: var(--text-muted); font-size: 0.95rem"
             >
-              <div class="activitylog-filter-title">Filter by User</div>
-              <div
-                id="activitylog-user-filter-options"
-                class="activitylog-filter-options"
-              ></div>
+              <span id="activitylog-meta"
+                >Page <span id="activitylog-page-num">1</span></span
+              >
             </div>
-
-            <nav
-              id="activitylog-pagination"
-              class="pagination"
-              role="navigation"
-              style="
-                margin-top: 1rem;
-                display: flex;
-                gap: 0.5rem;
-                align-items: center;
-                flex-wrap: wrap;
-              "
-            >
-              <button
-                id="activitylog-first"
-                class="btn btn-ghost"
-                type="button"
-                disabled
-              >
-                &laquo;
-              </button>
-              <button
-                id="activitylog-prev"
-                class="btn btn-ghost"
-                type="button"
-                disabled
-              >
-                &lt;
-              </button>
-
-              <div
-                id="activitylog-pages"
-                style="display: flex; gap: 0.35rem; align-items: center"
-              ></div>
-
-              <button
-                id="activitylog-next"
-                class="btn btn-ghost"
-                type="button"
-                disabled
-              >
-                &gt;
-              </button>
-              <button
-                id="activitylog-last"
-                class="btn btn-ghost"
-                type="button"
-                disabled
-              >
-                &raquo;
-              </button>
-
-              <div
-                style="
-                  margin-left: auto;
-                  color: var(--text-muted);
-                  font-size: 0.95rem;
-                "
-              >
-                <span id="activitylog-meta"
-                  >Page <span id="activitylog-page-num">1</span></span
-                >
-              </div>
-            </nav>
-          </div>
-        </section>
+          </nav>
+        </div>
       </main>
     </div>
 

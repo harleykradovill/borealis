@@ -1,0 +1,11 @@
+{
+  "printWidth": 88,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "trailingComma": "all",
+  "bracketSpacing": true,
+  "quoteProps": "as-needed",
+  "arrowParens": "always",
+  "htmlWhitespaceSensitivity": "css"
+}

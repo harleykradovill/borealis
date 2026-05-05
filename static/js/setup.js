@@ -118,8 +118,7 @@
   function loadPage1() {
     if (formFields.hourFormat) formFields.hourFormat.value = state.hourFormat;
     if (formFields.language) formFields.language.value = state.language;
-    if (formFields.syncInterval)
-      formFields.syncInterval.value = state.syncInterval;
+    if (formFields.syncInterval) formFields.syncInterval.value = state.syncInterval;
   }
 
   function loadPage2() {
@@ -137,9 +136,7 @@
 
   async function loadPage3() {
     const serverNameDisplay = document.getElementById("server-name-display");
-    const serverVersionDisplay = document.getElementById(
-      "server-version-display",
-    );
+    const serverVersionDisplay = document.getElementById("server-version-display");
 
     if (serverNameDisplay) {
       serverNameDisplay.textContent = state.serverName || "Unknown";
@@ -267,8 +264,7 @@
         updatePage2NextButton();
       } else {
         testConnectionOk = false;
-        const msg =
-          result?.message || `Failed (status: ${result?.status ?? "n/a"})`;
+        const msg = result?.message || `Failed (status: ${result?.status ?? "n/a"})`;
         showToast(msg, "error");
         updatePage2NextButton();
       }
@@ -345,9 +341,7 @@
           }
 
           try {
-            const progressResp = await fetch(
-              "/api/analytics/server/sync-progress",
-            );
+            const progressResp = await fetch("/api/analytics/server/sync-progress");
             const progressData = await progressResp.json();
 
             if (progressData && progressData.ok && !progressData.syncing) {

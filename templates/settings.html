@@ -3,16 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <title>Borealis | Settings</title>
-    <link
-      rel="icon"
-      type="image/x-icon"
-      href="../assets/images/borealis_small.png"
-    />
+    <link rel="icon" type="image/x-icon" href="../assets/images/borealis_small.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/site.css') }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}" />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/settings.css') }}"
@@ -68,10 +61,7 @@
             <div id="general" class="settings-content" role="tabpanel">
               <form class="settings-form">
                 <section class="settings-group">
-                  <h3
-                    id="display-settings-heading"
-                    class="settings-group-title"
-                  >
+                  <h3 id="display-settings-heading" class="settings-group-title">
                     Display
                   </h3>
 
@@ -92,9 +82,7 @@
                 </section>
 
                 <section class="settings-group">
-                  <h3 id="sync-settings-heading" class="settings-group-title">
-                    Sync
-                  </h3>
+                  <h3 id="sync-settings-heading" class="settings-group-title">Sync</h3>
 
                   <div class="form-field">
                     <label for="sync-interval">Sync Interval</label>
@@ -116,11 +104,7 @@
                       </div>
                     </div>
 
-                    <button
-                      id="manual-periodic-sync-btn"
-                      class="btn"
-                      type="button"
-                    >
+                    <button id="manual-periodic-sync-btn" class="btn" type="button">
                       Sync Now
                     </button>
                   </div>
@@ -130,9 +114,7 @@
 
             <div class="settings-content" role="tabpanel" id="jellyfin" hidden>
               <div id="jf-no-server" class="jf-server-container">
-                <p>
-                  You do not have a server added yet. You should not be here.
-                </p>
+                <p>You do not have a server added yet. You should not be here.</p>
               </div>
 
               <div id="jf-server-added" class="jf-server-container" hidden>

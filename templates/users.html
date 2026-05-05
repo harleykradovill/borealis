@@ -3,30 +3,16 @@
   <head>
     <meta charset="utf-8" />
     <title>Borealis | Users</title>
-    <link
-      rel="icon"
-      type="image/x-icon"
-      href="../assets/images/borealis_small.png"
-    />
+    <link rel="icon" type="image/x-icon" href="../assets/images/borealis_small.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/site.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/users.css') }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/users.css') }}" />
   </head>
   <body>
     <div class="app-shell">
       {% include '_sidebar.html' %}
       <main id="content" class="content" tabindex="-1" role="main">
-        <div
-          id="users-container"
-          hidden
-          style="max-width: 1500px; margin: 0 auto"
-        >
+        <div id="users-container" hidden style="max-width: 1500px; margin: 0 auto">
           <table id="users-table" class="users-table">
             <thead>
               <tr>

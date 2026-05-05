@@ -3,16 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <title>Borealis | Libraries</title>
-    <link
-      rel="icon"
-      type="image/x-icon"
-      href="../assets/images/borealis_small.png"
-    />
+    <link rel="icon" type="image/x-icon" href="../assets/images/borealis_small.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/site.css') }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}" />
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/libraries.css') }}"
@@ -22,34 +15,22 @@
     <div class="app-shell">
       {% include '_sidebar.html' %}
       <main id="content" class="content" tabindex="-1" role="main">
-          <div id="libraries-container" hidden>
-            <div id="libraries-empty" class="settings-placeholder" hidden>
-              <p>No libraries found.</p>
-            </div>
-
-            <div
-              class="libraries-container"
-            >
-              <div id="libraries-cards" class="libraries-cards"></div>
-            </div>
+        <div id="libraries-container" hidden>
+          <div id="libraries-empty" class="settings-placeholder" hidden>
+            <p>No libraries found.</p>
           </div>
-        </section>
+
+          <div class="libraries-container">
+            <div id="libraries-cards" class="libraries-cards"></div>
+          </div>
+        </div>
         <div id="charts-hbox">
           <div class="libraries-chart-group">
             <div class="chart-card">
               <h1>Files</h1>
-              <canvas
-                id="files-doughnut"
-                width="360"
-                height="360"
-                role="img"
-              ></canvas>
+              <canvas id="files-doughnut" width="360" height="360" role="img"></canvas>
 
-              <div
-                id="libraries-chart-empty-files"
-                class="settings-placeholder"
-                hidden
-              >
+              <div id="libraries-chart-empty-files" class="settings-placeholder" hidden>
                 <p>No data to display.</p>
               </div>
             </div>
@@ -58,18 +39,9 @@
           <div class="libraries-chart-group">
             <div class="chart-card">
               <h1>Plays</h1>
-              <canvas
-                id="plays-doughnut"
-                width="360"
-                height="360"
-                role="img"
-              ></canvas>
+              <canvas id="plays-doughnut" width="360" height="360" role="img"></canvas>
 
-              <div
-                id="libraries-chart-empty-plays"
-                class="settings-placeholder"
-                hidden
-              >
+              <div id="libraries-chart-empty-plays" class="settings-placeholder" hidden>
                 <p>No data to display.</p>
               </div>
             </div>
@@ -78,12 +50,7 @@
         <div class="libraries-chart-group">
           <div class="chart-card">
             <h1>Items Added in Last 30 Days</h1>
-            <canvas
-              id="item-line"
-              width="1400"
-              height="360"
-              role="img"
-            ></canvas>
+            <canvas id="item-line" width="1400" height="360" role="img"></canvas>
           </div>
         </div>
       </main>
