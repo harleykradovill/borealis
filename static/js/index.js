@@ -885,3 +885,125 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("resize", updateCarousel);
   updateCarousel();
 })();
+
+(function () {
+  const resolutionCanvas = document.getElementById("resolutions-chart");
+  const resolutionLoading = document.getElementById("resolutions-loading");
+  const resolutionEmpty = document.getElementById("resolutions-empty");
+
+  if (!resolutionCanvas) return;
+
+  const resolutionPalette = [
+    "#187ddb",
+    "#3272bb",
+    "#3b6ca5",
+    "#375f91",
+    "#35537a",
+    "#364c6d",
+    "#2f3c52",
+    "#2d3647",
+  ];
+
+  function renderResolutionsChart(rows) {
+    const safeRows = Array.isArray(rows) ? rows : [];
+    const labels = safeRows.map((r) => r?.resolution ?? "");
+    const values = safeRows.map((r) => Number(r?.count || 0));
+
+    const maxV = values.length ? Math.max(...values) : 0;
+    if (!values.length || maxV === 0) {
+      if (resolutionEmpty) resolutionEmpty.hidden = false;
+      resolutionCanvas.style.display = "none";
+      return;
+    }
+
+    if (resolutionEmpty) resolutionEmpty.hidden = true;
+
+    const span = Math.max(1, maxV);
+    const pad = Math.max(1, Math.round(span * 0.2));
+    const xMax = maxV + pad;
+
+    const ctx = resolutionCanvas.getContext("2d");
+
+    const config = {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            backgroundColor: values.map(
+              (_, idx) =>
+                resolutionPalette[Math.min(idx, resolutionPalette.length - 1)],
+            ),
+            borderRadius: 100,
+            barThickness: 18,
+          },
+        ],
+      },
+      options: {
+        indexAxis: "y",
+        animation: { duration: 200 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctxArg) => `Items: ${ctxArg.raw}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            display: true,
+            title: { display: false },
+            ticks: {
+              color: "#b3b3b3",
+              precision: 0,
+              padding: 6,
+            },
+            grid: { display: false },
+            min: 0,
+            max: xMax,
+          },
+          y: {
+            display: true,
+            title: { display: false },
+            ticks: { color: "#b3b3b3" },
+            grid: { display: false },
+          },
+        },
+        maintainAspectRatio: false,
+        responsive: true,
+      },
+    };
+
+    if (window.__resolutionsChart) {
+      try {
+        window.__resolutionsChart.destroy();
+      } catch (e) {}
+      window.__resolutionsChart = null;
+    }
+    window.__resolutionsChart = new Chart(ctx, config);
+    resolutionCanvas.style.display = "";
+  }
+
+  async function loadResolutions() {
+    try {
+      if (resolutionLoading) resolutionLoading.hidden = false;
+      resolutionCanvas.style.display = "none";
+
+      const resp = await fetch("/api/analytics/stats/dashboard");
+      if (!resp.ok) return;
+
+      const payload = await resp.json();
+      if (!payload?.ok) return;
+
+      renderResolutionsChart(payload.data?.sections?.resolutions || []);
+    } catch (err) {
+      console.error("Failed to load resolution stats:", err);
+    } finally {
+      if (resolutionLoading) resolutionLoading.hidden = true;
+    }
+  }
+
+  loadResolutions();
+})();

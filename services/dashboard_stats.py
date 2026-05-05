@@ -330,4 +330,8 @@ class DashboardStatsBuilder:
         if others_total > 0:
             out.append({"resolution": "Others", "count": others_total})
 
+        out.sort(
+            key=lambda row: (-int(row.get("count") or 0), row.get("resolution") or "")
+        )
+
         return out

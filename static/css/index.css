@@ -478,3 +478,18 @@
   border-radius: 12px;
   padding: 0.75rem;
 }
+
+.resolutions-card {
+  height: 250px;
+}
+
+.resolutions-card canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#resolutions-loading .wrapper > div {
+  height: 250px;
+  border-radius: 12px;
+}
