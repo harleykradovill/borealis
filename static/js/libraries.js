@@ -29,22 +29,22 @@
       renderLibraries(libs);
 
       if (
-        window.updateLibrariesChart &&
-        typeof window.updateLibrariesChart === "function"
+        globalThis.updateLibrariesChart &&
+        typeof globalThis.updateLibrariesChart === "function"
       ) {
         try {
-          window.updateLibrariesChart(libs);
+          globalThis.updateLibrariesChart(libs);
         } catch (err) {
           console.error("Chart update failed", err);
         }
       }
 
       if (
-        window.updateItemsAddedChart &&
-        typeof window.updateItemsAddedChart === "function"
+        globalThis.updateItemsAddedChart &&
+        typeof globalThis.updateItemsAddedChart === "function"
       ) {
         try {
-          window.updateItemsAddedChart(libs);
+          globalThis.updateItemsAddedChart(libs);
         } catch (err) {
           console.error("Items added chart update failed", err);
         }
@@ -294,7 +294,7 @@
     }
   }
 
-  window.updateItemsAddedChart = updateItemsAddedChart;
+  globalThis.updateItemsAddedChart = updateItemsAddedChart;
 
   async function updateLibrariesChart(libs) {
     const filesChartCanvas = document.getElementById("files-doughnut");
@@ -425,5 +425,5 @@
       },
     });
   }
-  window.updateLibrariesChart = updateLibrariesChart;
+  globalThis.updateLibrariesChart = updateLibrariesChart;
 })();

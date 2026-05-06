@@ -1,6 +1,6 @@
 (function () {
-  if (window.__syncToastBridgeInitialized) return;
-  window.__syncToastBridgeInitialized = true;
+  if (globalThis.__syncToastBridgeInitialized) return;
+  globalThis.__syncToastBridgeInitialized = true;
 
   let syncToastId = null;
   let source = null;
@@ -71,7 +71,7 @@
   function connectSyncStream() {
     disconnectSyncStream();
 
-    if (!window.EventSource) {
+    if (!globalThis.EventSource) {
       startFallbackPolling();
       return;
     }

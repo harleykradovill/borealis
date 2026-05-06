@@ -1,7 +1,7 @@
 (function () {
   function showToast(message, kind = "success", ttl = 5000) {
-    if (window.Toast && typeof window.Toast.showToast === "function") {
-      return window.Toast.showToast(message, kind, ttl);
+    if (globalThis.Toast && typeof globalThis.Toast.showToast === "function") {
+      return globalThis.Toast.showToast(message, kind, ttl);
     }
     const container = document.getElementById("toast-container");
     if (!container) return null;
@@ -349,7 +349,7 @@
                 syncText.textContent = "Setup complete";
               }
               setTimeout(() => {
-                window.location.href = "/";
+                globalThis.location.href = "/";
               }, 1500);
               return;
             }

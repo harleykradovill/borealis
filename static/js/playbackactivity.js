@@ -394,7 +394,7 @@
     if (!filterMenu?.hidden) openFilterMenu();
   });
 
-  window.addEventListener("hashchange", () => {
+  globalThis.addEventListener("hashchange", () => {
     loadPage(parseHashPage());
   });
 

@@ -238,13 +238,13 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       };
 
-      if (window.__playsMatrixChart) {
+      if (globalThis.__playsMatrixChart) {
         try {
-          window.__playsMatrixChart.destroy();
+          globalThis.__playsMatrixChart.destroy();
         } catch (e) {}
-        window.__playsMatrixChart = null;
+        globalThis.__playsMatrixChart = null;
       }
-      window.__playsMatrixChart = new Chart(ctx, config);
+      globalThis.__playsMatrixChart = new Chart(ctx, config);
     } finally {
       if (matrixLoading) {
         matrixLoading.classList.remove("skeleton");
@@ -294,12 +294,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     };
 
-    if (typeof window.requestIdleCallback === "function") {
-      window.requestIdleCallback(run, { timeout: 100 });
+    if (typeof globalThis.requestIdleCallback === "function") {
+      globalThis.requestIdleCallback(run, { timeout: 100 });
       return;
     }
 
-    window.setTimeout(run, 0);
+    globalThis.setTimeout(run, 0);
   }
 
   scheduleHeatmapRender();
@@ -419,13 +419,13 @@ document.addEventListener("DOMContentLoaded", () => {
         },
       };
 
-      if (window.__playsTrendChart) {
+      if (globalThis.__playsTrendChart) {
         try {
-          window.__playsTrendChart.destroy();
+          globalThis.__playsTrendChart.destroy();
         } catch (e) {}
-        window.__playsTrendChart = null;
+        globalThis.__playsTrendChart = null;
       }
-      window.__playsTrendChart = new Chart(ctx, config);
+      globalThis.__playsTrendChart = new Chart(ctx, config);
       trendCanvas.style.display = "";
     } finally {
       if (trendLoading) trendLoading.hidden = true;
@@ -439,12 +439,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     };
 
-    if (typeof window.requestIdleCallback === "function") {
-      window.requestIdleCallback(run, { timeout: 100 });
+    if (typeof globalThis.requestIdleCallback === "function") {
+      globalThis.requestIdleCallback(run, { timeout: 100 });
       return;
     }
 
-    window.setTimeout(run, 0);
+    globalThis.setTimeout(run, 0);
   }
 
   scheduleTrendRender();
@@ -976,13 +976,13 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     };
 
-    if (window.__resolutionsChart) {
+    if (globalThis.__resolutionsChart) {
       try {
-        window.__resolutionsChart.destroy();
+        globalThis.__resolutionsChart.destroy();
       } catch (e) {}
-      window.__resolutionsChart = null;
+      globalThis.__resolutionsChart = null;
     }
-    window.__resolutionsChart = new Chart(ctx, config);
+    globalThis.__resolutionsChart = new Chart(ctx, config);
     resolutionCanvas.style.display = "";
   }
 

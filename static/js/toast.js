@@ -120,7 +120,7 @@
 
   function updateSyncToast(toastId, message) {
     const toast = toasts.get(toastId);
-    if (toast && toast.el) {
+    if (toast?.el) {
       const messageSpan = toast.el.querySelector("span");
       if (messageSpan) {
         messageSpan.textContent = String(message);
@@ -132,7 +132,7 @@
     removeToast(toastId);
   }
 
-  window.Toast = {
+  globalThis.Toast = {
     showToast,
     updateToast,
     removeToast,

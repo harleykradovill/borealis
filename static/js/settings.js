@@ -1,7 +1,7 @@
 const jf_helpers = (function () {
   function showToast(message, kind = "success") {
-    if (window.Toast && typeof window.Toast.showToast === "function") {
-      return window.Toast.showToast(message, kind, 5000);
+    if (globalThis.Toast && typeof globalThis.Toast.showToast === "function") {
+      return globalThis.Toast.showToast(message, kind, 5000);
     }
 
     const container = document.getElementById("toast-container");
@@ -436,7 +436,7 @@ function maskKey(key) {
     });
   });
 
-  window.addEventListener("hashchange", fromHash);
+  globalThis.addEventListener("hashchange", fromHash);
   fromHash();
   loadSettings().then(() => {
     bindAutosave();
