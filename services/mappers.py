@@ -1,3 +1,9 @@
+"""
+Map Jellyfin API payloads to database row dictionaries. Includes helpers for parising
+Jellyfin dates, extracting media metadata, and mapping users, libraries, items, and
+playback events for ingestion.
+"""
+
 from __future__ import annotations
 
 import json

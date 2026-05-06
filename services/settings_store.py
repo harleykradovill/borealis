@@ -30,7 +30,7 @@ class SettingsService:
         :returns: None
         """
         self.engine = create_engine(self.database_url, future=True)
-        self.SessionLocal = sessionmaker(
+        self.session_local = sessionmaker(
             bind=self.engine,
             expire_on_commit=False,
         )
@@ -45,7 +45,7 @@ class SettingsService:
         :returns: Yields an active SQLAlchemy Session
         :raises Exception: Re-raises any exception after rolling back the session
         """
-        session: Session = self.SessionLocal()
+        session: Session = self.session_local()
         try:
             yield session
             session.commit()

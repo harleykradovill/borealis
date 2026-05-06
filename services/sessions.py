@@ -1,5 +1,7 @@
 """
-Service for periodically syncing active Jellyfin sessions.
+Background service to poll Jellyfin sessions and cache sanitized active sessions.
+Sanitizes now-playing payloads for the UI and optionally resolves episode series
+names via the repository.
 """
 
 import logging

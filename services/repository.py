@@ -1,3 +1,9 @@
+"""
+Database repository layer for Borealis. Provides 'Repository' class which manages
+SQLAlchemy sessions and migrations, and offers upsert/list/archive helpers for users,
+libraries, and items.
+"""
+
 from __future__ import annotations
 
 import json
@@ -84,7 +90,7 @@ class Repository:
         :returns: None
         """
         self.engine = create_engine(self.database_url, future=True)
-        self.SessionLocal = sessionmaker(bind=self.engine, expire_on_commit=False)
+        self.session_local = sessionmaker(bind=self.engine, expire_on_commit=False)
         Base.metadata.create_all(self.engine)
 
         try:
@@ -104,7 +110,7 @@ class Repository:
 
         :returns: Session context that auto-commits on success or rolls back on exceptions
         """
-        session: Session = self.SessionLocal()
+        session: Session = self.session_local()
         try:
             yield session
             session.commit()

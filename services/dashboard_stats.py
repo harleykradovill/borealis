@@ -1,3 +1,9 @@
+"""
+Build dashboard statistic sections from persisten models and playback activity.
+Computes top users/items/libraries, watch-time leaders, most-active weekdays, recently watched items,
+and resolution breakdowns.
+"""
+
 from __future__ import annotations
 
 from services.data_models import Item, Library, PlaybackActivity, User

@@ -1,3 +1,9 @@
+"""
+Sync orchestrator for Jellyfin ingestion. Defines SyncResult and SyncService to coordinate
+metadata sync, full and incremental activity-log ingestions, initial/periodic sync workflows,
+progress reporting, and dashboard cache refreshes.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -155,9 +161,7 @@ class SyncService:
                             f"{items_result.get('message')}"
                         )
             else:
-                errors.append(
-                    f"Libraries sync failed: " f"{libs_result.get('message')}"
-                )
+                errors.append(f"Libraries sync failed: {libs_result.get('message')}")
 
             duration_ms = int((time.time() - start_time) * 1000)
             result = SyncResult(
@@ -179,7 +183,7 @@ class SyncService:
 
             return result
 
-        except Exception as exc:
+        except Exception:
             duration_ms = int((time.time() - start_time) * 1000)
             errors.append("Unexpected error")
 
@@ -254,7 +258,7 @@ class SyncService:
 
                 data = activity_result.get("data", {})
                 if not isinstance(data, dict):
-                    error_msg = f"Activity log returned non-dict: " f"{type(data)}"
+                    error_msg = f"Activity log returned non-dict: {type(data)}"
                     errors.append(error_msg)
                     break
 
@@ -340,7 +344,7 @@ class SyncService:
             logging.info("[INFO] Full Activity Log Sync Complete")
             return result
 
-        except Exception as exc:
+        except Exception:
             duration_ms = int((time.time() - start_time) * 1000)
             errors.append("Unexpected error")
 
@@ -465,7 +469,7 @@ class SyncService:
                     try:
                         inserted = self.repository.insert_playback_events(mapped)
                         processed += inserted
-                    except Exception as exc:
+                    except Exception:
                         errors.append("Failed to insert events")
                         logging.error(
                             "[ERROR] Failed to insert mapped playback events on page %s",
@@ -510,7 +514,7 @@ class SyncService:
 
             return result
 
-        except Exception as exc:
+        except Exception:
             duration_ms = int((time.time() - start_time) * 1000)
             errors.append("Unexpected error during incremental sync")
             result = SyncResult(
@@ -588,7 +592,7 @@ class SyncService:
             # Step 3: Refresh dashboard stats
             try:
                 self._refresh_dashboard_cache()
-            except Exception as exc:
+            except Exception:
                 errors.append("Failed to refresh dashboard stats")
 
             duration_ms = int((time.time() - start_time) * 1000)
@@ -617,7 +621,7 @@ class SyncService:
             logging.info("[INFO] Initial Sync Complete")
             return result
 
-        except Exception as exc:
+        except Exception:
             duration_ms = int((time.time() - start_time) * 1000)
             error_msg = "Unexpected error during initial sync"
             errors.append(error_msg)
@@ -708,7 +712,7 @@ class SyncService:
             # Step 3: Refresh play statistics
             try:
                 self.repository.refresh_play_stats()
-            except Exception as exc:
+            except Exception:
                 errors.append("Failed to refresh play stats")
 
             self.repository.update_task_log_progress(
@@ -723,7 +727,7 @@ class SyncService:
             # Step 4: Refresh dashboard stats
             try:
                 self._refresh_dashboard_cache()
-            except Exception as exc:
+            except Exception:
                 errors.append("Failed to refresh dashboard stats")
 
             duration_ms = int((time.time() - start_time) * 1000)
@@ -754,7 +758,7 @@ class SyncService:
             logging.info("[INFO] Periodic Sync Complete")
             return result
 
-        except Exception as exc:
+        except Exception:
             duration_ms = int((time.time() - start_time) * 1000)
             error_msg = "Unexpected error during periodic sync"
             errors.append(error_msg)

@@ -1,5 +1,7 @@
 """
-Borealis analytics data.
+SQLAlchemy ORM models for Borealis persisted entities. Defines User, Library,
+Item, PlaybackActivity, TaskLog, Settings, and cached DashboardStat with simple
+serialization helpers.
 """
 
 from __future__ import annotations
