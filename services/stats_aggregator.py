@@ -34,14 +34,25 @@ def _playback_event_kind(event_name: Optional[str]) -> str:
     return "stop"
 
 
-def _calculate_watch_seconds(
+def _calculate_watch_metrics(
     session: Session,
-) -> tuple[Dict[str, int], Dict[str, int]]:
+    minimum_play_seconds: int = 120,
+) -> tuple[
+    Dict[str, int],
+    Dict[str, int],
+    Dict[str, int],
+    Dict[str, int],
+]:
     """
-    Pair start/stop playback events and calculate total watch duration by user and item.
+    Pair start/stop playback events and calculate watch time and qualified plays.
 
     :param session: Active SQL session
-    :returns: Tuple of (watch_seconds_by_user dict, watch_seconds_by_item dict) with accumulated watch time in seconds
+    :param minimum_play_seconds: Minimum paired duration required to count as a play
+    :returns: Tuple of
+        watch_seconds_by_user,
+        watch_seconds_by_item,
+        qualified_plays_by_user,
+        qualified_plays_by_item
     :raises Exception: Propagates SQLAlchemy query errors
     """
     rows = (
@@ -69,8 +80,10 @@ def _calculate_watch_seconds(
     )
 
     open_starts: Dict[tuple[str, str], List[int]] = {}
-    by_user: Dict[str, int] = {}
-    by_item: Dict[str, int] = {}
+    watch_seconds_by_user: Dict[str, int] = {}
+    watch_seconds_by_item: Dict[str, int] = {}
+    qualified_plays_by_user: Dict[str, int] = {}
+    qualified_plays_by_item: Dict[str, int] = {}
 
     for user_id, item_id, activity_at, event_name, runtime_seconds, _ in rows:
         user_id = str(user_id)
@@ -113,10 +126,27 @@ def _calculate_watch_seconds(
         if duration <= 0:
             continue
 
-        by_user[user_id] = by_user.get(user_id, 0) + duration
-        by_item[item_id] = by_item.get(item_id, 0) + duration
+        watch_seconds_by_user[user_id] = (
+            watch_seconds_by_user.get(user_id, 0) + duration
+        )
+        watch_seconds_by_item[item_id] = (
+            watch_seconds_by_item.get(item_id, 0) + duration
+        )
 
-    return by_user, by_item
+        if duration >= minimum_play_seconds:
+            qualified_plays_by_user[user_id] = (
+                qualified_plays_by_user.get(user_id, 0) + 1
+            )
+            qualified_plays_by_item[item_id] = (
+                qualified_plays_by_item.get(item_id, 0) + 1
+            )
+
+    return (
+        watch_seconds_by_user,
+        watch_seconds_by_item,
+        qualified_plays_by_user,
+        qualified_plays_by_item,
+    )
 
 
 def _stop_playback_filter():
@@ -143,51 +173,33 @@ class StatsAggregator:
         :returns: Counts of processed libraries, items, and users
         :raises Exception: Propagates database/query errors from SQLAlchemy
         """
-
         stop_filter = _stop_playback_filter()
+        qualified_play_seconds = 120
+        (
+            watch_seconds_by_user,
+            watch_seconds_by_item,
+            qualified_plays_by_user,
+            qualified_plays_by_item,
+        ) = _calculate_watch_metrics(
+            session, minimum_play_seconds=qualified_play_seconds
+        )
 
         # ---- Item play counts ----
-        play_counts = dict(
-            session.query(
-                PlaybackActivity.item_id,
-                func.count(PlaybackActivity.id),
-            )
-            .filter(stop_filter)
-            .group_by(PlaybackActivity.item_id)
-            .all()
-        )
-
         items_processed = 0
-        if play_counts:
-            items = (
-                session.query(Item)
-                .filter(Item.jellyfin_id.in_(play_counts.keys()))
-                .all()
-            )
-            for item in items:
-                new_count = int(play_counts.get(item.jellyfin_id, 0))
-                if item.play_count != new_count:
-                    item.play_count = new_count
-                items_processed += 1
+        items = session.query(Item).filter(Item.archived.is_(False)).all()
+        for item in items:
+            new_count = int(qualified_plays_by_item.get(item.jellyfin_id, 0))
+            if item.play_count != new_count:
+                item.play_count = new_count
+            items_processed += 1
 
         # ---- User play counts ----
-        user_counts = dict(
-            session.query(
-                PlaybackActivity.user_id,
-                func.count(PlaybackActivity.id),
-            )
-            .filter(stop_filter)
-            .group_by(PlaybackActivity.user_id)
-            .all()
-        )
-
-        watch_seconds_by_user, watch_seconds_by_item = _calculate_watch_seconds(session)
-
         users_processed = 0
-        user_ids = [uid for uid in user_counts.keys() if uid]
-        if user_ids:
-            users = session.query(User).filter(User.jellyfin_id.in_(user_ids)).all()
+        users = session.query(User).filter(User.archived.is_(False)).all()
+        user_ids = [user.jellyfin_id for user in users if user.jellyfin_id]
 
+        latest_user_by_id: Dict[str, Dict[str, Any]] = {}
+        if user_ids:
             latest_user_ts = (
                 session.query(
                     PlaybackActivity.user_id.label("user_id"),
@@ -220,7 +232,6 @@ class StatsAggregator:
                 .all()
             )
 
-            latest_user_by_id: Dict[str, Dict[str, Any]] = {}
             for user_id, activity_at, event_name, _ in latest_user_rows:
                 if user_id and user_id not in latest_user_by_id:
                     latest_user_by_id[user_id] = {
@@ -228,31 +239,31 @@ class StatsAggregator:
                         "event_name": event_name,
                     }
 
-            for user in users:
-                new_total = int(user_counts.get(user.jellyfin_id, 0))
-                if user.total_plays != new_total:
-                    user.total_plays = new_total
+        for user in users:
+            new_total = int(qualified_plays_by_user.get(user.jellyfin_id, 0))
+            if user.total_plays != new_total:
+                user.total_plays = new_total
 
-                watch_seconds = int(watch_seconds_by_user.get(user.jellyfin_id, 0))
-                if user.total_watch_time_seconds != watch_seconds:
-                    user.total_watch_time_seconds = watch_seconds
+            watch_seconds = int(watch_seconds_by_user.get(user.jellyfin_id, 0))
+            if user.total_watch_time_seconds != watch_seconds:
+                user.total_watch_time_seconds = watch_seconds
 
-                latest = latest_user_by_id.get(user.jellyfin_id)
-                if latest:
-                    latest_ts = latest.get("activity_at")
-                    if user.last_seen_at != latest_ts:
-                        user.last_seen_at = latest_ts
+            latest = latest_user_by_id.get(user.jellyfin_id)
+            if latest:
+                latest_ts = latest.get("activity_at")
+                if user.last_seen_at != latest_ts:
+                    user.last_seen_at = latest_ts
 
-                    event_name = latest.get("event_name")
-                    if event_name:
-                        device = StatsAggregator._extract_device_from_event_name(
-                            str(event_name)
-                        )
-                        if device and user.last_device != device:
-                            user.last_device = device
+                event_name = latest.get("event_name")
+                if event_name:
+                    device = StatsAggregator._extract_device_from_event_name(
+                        str(event_name)
+                    )
+                    if device and user.last_device != device:
+                        user.last_device = device
 
-                session.merge(user)
-                users_processed += 1
+            session.merge(user)
+            users_processed += 1
 
         # ---- Library aggregates ----
         libraries_processed = 0
