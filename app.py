@@ -102,9 +102,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     ## Blueprints
 
     app.register_blueprint(create_settings_blueprint(svc=svc, repo=repo, sync=sync))
-    app.register_blueprint(
-        create_analytics_blueprint(svc=svc, repo=repo, sync=sync, jf=jf)
-    )
+    app.register_blueprint(create_analytics_blueprint(repo=repo, sync=sync, jf=jf))
 
     from services.sessions import SessionsService
 

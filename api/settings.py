@@ -3,7 +3,10 @@ import logging
 import threading
 import time
 
-from flask import Blueprint, Response, current_app, jsonify, request
+from flask import Blueprint, Response, current_app, jsonify, request, make_response
+
+HTTP_PREFIX = "http://"
+HTTPS_PREFIX = "https://"
 
 """
 Create the settings API blueprints with routes for configuration and sync management.
@@ -71,10 +74,11 @@ def create_settings_blueprint(*, svc, repo, sync):
                 "message": message_from_log or "Sync in progress",
             }
 
+        default_phase = "complete" if result == "SUCCESS" else "failed"
         phase = (
             phase_from_log
             if phase_from_log in {"complete", "failed"}
-            else ("complete" if result == "SUCCESS" else "failed")
+            else default_phase
         )
         return {
             "ok": True,
@@ -103,7 +107,7 @@ def create_settings_blueprint(*, svc, repo, sync):
         token = (payload.get("jf_api_key") or "").strip()
 
         if not host or not port or not token:
-            return (
+            return make_response(
                 jsonify(
                     {
                         "ok": False,
@@ -115,7 +119,7 @@ def create_settings_blueprint(*, svc, repo, sync):
             )
 
         if not port.isdigit():
-            return (
+            return make_response(
                 jsonify(
                     {"ok": False, "status": 400, "message": "Port must be numeric."}
                 ),
@@ -124,13 +128,13 @@ def create_settings_blueprint(*, svc, repo, sync):
 
         # Parse host to handle http:// or https:// prefixes
         scheme = "http"
-        if host.startswith(("http://", "https://")):
-            if host.startswith("https://"):
+        if host.startswith((HTTP_PREFIX, HTTPS_PREFIX)):
+            if host.startswith(HTTPS_PREFIX):
                 scheme = "https"
-                host = host.removeprefix("https://")
-            elif host.startswith("http://"):
+                host = host.removeprefix(HTTPS_PREFIX)
+            elif host.startswith(HTTP_PREFIX):
                 scheme = "http"
-                host = host.removeprefix("http://")
+                host = host.removeprefix(HTTP_PREFIX)
 
         url = f"{scheme}://{host}:{port}/System/Info"
 
@@ -145,7 +149,7 @@ def create_settings_blueprint(*, svc, repo, sync):
                     response_data = json.loads(resp.read().decode("utf-8"))
                     server_name = response_data.get("ServerName", "")
                     server_version = response_data.get("Version", "")
-                    return (
+                    return make_response(
                         jsonify(
                             {
                                 "ok": True,
@@ -157,7 +161,7 @@ def create_settings_blueprint(*, svc, repo, sync):
                         ),
                         200,
                     )
-                return (
+                return make_response(
                     jsonify(
                         {
                             "ok": False,
@@ -168,7 +172,7 @@ def create_settings_blueprint(*, svc, repo, sync):
                     200,
                 )
         except HTTPError as he:
-            return (
+            return make_response(
                 jsonify(
                     {
                         "ok": False,
@@ -183,14 +187,14 @@ def create_settings_blueprint(*, svc, repo, sync):
             )
         except URLError as ue:
             reason = getattr(ue, "reason", "Unknown")
-            return (
+            return make_response(
                 jsonify(
                     {"ok": False, "status": 0, "message": f"Network error: {reason}"}
                 ),
                 200,
             )
-        except Exception as exc:
-            return (
+        except Exception:
+            return make_response(
                 jsonify({"ok": False, "status": 0, "message": "Unexpected error"}),
                 200,
             )
@@ -215,7 +219,7 @@ def create_settings_blueprint(*, svc, repo, sync):
                 return None
 
         data["jf_api_key"] = _mask_key(data.get("jf_api_key"))
-        return jsonify(data), 200
+        return make_response(jsonify(data), 200)
 
     @bp.put("/settings")
     def update_settings() -> Response:
@@ -270,7 +274,7 @@ def create_settings_blueprint(*, svc, repo, sync):
             if sessions_svc and not current_app.config.get("DEBUG"):
                 sessions_svc.start()
 
-        return jsonify(updated), 200
+        return make_response(jsonify(updated), 200)
 
     @bp.get("/settings/sync-status")
     def get_sync_status() -> Response:
@@ -287,7 +291,7 @@ def create_settings_blueprint(*, svc, repo, sync):
         progress = _build_sync_progress_payload()
         syncing = bool(progress.get("syncing")) or bool(sched_status.get("is_running"))
 
-        return (
+        return make_response(
             jsonify(
                 {
                     "ok": True,
@@ -307,9 +311,9 @@ def create_settings_blueprint(*, svc, repo, sync):
         :returns: JSON response with sync state payload, or error details with HTTP 500
         """
         try:
-            return jsonify(_build_sync_progress_payload()), 200
-        except Exception as exc:
-            return (
+            return make_response(jsonify(_build_sync_progress_payload()), 200)
+        except Exception:
+            return make_response(
                 jsonify({"ok": False, "message": "Failed to fetch sync progress"}),
                 500,
             )
@@ -322,7 +326,7 @@ def create_settings_blueprint(*, svc, repo, sync):
         sched = getattr(current_app, "sync_scheduler", None)
         if sched and hasattr(sched, "trigger_periodic_now"):
             sched.trigger_periodic_now()
-            return (
+            return make_response(
                 jsonify({"ok": True, "message": "Periodic sync started; timer reset."}),
                 200,
             )
@@ -336,6 +340,8 @@ def create_settings_blueprint(*, svc, repo, sync):
                 logging.exception("[ERROR] Manual periodic sync failed")
 
         threading.Thread(target=run_sync, daemon=True).start()
-        return jsonify({"ok": True, "message": "Periodic sync started."}), 200
+        return make_response(
+            jsonify({"ok": True, "message": "Periodic sync started."}), 200
+        )
 
     return bp

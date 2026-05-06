@@ -29,6 +29,8 @@ class JellyfinClient:
     def __init__(self, settings: SettingsService) -> None:
         self._settings = settings
 
+    _DEFAULT_IMAGE_CONTENT_TYPE = "image/jpeg"
+
     def _read_settings(self) -> Tuple[str, str, str, str]:
         """
         Read persisted Jellyfin settings and normalize connection values.
@@ -57,9 +59,9 @@ class JellyfinClient:
         elif candidate_port_from_host:
             port = str(candidate_port_from_host)
 
-        if parsed.scheme and parsed.scheme.lower() == "https":
-            scheme = "https"
-        elif raw_host.startswith("https://"):
+        if (parsed.scheme and parsed.scheme.lower() == "https") or raw_host.startswith(
+            "https://"
+        ):
             scheme = "https"
 
         host = candidate_host or raw_host
@@ -186,7 +188,7 @@ class JellyfinClient:
                         "status": 0,
                         "message": f"Network error: {reason}",
                     }
-            except Exception as exc:  # Unhandled exception
+            except Exception:  # Unhandled exception
                 return {
                     "ok": False,
                     "status": 0,
@@ -217,9 +219,7 @@ class JellyfinClient:
                 return {
                     "ok": False,
                     "status": 0,
-                    "message": (
-                        f"Network error after {max_retries} retries: " f"{reason}"
-                    ),
+                    "message": (f"Network error after {max_retries} retries: {reason}"),
                 }
 
         return {  # Fallback if no exception captured
@@ -301,14 +301,12 @@ class JellyfinClient:
                 page_items = []
                 total = None
 
-            new_added = 0
             for it in page_items:
                 jf_id = (it.get("Id") or "").strip()  # Extract item ID
                 if not jf_id or jf_id in seen_ids:  # Skip invalid or duplicate items
                     continue
                 seen_ids.add(jf_id)
                 aggregated.append(it)
-                new_added += 1
 
             if (total is not None and len(aggregated) >= int(total)) or len(
                 page_items
@@ -392,7 +390,7 @@ class JellyfinClient:
                 "ok": False,
                 "status": 404,
                 "body": b"",
-                "content_type": "image/jpeg",
+                "content_type": self._DEFAULT_IMAGE_CONTENT_TYPE,
             }
 
         if not re.match(r"^[a-zA-Z0-9\-_]+$", item_id):  # Validate item_id format
@@ -421,28 +419,30 @@ class JellyfinClient:
                     "ok": True,
                     "status": getattr(resp, "status", 200),
                     "body": resp.read(),
-                    "content_type": resp.headers.get("Content-Type", "image/jpeg"),
+                    "content_type": resp.headers.get(
+                        "Content-Type", self._DEFAULT_IMAGE_CONTENT_TYPE
+                    ),
                 }
         except HTTPError as exc:
             return {
                 "ok": False,
                 "status": exc.code,
                 "body": b"",
-                "content_type": "image/jpeg",
+                "content_type": self._DEFAULT_IMAGE_CONTENT_TYPE,
             }
         except URLError:
             return {
                 "ok": False,
                 "status": 502,
                 "body": b"",
-                "content_type": "image/jpeg",
+                "content_type": self._DEFAULT_IMAGE_CONTENT_TYPE,
             }
         except Exception:
             return {
                 "ok": False,
                 "status": 500,
                 "body": b"",
-                "content_type": "image/jpeg",
+                "content_type": self._DEFAULT_IMAGE_CONTENT_TYPE,
             }
 
 
