@@ -1,4 +1,4 @@
-<aside class="sidebar" role="navigation">
+<nav class="sidebar">
   <a class="brand sidebar-brand" href="/">
     <img
       src="{{ url_for('assets', filename='images/borealis_small.png') }}"
@@ -13,8 +13,8 @@
   url_for('playbackactivity') %} {% set is_settings = request.path ==
   url_for('settings') %} {% set is_setup = request.path == url_for('setup') %}
 
-  <ul class="sidebar-links" role="menu">
-    <li role="none">
+  <ul class="sidebar-links">
+    <li>
       <a
         role="menuitem"
         href="/"
@@ -29,7 +29,7 @@
         <span>Dashboard</span>
       </a>
     </li>
-    <li role="none">
+    <li>
       <a
         role="menuitem"
         href="/users"
@@ -44,7 +44,7 @@
         <span>Users</span>
       </a>
     </li>
-    <li role="none">
+    <li>
       <a
         role="menuitem"
         href="/libraries"
@@ -59,7 +59,7 @@
         <span>Libraries</span>
       </a>
     </li>
-    <li role="none">
+    <li>
       <a
         role="menuitem"
         href="/playbackactivity"
@@ -74,7 +74,7 @@
         <span>Playback Activity</span>
       </a>
     </li>
-    <li role="none">
+    <li>
       <a
         role="menuitem"
         href="/settings"
@@ -90,4 +90,4 @@
       </a>
     </li>
   </ul>
-</aside>
+</nav>

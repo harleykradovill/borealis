@@ -14,7 +14,14 @@ from api.analytics import create_analytics_blueprint
 logger = logging.getLogger(__name__)
 
 try:
-    from flask import Flask, Response, render_template, request, send_from_directory
+    from flask import (
+        Flask,
+        Response,
+        render_template,
+        request,
+        send_from_directory,
+        make_response,
+    )
 except ImportError as exc:
     raise RuntimeError(
         "Flask is required to run the local config site. "
@@ -44,7 +51,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     app.config.setdefault("PORT", 2929)
     app.config.setdefault("DATABASE_URL", "sqlite:///borealis.db")
     app.config.setdefault("ENCRYPTION_KEY_PATH", "secret.key")
-    app.config["TEMPLATES_AUTO_RELOAD"] = True  # TODO: TURN OFF IN PROD
+    app.config["TEMPLATES_AUTO_RELOAD"] = True  # NOTE: TURN OFF IN PROD
 
     logging.info("-=-=-=-=-=-=-=-=-=-=-=-=-")
     logging.info("         Borealis        ")
@@ -185,31 +192,31 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     @app.get("/")
     @require_server
     def index() -> Response:
-        return render_template("index.html"), 200
+        return make_response(render_template("index.html"), 200)
 
     @app.get("/setup")
     def setup() -> Response:
-        return render_template("setup.html"), 200
+        return make_response(render_template("setup.html"), 200)
 
     @app.get("/users")
     @require_server
     def users() -> Response:
-        return render_template("users.html"), 200
+        return make_response(render_template("users.html"), 200)
 
     @app.get("/libraries")
     @require_server
     def libraries() -> Response:
-        return render_template("libraries.html"), 200
+        return make_response(render_template("libraries.html"), 200)
 
     @app.get("/playbackactivity")
     @require_server
     def playbackactivity() -> Response:
-        return render_template("playbackactivity.html"), 200
+        return make_response(render_template("playbackactivity.html"), 200)
 
     @app.get("/settings")
     @require_server
     def settings() -> Response:
-        return render_template("settings.html"), 200
+        return make_response(render_template("settings.html"), 200)
 
     @app.get("/api/jellyfin/items/<item_id>/images/primary")
     def api_jellyfin_item_primary_image(item_id: str) -> Response:
