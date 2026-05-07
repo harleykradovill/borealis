@@ -87,7 +87,6 @@
   inset: 0;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 180ms ease;
 }
 
 .session-card::before {
