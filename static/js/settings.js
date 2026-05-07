@@ -75,7 +75,7 @@ const jf_helpers = (function () {
 
   function escapeHtml(s) {
     if (s === null || s === undefined) return "";
-    return String(s).replace(
+    return String(s).replaceAll(
       /[&<>"']/g,
       (c) =>
         ({
@@ -112,7 +112,9 @@ const jf_helpers = (function () {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
-    return h ? `${h}h ${m}m` : m ? `${m}m ${s}s` : `${s}s`;
+    if (h) return `${h}h ${m}m`;
+    if (m) return `${m}m ${s}s`;
+    return `${s}s`;
   }
 
   function maskKey(key) {
@@ -184,19 +186,19 @@ function maskKey(key) {
   function formatRelativeTime(ts, emptyLabel) {
     if (!ts) return emptyLabel;
 
-    var targetSec = Number(ts);
+    let targetSec = Number(ts);
     if (!Number.isFinite(targetSec)) return emptyLabel;
 
-    var nowSec = Math.floor(Date.now() / 1000);
-    var diff = targetSec - nowSec;
-    var absDiff = Math.abs(diff);
+    let nowSec = Math.floor(Date.now() / 1000);
+    let diff = targetSec - nowSec;
+    let absDiff = Math.abs(diff);
 
     if (absDiff < 10) {
       return diff >= 0 ? "in a few seconds" : "just now";
     }
 
-    var value = 0;
-    var unit = "";
+    let value = 0;
+    let unit = "";
 
     if (absDiff < 3600) {
       value = Math.floor(absDiff / 60) || 1;
@@ -218,7 +220,7 @@ function maskKey(key) {
   function renderSyncStatus(payload) {
     if (!payload) return;
 
-    var nextAt = payload.next_scheduled_sync_at;
+    let nextAt = payload.next_scheduled_sync_at;
     if (fields.sync_next_at) {
       fields.sync_next_at.textContent = nextAt
         ? formatRelativeTime(nextAt, "Not scheduled")
@@ -231,9 +233,9 @@ function maskKey(key) {
   }
 
   async function refreshSyncStatus() {
-    var result = await fetchJson("/api/settings/sync-status");
-    if (!result || !result.ok) return;
-    var payload = result.data && typeof result.data === "object" ? result.data : result;
+    let result = await fetchJson("/api/settings/sync-status");
+    if (!result?.ok) return;
+    let payload = result.data && typeof result.data === "object" ? result.data : result;
     renderSyncStatus(payload);
   }
 
@@ -271,7 +273,7 @@ function maskKey(key) {
   let pendingPayload = {};
 
   function scheduleSave(payload) {
-    pendingPayload = Object.assign({}, pendingPayload, payload);
+    pendingPayload = { ...pendingPayload, ...payload };
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
       const toSend = pendingPayload;
@@ -284,13 +286,12 @@ function maskKey(key) {
   async function saveSettings(payload) {
     try {
       const result = await postJson("/api/settings", payload, "PUT");
-      if (!result || !result.ok) {
+      if (!result?.ok) {
         showToast(result?.message || "Failed to save settings", "error");
         return;
       }
 
-      const updated =
-        result && result.data && typeof result.data === "object" ? result.data : result;
+      const updated = typeof result?.data === "object" ? result.data : result;
 
       if (fields.hour_format && "hour_format" in updated) {
         fields.hour_format.value = updated.hour_format;
@@ -363,10 +364,9 @@ function maskKey(key) {
 
   async function refreshManualSyncButtonState() {
     const result = await fetchJson("/api/analytics/server/sync-progress");
-    if (!result || !result.ok) return;
+    if (!result?.ok) return;
 
-    const syncing =
-      result.syncing === true || (result.data && result.data.syncing === true);
+    const syncing = result.syncing === true || result.data?.syncing === true;
 
     setManualSyncButtonState(!!syncing);
   }
@@ -393,7 +393,7 @@ function maskKey(key) {
 
       try {
         const result = await postJson("/api/sync/periodic", {}, "POST");
-        if (!result || !result.ok) {
+        if (!result?.ok) {
           showToast(result?.message || "Failed to start manual sync", "error");
           await refreshManualSyncButtonState();
           return;
@@ -402,12 +402,14 @@ function maskKey(key) {
         showToast("Failed to start manual sync", "error");
         console.error(err);
       } finally {
-        setTimeout(() => {
-          refreshManualSyncButtonState().catch(() => {});
-        }, 300);
+        setTimeout(handleSyncComplete, 300);
         refreshSyncStatus().catch(function () {});
       }
     });
+  }
+
+  function handleSyncComplete() {
+    refreshManualSyncButtonState().catch(() => {});
   }
 
   function activate(id) {

@@ -259,6 +259,10 @@ body {
     background-color 120ms ease;
 }
 
+.form-field select {
+  appearance: auto;
+}
+
 .form-field input:hover,
 .form-field select:hover,
 .form-field textarea:hover,

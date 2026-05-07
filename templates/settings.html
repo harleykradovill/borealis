@@ -30,15 +30,6 @@
                 General
               </a>
               <a
-                id="jellyfin-tab"
-                href="#jellyfin"
-                class="settings-tab"
-                role="tab"
-                tabindex="-1"
-              >
-                Jellyfin
-              </a>
-              <a
                 id="task-log-tab"
                 href="#tasklog"
                 class="settings-tab"
@@ -111,36 +102,32 @@
                 <section class="settings-group">
                   <h3 class="settings-group-title">Database</h3>
                 </section>
-              </form>
-            </div>
 
-            <div class="settings-content" role="tabpanel" id="jellyfin" hidden>
-              <div id="jf-no-server" class="jf-server-container">
-                <p>You do not have a server added yet. You should not be here.</p>
-              </div>
+                <section class="settings-group">
+                  <h3 class="settings-group-title">Jellyfin</h3>
 
-              <div id="jf-server-added" class="jf-server-container" hidden>
-                <div class="jf-server-info">
-                  <div class="jf-server-details">
-                    <div class="jf-server-name" id="jf-server-name-display">
-                      Server Name
+                  <div class="jf-server-info">
+                    <div class="jf-server-details">
+                      <div class="jf-server-name" id="jf-server-name-display">
+                        Server Name
+                      </div>
+                      <div class="jf-server-host" id="jf-server-host-display">
+                        127.0.0.1:8096
+                      </div>
+                      <div class="jf-server-key" id="jf-server-key-display">
+                        API Key: ••••••••••••••••
+                      </div>
                     </div>
-                    <div class="jf-server-host" id="jf-server-host-display">
-                      127.0.0.1:8096
-                    </div>
-                    <div class="jf-server-key" id="jf-server-key-display">
-                      API Key: ••••••••••••••••
-                    </div>
+                    <button
+                      id="jf-remove-server-btn"
+                      class="btn btn-danger"
+                      type="button"
+                    >
+                      Remove Server & Reset Borealis
+                    </button>
                   </div>
-                  <button
-                    id="jf-remove-server-btn"
-                    class="btn btn-danger"
-                    type="button"
-                  >
-                    Remove Server
-                  </button>
-                </div>
-              </div>
+                </section>
+              </form>
             </div>
 
             <div class="settings-content" role="tabpanel" id="tasklog" hidden>
