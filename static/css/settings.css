@@ -167,15 +167,14 @@
 }
 
 .jf-server-host {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   color: var(--text);
   font-weight: 500;
-  margin-bottom: 0.5rem;
   word-break: break-all;
 }
 
 .jf-server-key {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--text-muted);
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",

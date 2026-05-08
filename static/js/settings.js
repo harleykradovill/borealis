@@ -453,11 +453,6 @@ function maskKey(key) {
   const serverKeyDisplay = document.getElementById("jf-server-key-display");
   const serverNameDisplay = document.getElementById("jf-server-name-display");
 
-  function updateServerState(hasServer) {
-    if (noServerDiv) noServerDiv.hidden = hasServer;
-    if (serverAddedDiv) serverAddedDiv.hidden = !hasServer;
-  }
-
   function displayServer(name, host, port, apiKey) {
     if (serverNameDisplay) {
       serverNameDisplay.textContent = name || "Unknown Name";
@@ -482,10 +477,7 @@ function maskKey(key) {
       const hasServer = !!(data.jf_host && data.jf_port && data.jf_api_key);
 
       if (hasServer) {
-        updateServerState(true);
         displayServer(data.jf_server_name, data.jf_host, data.jf_port, data.jf_api_key);
-      } else {
-        updateServerState(false);
       }
     } catch (err) {
       console.error("Failed to check server state:", err);
