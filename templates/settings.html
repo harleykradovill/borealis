@@ -17,151 +17,135 @@
       <main id="content" class="content" tabindex="-1">
         {% block content %}{% endblock %}
 
-        <section class="settings-shell">
-          <div class="settings-container" role="tablist">
-            <nav class="settings-nav">
-              <a
-                id="general-tab"
-                href="#general"
-                class="settings-tab active"
-                role="tab"
-                tabindex="0"
-              >
-                General
-              </a>
-              <a
-                id="task-log-tab"
-                href="#tasklog"
-                class="settings-tab"
-                role="tab"
-                tabindex="-1"
-              >
-                Task Log
-              </a>
-              <a
-                id="about-tab"
-                href="#about"
-                class="settings-tab"
-                role="tab"
-                tabindex="-1"
-              >
-                About
-              </a>
-            </nav>
+        <nav class="settings-nav">
+          <a
+            id="general-tab"
+            href="#general"
+            class="settings-tab active"
+            role="tab"
+            tabindex="0"
+          >
+            General
+          </a>
+          <a
+            id="task-log-tab"
+            href="#tasklog"
+            class="settings-tab"
+            role="tab"
+            tabindex="-1"
+          >
+            Task Log
+          </a>
+          <a id="about-tab" href="#about" class="settings-tab" role="tab" tabindex="-1">
+            About
+          </a>
+        </nav>
 
-            <div id="general" class="settings-content" role="tabpanel">
-              <form class="settings-form">
-                <section class="settings-group">
-                  <h3 class="settings-group-title">Display</h3>
+        <section id="general" class="settings-content" role="tabpanel">
+          <form class="settings-form">
+            <section class="settings-group">
+              <h3 class="settings-group-title">Display</h3>
 
-                  <div class="form-field">
-                    <label for="hour-format">Hour Format</label>
-                    <select id="hour-format" name="hour_format">
-                      <option value="12">12 Hours</option>
-                      <option value="24">24 Hours</option>
-                    </select>
+              <div class="form-field">
+                <label for="hour-format">Hour Format</label>
+                <select id="hour-format" name="hour_format">
+                  <option value="12">12 Hours</option>
+                  <option value="24">24 Hours</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="language">Language</label>
+                <select id="language" name="language">
+                  <option value="en">English</option>
+                </select>
+              </div>
+            </section>
+
+            <section class="settings-group">
+              <h3 class="settings-group-title">Sync</h3>
+
+              <div class="form-field">
+                <label for="sync-interval">Sync Interval</label>
+                <select id="sync-interval" name="sync_interval">
+                  <option value="1800">30 Minutes</option>
+                  <option value="3600">1 Hour</option>
+                  <option value="43200">12 Hours</option>
+                </select>
+              </div>
+
+              <div class="sync-status-card" id="sync-status-card">
+                <div class="sync-status-grid">
+                  <div class="sync-stat">
+                    <div class="sync-stat-label">Next Scheduled</div>
+                    <div class="sync-stat-value" id="sync-next-at">Not scheduled</div>
+                    <div class="sync-stat-sub" id="sync-next-eta"></div>
                   </div>
-
-                  <div class="form-field">
-                    <label for="language">Language</label>
-                    <select id="language" name="language">
-                      <option value="en">English</option>
-                    </select>
-                  </div>
-                </section>
-
-                <section class="settings-group">
-                  <h3 class="settings-group-title">Sync</h3>
-
-                  <div class="form-field">
-                    <label for="sync-interval">Sync Interval</label>
-                    <select id="sync-interval" name="sync_interval">
-                      <option value="1800">30 Minutes</option>
-                      <option value="3600">1 Hour</option>
-                      <option value="43200">12 Hours</option>
-                    </select>
-                  </div>
-
-                  <div class="sync-status-card" id="sync-status-card">
-                    <div class="sync-status-grid">
-                      <div class="sync-stat">
-                        <div class="sync-stat-label">Next Scheduled</div>
-                        <div class="sync-stat-value" id="sync-next-at">
-                          Not scheduled
-                        </div>
-                        <div class="sync-stat-sub" id="sync-next-eta"></div>
-                      </div>
-                    </div>
-
-                    <button id="manual-periodic-sync-btn" class="btn" type="button">
-                      Sync Now
-                    </button>
-                  </div>
-                </section>
-
-                <section class="settings-group">
-                  <h3 class="settings-group-title">Database</h3>
-                </section>
-
-                <section class="settings-group">
-                  <h3 class="settings-group-title">Jellyfin</h3>
-
-                  <div class="jf-server-info">
-                    <div class="jf-server-details">
-                      <div class="jf-server-name" id="jf-server-name-display">
-                        Server Name
-                      </div>
-                      <div class="jf-server-host" id="jf-server-host-display">
-                        127.0.0.1:8096
-                      </div>
-                      <div class="jf-server-key" id="jf-server-key-display">
-                        API Key: ••••••••••••••••
-                      </div>
-                    </div>
-                    <button
-                      id="jf-remove-server-btn"
-                      class="btn btn-danger"
-                      type="button"
-                    >
-                      Remove Server & Reset Borealis
-                    </button>
-                  </div>
-                </section>
-              </form>
-            </div>
-
-            <div class="settings-content" role="tabpanel" id="tasklog" hidden>
-              <div id="tasklog-panel" class="settings-content">
-                <div id="tasklog-empty" class="settings-placeholder" hidden>
-                  <p>No task logs found.</p>
                 </div>
 
-                <ul class="tasklog-list" id="tasklog-list"></ul>
+                <button id="manual-periodic-sync-btn" class="btn" type="button">
+                  Sync Now
+                </button>
               </div>
+            </section>
+
+            <section class="settings-group">
+              <h3 class="settings-group-title">Database</h3>
+            </section>
+
+            <section class="settings-group">
+              <h3 class="settings-group-title">Jellyfin</h3>
+
+              <div class="jf-server-info">
+                <div class="jf-server-details">
+                  <div class="jf-server-name" id="jf-server-name-display">
+                    Server Name
+                  </div>
+                  <div class="jf-server-host" id="jf-server-host-display">
+                    127.0.0.1:8096
+                  </div>
+                  <div class="jf-server-key" id="jf-server-key-display">
+                    API Key: ••••••••••••••••
+                  </div>
+                </div>
+                <button id="jf-remove-server-btn" class="btn btn-danger" type="button">
+                  Remove Server & Reset Borealis
+                </button>
+              </div>
+            </section>
+          </form>
+        </section>
+
+        <section id="tasklog" class="settings-content" role="tabpanel" hidden>
+          <div id="tasklog-panel" class="settings-content">
+            <div id="tasklog-empty" class="settings-placeholder" hidden>
+              <p>No task logs found.</p>
             </div>
 
-            <div class="settings-content" role="tabpanel" id="about" hidden>
-              <div class="about-list">
-                <p>
-                  <strong>Borealis Version:</strong>
-                  <span id="borealis-version">0.1.0</span>
-                </p>
-                <p>
-                  <strong>Latest Borealis Version:</strong>
-                  <span id="borealis-latest">0.1.0</span>
-                </p>
-                <p>
-                  <strong>Repository:</strong>
-                  <a
-                    href="https://github.com/harleykradovill/borealis"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    github.com/harleykradovill/borealis
-                  </a>
-                </p>
-              </div>
-            </div>
+            <ul class="tasklog-list" id="tasklog-list"></ul>
+          </div>
+        </section>
+
+        <section id="about" class="settings-content" role="tabpanel" hidden>
+          <div class="about-list">
+            <p>
+              <strong>Borealis Version:</strong>
+              <span id="borealis-version">0.1.0</span>
+            </p>
+            <p>
+              <strong>Latest Borealis Version:</strong>
+              <span id="borealis-latest">0.1.0</span>
+            </p>
+            <p>
+              <strong>Repository:</strong>
+              <a
+                href="https://github.com/harleykradovill/borealis"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                github.com/harleykradovill/borealis
+              </a>
+            </p>
           </div>
         </section>
       </main>

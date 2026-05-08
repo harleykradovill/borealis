@@ -448,8 +448,6 @@ function maskKey(key) {
 })();
 
 (function () {
-  const noServerDiv = document.getElementById("jf-no-server");
-  const serverAddedDiv = document.getElementById("jf-server-added");
   const removeServerBtn = document.getElementById("jf-remove-server-btn");
   const serverHostDisplay = document.getElementById("jf-server-host-display");
   const serverKeyDisplay = document.getElementById("jf-server-key-display");
@@ -518,11 +516,6 @@ function maskKey(key) {
 
         showToast("Server removed", "success");
         updateServerState(false);
-
-        const libList = document.getElementById("libraries-list");
-        const libEmpty = document.getElementById("libraries-empty");
-        if (libList) libList.innerHTML = "";
-        if (libEmpty) libEmpty.hidden = false;
       } catch (err) {
         showToast("Error removing server", "error");
         console.error(err);

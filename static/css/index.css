@@ -1,9 +1,10 @@
 /* Spacing between sections */
 .glance-section,
+#sessions-section,
 .plays-overview-row,
 .statistics-section,
 .media-overview-row {
-  margin: 1.5rem 0;
+  margin-bottom: 1.5rem;
 }
 
 /* Section Headers */
