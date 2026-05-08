@@ -599,3 +599,41 @@ function maskKey(key) {
   if (location.hash === "#tasklog") setTimeout(loadIfVisible, 0);
   if (tab) tab.addEventListener("click", () => setTimeout(loadIfVisible, 0));
 })();
+
+(function () {
+  const dbInfoGrid = document.getElementById("db-info-grid");
+
+  async function loadDatabaseInfo() {
+    try {
+      const result = await fetchJson("/api/database/info");
+      if (!result?.ok) {
+        console.error("Failed to load database info:", result?.message);
+        return;
+      }
+
+      const data =
+        result.data && typeof result.data === "object" ? result.data : result;
+
+      if (dbInfoGrid) {
+        if (data.alembic_version && document.getElementById("db-version")) {
+          document.getElementById("db-version").textContent = data.alembic_version;
+        }
+        if (data.size && document.getElementById("db-size")) {
+          document.getElementById("db-size").textContent = data.size;
+        }
+        if (data.created_at && document.getElementById("db-created")) {
+          document.getElementById("db-created").textContent = data.created_at;
+        }
+        if (data.modified_at && document.getElementById("db-modified")) {
+          document.getElementById("db-modified").textContent = data.modified_at;
+        }
+      }
+    } catch (err) {
+      console.error("Error loading database info:", err);
+    }
+  }
+
+  if (dbInfoGrid) {
+    loadDatabaseInfo();
+  }
+})();

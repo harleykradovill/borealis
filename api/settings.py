@@ -1,7 +1,10 @@
+from datetime import datetime
 import json
 import logging
+from sqlalchemy import text
 import threading
 import time
+import os
 
 from flask import Blueprint, Response, current_app, jsonify, request, make_response
 
@@ -343,5 +346,91 @@ def create_settings_blueprint(*, svc, repo, sync):
         return make_response(
             jsonify({"ok": True, "message": "Periodic sync started."}), 200
         )
+
+    @bp.get("/database/info")
+    def get_database_info() -> Response:
+        """
+        Retrieve Borealis database information.
+
+        :returns: JSON response with database version, size in bytes, creation time, and last modified time
+        """
+
+        db_url = current_app.config.get("DATABASE_URL", "sqlite:///borealis.db")
+
+        if db_url.startswith("sqlite:///"):
+            db_path = db_url.removeprefix("sqlite:///")
+        elif db_url.startswith("sqlite://"):
+            db_path = db_url.removeprefix("sqlite://")
+        else:
+            db_path = db_url
+
+        try:
+            if not os.path.exists(db_path):
+                return make_response(
+                    jsonify(
+                        {
+                            "ok": False,
+                            "message": "Database file not found.",
+                        }
+                    ),
+                    404,
+                )
+
+            stat = os.stat(db_path)
+
+            size_bytes = stat.st_size
+            if size_bytes < 1024:
+                size_str = f"{size_bytes} B"
+            elif size_bytes < 1024**2:
+                size_str = f"{size_bytes / 1024:.2f} KB"
+            elif size_bytes < 1024**3:
+                size_str = f"{size_bytes / (1024 ** 2):.2f} MB"
+            else:
+                size_str = f"{size_bytes / (1024 ** 3):.2f} GB"
+
+            created_at = datetime.fromtimestamp(stat.st_ctime).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+            modified_at = datetime.fromtimestamp(stat.st_mtime).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+
+            alembic_version = None
+            try:
+                with repo._session() as session:
+                    result = session.execute(
+                        text("SELECT version_num FROM alembic_version LIMIT 1")
+                    )
+                    row = result.fetchone()
+                    alembic_version = row[0] if row else None
+            except Exception as e:
+                logging.warning(f"[WARN] Failed to get alembic version: {e}")
+                alembic_version = "Error getting database version."
+
+            return make_response(
+                jsonify(
+                    {
+                        "ok": True,
+                        "alembic_version": alembic_version,
+                        "size": size_str,
+                        "size_bytes": size_bytes,
+                        "created_at": created_at,
+                        "modified_at": modified_at,
+                    }
+                ),
+                200,
+            )
+
+        except Exception as exc:
+            logging.exception("[ERROR] Failed to retrieve database info")
+            return make_response(
+                jsonify(
+                    {
+                        "ok": False,
+                        "message": f"Failed to retrieve database info: {str(exc)}",
+                    }
+                ),
+                500,
+            )
 
     return bp
