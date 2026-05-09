@@ -188,28 +188,26 @@ def map_item(
     )
 
     video_codec = None
+    audio_codec = None
     resolution = None
     media_sources = jf_item.get("MediaSources", [])
     if media_sources and isinstance(media_sources[0], dict):
         media_streams = media_sources[0].get("MediaStreams", [])
         for stream in media_streams:
-            if isinstance(stream, dict) and stream.get("Type") == "Video":
-                video_codec = _clean_str(stream.get("Codec"))
-                width = stream.get("Width")
-                height = stream.get("Height")
-                if width and height:
-                    resolution = f"{width}x{height}"
-                break
-
-    # Extract languages from audio streams
-    languages = []
-    if media_sources and isinstance(media_sources[0], dict):
-        media_streams = media_sources[0].get("MediaStreams", [])
-        for stream in media_streams:
-            if isinstance(stream, dict) and stream.get("Type") == "Audio":
-                lang = _clean_str(stream.get("Language"))
-                if lang and lang not in languages:
-                    languages.append(lang)
+            if isinstance(stream, dict):
+                if stream.get("Type") == "Video" and not video_codec:
+                    video_codec = _clean_str(stream.get("Codec"))
+                    width = stream.get("Width")
+                    height = stream.get("Height")
+                    if width and height:
+                        resolution = f"{width}x{height}"
+                elif stream.get("Type") == "Audio" and not audio_codec:
+                    codec = _clean_str(stream.get("Codec"))
+                    channels = stream.get("Channels")
+                    if codec and channels:
+                        audio_codec = f"{codec}{channels}.0"
+                    elif codec:
+                        audio_codec = codec
 
     return {
         "jellyfin_id": jf_id,
@@ -221,8 +219,8 @@ def map_item(
         "size_bytes": size_bytes,
         "date_created": _parse_jf_date(jf_item.get("DateCreated")),
         "video_codec": video_codec,
+        "audio_codec": audio_codec,
         "resolution": resolution,
-        "languages": json.dumps(languages) if languages else None,
     }
 
 

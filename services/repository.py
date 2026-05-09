@@ -557,8 +557,8 @@ class Repository:
                         data.get("size_bytes"), item.size_bytes or 0
                     )
                     item.video_codec = data.get("video_codec", item.video_codec)
+                    item.audio_codec = data.get("audio_codec", item.audio_codec)
                     item.resolution = data.get("resolution", item.resolution)
-                    item.languages = data.get("languages", item.languages)
                 else:
                     session.add(
                         Item(
@@ -572,8 +572,8 @@ class Repository:
                             archived=False,
                             date_created=data.get("date_created"),
                             video_codec=data.get("video_codec"),
+                            audio_codec=data.get("audio_codec"),
                             resolution=data.get("resolution"),
-                            languages=data.get("languages"),
                         )
                     )
 

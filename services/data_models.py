@@ -142,8 +142,8 @@ class Item(Base):
     size_bytes = Column(BigInteger, default=0)
     date_created = Column(BigInteger, nullable=True)
     video_codec = Column(String(64), nullable=True)
+    audio_codec = Column(String(64), nullable=True)
     resolution = Column(String(32), nullable=True)
-    languages = Column(Text, nullable=True)
 
     library = relationship("Library", back_populates="items")
 
@@ -156,15 +156,15 @@ class Item(Base):
         Index("idx_item_size_bytes", "size_bytes"),
         Index("idx_date_created", "date_created"),
         Index("idx_video_codec", "video_codec"),
+        Index("idx_audio_codec", "audio_codec"),
         Index("idx_resolution", "resolution"),
-        Index("idx_languages", "languages"),
     )
 
     def to_dict(self) -> Dict[str, Any]:
         """
         Serialize the media item record for API responses.
 
-        :returns: Dictionary containing item ID, library ID, playback stats, runtime, size, codec, resolution, languages, and archive state
+        :returns: Dictionary containing item ID, library ID, playback stats, runtime, size, codecs, resolution, and archive state
         """
         return {
             "id": self.id,
@@ -179,8 +179,8 @@ class Item(Base):
             "archived": self.archived,
             "date_created": self.date_created,
             "video_codec": self.video_codec,
+            "audio_codec": self.audio_codec,
             "resolution": self.resolution,
-            "languages": self.languages,
         }
 
 

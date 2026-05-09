@@ -14,8 +14,8 @@
 .glance-section h2,
 .plays-trend-section h2,
 .resolutions-section h2,
-.codecs-section h2,
-.languages-section h2 {
+.video-codecs-section h2,
+.audio-codecs-section h2 {
   margin: 0 0 0.75rem 0;
   color: var(--text);
   font-size: 1rem;
@@ -470,8 +470,8 @@
 }
 
 .resolutions-section,
-.codecs-section,
-.languages-section {
+.video-codecs-section,
+.audio-codecs-section {
   flex: 1 1 0;
   min-width: 0;
   border: 1px solid var(--border);
