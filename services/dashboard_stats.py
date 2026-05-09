@@ -20,6 +20,7 @@ SECTION_WATCH_TIME_BY_USER = "top_users_by_watch_time"
 SECTION_MOST_ACTIVE_DAY = "most_active_weekdays"
 SECTION_RECENTLY_WATCHED = "recently_watched"
 SECTION_RESOLUTIONS = "resolutions"
+SECTION_VIDEO_CODECS = "video_codecs"
 SECTION_AUDIO_CODECS = "audio_codecs"
 
 
@@ -100,6 +101,7 @@ class DashboardStatsBuilder:
                 name_resolver=name_resolver,
             ),
             SECTION_RESOLUTIONS: DashboardStatsBuilder.resolutions(session, limit=8),
+            SECTION_VIDEO_CODECS: DashboardStatsBuilder.video_codecs(session, limit=8),
             SECTION_AUDIO_CODECS: DashboardStatsBuilder.audio_codecs(session, limit=8),
         }
 
@@ -387,6 +389,53 @@ class DashboardStatsBuilder:
 
         out.sort(
             key=lambda row: (-int(row.get("count") or 0), row.get("audio_codec") or "")
+        )
+
+        return out
+
+    @staticmethod
+    def video_codecs(session: Session, limit: int) -> List[Dict[str, Any]]:
+        """
+        Return top video codec counts for Episode/Movie items with an "Others" bucket.
+
+        :param session: Active SQL session
+        :param limit: Max number of rows to return including Others
+        :returns: List of video codec rows with name and count
+        """
+        max_rows = max(2, int(limit or 8))  # Reserve a row for Others
+        primary_limit = max_rows - 1  # Keep top N-1 before Others
+
+        rows = (
+            session.query(
+                Item.video_codec,
+                func.count(Item.id).label("total"),
+            )
+            .filter(
+                Item.archived.is_(False),
+                func.lower(Item.type).in_(["episode", "movie"]),
+                Item.video_codec.isnot(None),
+                func.trim(Item.video_codec) != "",
+            )
+            .group_by(Item.video_codec)
+            .order_by(func.count(Item.id).desc(), Item.video_codec.asc())
+            .all()
+        )
+
+        trimmed = rows[:primary_limit]
+        others_rows = rows[primary_limit:]
+        others_total = sum(int(r.total or 0) for r in others_rows)  # Aggregate rest
+
+        out = [
+            {"video_codec": str(codec), "count": int(total or 0)}
+            for codec, total in trimmed
+            if codec
+        ]
+
+        if others_total > 0:
+            out.append({"video_codec": "Others", "count": others_total})
+
+        out.sort(
+            key=lambda row: (-int(row.get("count") or 0), row.get("video_codec") or "")
         )
 
         return out
