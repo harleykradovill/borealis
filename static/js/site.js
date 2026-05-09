@@ -112,3 +112,123 @@
   connectSyncStream();
   fetchSyncSnapshot();
 })();
+
+globalThis.jf_helpers = (function () {
+  async function fetchJson(path, opts = {}) {
+    try {
+      const resp = await fetch(path, opts.method ? opts : { method: "GET" });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        return {
+          ok: false,
+          status: resp.status,
+          message: data?.message || "HTTP error",
+          data: null,
+        };
+      }
+      if (data && typeof data === "object" && ("ok" in data || "data" in data)) {
+        return data;
+      }
+      return { ok: true, status: resp.status, data };
+    } catch (error) {
+      globalThis.Toast.showToast("Network error", "error");
+      return {
+        ok: false,
+        status: 0,
+        message: error?.message || "Network error",
+        data: null,
+      };
+    }
+  }
+
+  async function postJson(path, body, method = "POST") {
+    try {
+      const resp = await fetch(path, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        return {
+          ok: false,
+          status: resp.status,
+          message: data?.message || "HTTP error",
+          data: null,
+        };
+      }
+      if (data && typeof data === "object" && ("ok" in data || "data" in data)) {
+        return data;
+      }
+      return { ok: true, status: resp.status, data };
+    } catch (error) {
+      globalThis.Toast.showToast("Network error", "error");
+      return {
+        ok: false,
+        status: 0,
+        message: error?.message || "Network error",
+        data: null,
+      };
+    }
+  }
+
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return "";
+    return String(s).replaceAll(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[c],
+    );
+  }
+
+  function humanDuration(ms) {
+    if (!ms || ms <= 0) return "0s";
+    let s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    s = s % 3600;
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    if (h) return `${h}h ${m}m`;
+    if (m) return `${m}m ${sec}s`;
+    return `${sec}s`;
+  }
+
+  function humanBytes(bytes) {
+    if (!bytes || bytes === 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${units[i]}`;
+  }
+
+  function humanTime(seconds) {
+    if (!seconds || seconds === 0) return "0s";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h) return `${h}h ${m}m`;
+    if (m) return `${m}m ${s}s`;
+    return `${s}s`;
+  }
+
+  function maskKey(key) {
+    if (!key) return "";
+    if (key.length <= 4) return "•".repeat(key.length);
+    return `${key.slice(0, 4)}${"•".repeat(Math.max(8, key.length - 4))}`;
+  }
+
+  return {
+    fetchJson,
+    postJson,
+    escapeHtml,
+    humanDuration,
+    humanBytes,
+    humanTime,
+    maskKey,
+  };
+})();

@@ -3,27 +3,12 @@
   const empty = document.getElementById("libraries-empty");
   const cardsContainer = document.getElementById("libraries-cards");
 
-  function humanBytes(bytes) {
-    if (!bytes || bytes === 0) return "0 B";
-    const units = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${units[i]}`;
-  }
-
-  function humanTime(seconds) {
-    if (!seconds || seconds === 0) return "0s";
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return h ? `${h}h ${m}m` : m ? `${m}m ${s}s` : `${s}s`;
-  }
-
   async function loadLibraries() {
     try {
       const resp = await fetch("/api/analytics/stats/libraries");
       if (!resp.ok) throw new Error("Network error");
       const data = await resp.json();
-      if (!data || !data.ok) throw new Error(data?.message || "API error");
+      if (!data?.ok) throw new Error(data?.message || "API error");
 
       const libs = Array.isArray(data.data) ? data.data : [];
       renderLibraries(libs);
@@ -83,11 +68,14 @@
       const attrs = [
         { label: "Name", value: lib.name || "(unnamed)", isName: true },
         { label: "Type", value: typeText },
-        { label: "Total Time", value: humanTime(lib.total_time_seconds || 0) },
-        { label: "Size", value: humanBytes(lib.size_bytes || 0) },
+        {
+          label: "Total Time",
+          value: globalThis.jf_helpers.humanTime(lib.total_time_seconds || 0),
+        },
+        { label: "Size", value: globalThis.jf_helpers.humanBytes(lib.size_bytes || 0) },
         {
           label: "Total Playback",
-          value: humanTime(lib.total_playback_seconds || 0),
+          value: globalThis.jf_helpers.humanTime(lib.total_playback_seconds || 0),
         },
         { label: "Last Played", value: lib.last_played_item_name || "-" },
       ];
@@ -194,7 +182,7 @@
       const resp = await fetch("/api/analytics/items/added-last-30-days");
       if (!resp.ok) throw new Error("Network error");
       const payload = await resp.json();
-      if (!payload || !payload.ok) throw new Error(payload?.message || "API error");
+      if (!payload?.ok) throw new Error(payload?.message || "API error");
 
       const data = payload.data || {};
       const dates = Array.isArray(data.dates) ? data.dates : generateDateRange(30);
@@ -203,7 +191,7 @@
 
       const serverLibs = Array.isArray(data.libraries) ? data.libraries : [];
       serverLibs.forEach((sLib) => {
-        if (!sLib || !sLib.jellyfin_id || !Array.isArray(sLib.counts)) return;
+        if (!sLib?.jellyfin_id || !Array.isArray(sLib.counts)) return;
         const jfId = sLib.jellyfin_id;
         const counts = sLib.counts;
         if (!itemsByDate[jfId]) return;
@@ -316,14 +304,7 @@
     const totalPlays = playsData.reduce((a, b) => a + b, 0);
 
     // Files chart
-    if (!totalFiles) {
-      if (emptyElFiles) emptyElFiles.hidden = false;
-      filesChartCanvas.style.display = "none";
-      if (filesChart) {
-        filesChart.destroy();
-        filesChart = null;
-      }
-    } else {
+    if (totalFiles) {
       if (emptyElFiles) emptyElFiles.hidden = true;
       filesChartCanvas.style.display = "";
       const bgColors = paletteFor(labels.length);
@@ -343,7 +324,7 @@
             {
               data: filesData,
               backgroundColor: bgColors,
-              borderColor: Array(labels.length).fill(borderColor.trim()),
+              borderColor: new Array(labels.length).fill(borderColor.trim()),
               borderWidth: 1,
             },
           ],
@@ -370,6 +351,13 @@
           },
         },
       });
+    } else {
+      if (emptyElFiles) emptyElFiles.hidden = false;
+      filesChartCanvas.style.display = "none";
+      if (filesChart) {
+        filesChart.destroy();
+        filesChart = null;
+      }
     }
 
     // Plays chart
@@ -401,7 +389,7 @@
           {
             data: playsData,
             backgroundColor: bgColors2,
-            borderColor: Array(labels.length).fill(borderColor2.trim()),
+            borderColor: new Array(labels.length).fill(borderColor2.trim()),
             borderWidth: 1,
           },
         ],

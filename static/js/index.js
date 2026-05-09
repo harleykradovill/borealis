@@ -465,13 +465,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const numberFmt = new Intl.NumberFormat();
 
-  function humanBytes(bytes) {
-    if (!bytes || bytes === 0) return "0 B";
-    const units = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${units[i]}`;
-  }
-
   function setText(el, value) {
     if (!el) return;
     el.textContent = value;
@@ -493,7 +486,10 @@ document.addEventListener("DOMContentLoaded", () => {
       setText(elActiveSessions, numberFmt.format(Number(data.active_sessions || 0)));
       setText(elTotalPlays, numberFmt.format(Number(data.total_plays || 0)));
       setText(elTotalItems, numberFmt.format(Number(data.total_items || 0)));
-      setText(elTotalSize, humanBytes(Number(data.total_size_bytes || 0)));
+      setText(
+        elTotalSize,
+        globalThis.jf_helpers.humanBytes(Number(data.total_size_bytes || 0)),
+      );
       setText(elTotalUsers, numberFmt.format(Number(data.total_users || 0)));
 
       if (grid) grid.hidden = false;

@@ -215,9 +215,9 @@ def create_settings_blueprint(*, svc, repo, sync):
             if not k:
                 return None
             try:
-                if len(k) <= 8:
-                    return "*" * max(4, len(k))
-                return f"{k[:4]}…{k[-4:]}"
+                if len(k) <= 4:
+                    return "*" * len(k)
+                return f"{k[:4]}{'*' * (len(k) - 4)}"
             except Exception:
                 return None
 

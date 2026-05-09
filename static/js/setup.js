@@ -1,21 +1,4 @@
 (function () {
-  async function postJson(path, body, method = "POST") {
-    try {
-      const resp = await fetch(path, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      return await resp.json();
-    } catch (error) {
-      return {
-        ok: false,
-        status: 0,
-        message: error?.message || "Network error",
-      };
-    }
-  }
-
   const state = {
     hourFormat: "12",
     language: "en",
@@ -231,7 +214,7 @@
       const original = buttons.page2Test.textContent;
       buttons.page2Test.textContent = "Testing...";
 
-      const result = await postJson(
+      const result = await globalThis.jf_helpers.postJson(
         "/api/test-connection-with-credentials",
         { jf_host: host, jf_port: port, jf_api_key: apiKey },
         "POST",

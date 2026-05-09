@@ -1,145 +1,3 @@
-const jf_helpers = (function () {
-  async function fetchJson(path, opts = {}) {
-    try {
-      const resp = await fetch(path, opts.method ? opts : { method: "GET" });
-      const data = await resp.json().catch(() => ({}));
-      if (!resp.ok) {
-        return {
-          ok: false,
-          status: resp.status,
-          message: data?.message || "HTTP error",
-          data: null,
-        };
-      }
-      if (data && typeof data === "object" && ("ok" in data || "data" in data)) {
-        return data;
-      }
-      return { ok: true, status: resp.status, data };
-    } catch (error) {
-      globalThis.Toast.showToast("Network error", "error");
-      return {
-        ok: false,
-        status: 0,
-        message: error?.message || "Network error",
-        data: null,
-      };
-    }
-  }
-
-  async function postJson(path, body, method = "POST") {
-    try {
-      const resp = await fetch(path, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await resp.json().catch(() => ({}));
-      if (!resp.ok) {
-        return {
-          ok: false,
-          status: resp.status,
-          message: data?.message || "HTTP error",
-          data: null,
-        };
-      }
-      if (data && typeof data === "object" && ("ok" in data || "data" in data)) {
-        return data;
-      }
-      return { ok: true, status: resp.status, data };
-    } catch (error) {
-      globalThis.Toast.showToast("Network error", "error");
-      return {
-        ok: false,
-        status: 0,
-        message: error?.message || "Network error",
-        data: null,
-      };
-    }
-  }
-
-  function escapeHtml(s) {
-    if (s === null || s === undefined) return "";
-    return String(s).replaceAll(
-      /[&<>"']/g,
-      (c) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[c],
-    );
-  }
-
-  function humanDuration(ms) {
-    if (!ms || ms <= 0) return "0s";
-    let s = Math.floor(ms / 1000);
-    const h = Math.floor(s / 3600);
-    s = s % 3600;
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    if (h) return `${h}h ${m}m`;
-    if (m) return `${m}m ${sec}s`;
-    return `${sec}s`;
-  }
-
-  function humanBytes(bytes) {
-    if (!bytes || bytes === 0) return "0 B";
-    const units = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${units[i]}`;
-  }
-
-  function humanTime(seconds) {
-    if (!seconds || seconds === 0) return "0s";
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h) return `${h}h ${m}m`;
-    if (m) return `${m}m ${s}s`;
-    return `${s}s`;
-  }
-
-  function maskKey(key) {
-    if (!key) return "";
-    if (key.length <= 8) return "•".repeat(Math.max(4, key.length));
-    return `${key.slice(0, 4)}…${key.slice(-4)}`;
-  }
-
-  return {
-    fetchJson,
-    postJson,
-    escapeHtml,
-    humanDuration,
-    humanBytes,
-    humanTime,
-    maskKey,
-  };
-})();
-
-async function fetchJson(path) {
-  return jf_helpers.fetchJson(path);
-}
-async function postJson(path, body, method = "POST") {
-  return jf_helpers.postJson(path, body, method);
-}
-function escapeHtml(s) {
-  return jf_helpers.escapeHtml(s);
-}
-function humanDuration(ms) {
-  return jf_helpers.humanDuration(ms);
-}
-function humanBytes(bytes) {
-  return jf_helpers.humanBytes(bytes);
-}
-function humanTime(seconds) {
-  return jf_helpers.humanTime(seconds);
-}
-function maskKey(key) {
-  return jf_helpers.maskKey(key);
-}
-
 (function () {
   const tabs = Array.from(document.querySelectorAll(".settings-tab"));
   const panels = Array.from(
@@ -213,7 +71,7 @@ function maskKey(key) {
   }
 
   async function refreshSyncStatus() {
-    let result = await fetchJson("/api/settings/sync-status");
+    let result = await globalThis.jf_helpers.fetchJson("/api/settings/sync-status");
     if (!result?.ok) return;
     let payload = result.data && typeof result.data === "object" ? result.data : result;
     renderSyncStatus(payload);
@@ -265,7 +123,11 @@ function maskKey(key) {
 
   async function saveSettings(payload) {
     try {
-      const result = await postJson("/api/settings", payload, "PUT");
+      const result = await globalThis.jf_helpers.postJson(
+        "/api/settings",
+        payload,
+        "PUT",
+      );
       if (!result?.ok) {
         globalThis.Toast.showToast("Failed to save settings", "error");
         console.error("Failed to save settings: ", result?.message);
@@ -344,7 +206,9 @@ function maskKey(key) {
   }
 
   async function refreshManualSyncButtonState() {
-    const result = await fetchJson("/api/analytics/server/sync-progress");
+    const result = await globalThis.jf_helpers.fetchJson(
+      "/api/analytics/server/sync-progress",
+    );
     if (!result?.ok) return;
 
     const syncing = result.syncing === true || result.data?.syncing === true;
@@ -356,7 +220,7 @@ function maskKey(key) {
     if (manualSyncPollTimer) return;
     manualSyncPollTimer = setInterval(() => {
       refreshManualSyncButtonState().catch(() => {});
-    }, 3000);
+    }, 10000);
   }
 
   function bindManualPeriodicSync() {
@@ -373,7 +237,11 @@ function maskKey(key) {
       btn.textContent = "Starting...";
 
       try {
-        const result = await postJson("/api/sync/periodic", {}, "POST");
+        const result = await globalThis.jf_helpers.postJson(
+          "/api/sync/periodic",
+          {},
+          "POST",
+        );
         if (!result?.ok) {
           globalThis.Toast.showToast("Failed to start manual sync", "error");
           console.error("Failed to start manual sync: ", result?.message);
@@ -443,10 +311,8 @@ function maskKey(key) {
       serverHostDisplay.textContent = `${host}:${port}`;
     }
     if (serverKeyDisplay) {
-      const redacted = apiKey
-        ? `API Key: ${apiKey.substring(0, 3)}**************************`
-        : "API Key: *****************************";
-      serverKeyDisplay.textContent = redacted;
+      const masked = globalThis.jf_helpers.maskKey(apiKey);
+      serverKeyDisplay.textContent = `API Key: ${masked}`;
     }
   }
 
@@ -509,7 +375,7 @@ function maskKey(key) {
 
   async function loadTaskLogs() {
     try {
-      const result = await fetchJson("/api/analytics/task-logs");
+      const result = await globalThis.jf_helpers.fetchJson("/api/analytics/task-logs");
       if (!result.ok) {
         console.error("Failed to load task logs", result.message);
         if (empty) empty.hidden = false;
@@ -540,19 +406,19 @@ function maskKey(key) {
         li.innerHTML = `
           <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
             <div>
-              <div style="font-weight:600;color:var(--text);">${escapeHtml(
+              <div style="font-weight:600;color:var(--text);">${globalThis.jf_helpers.escapeHtml(
                 l.name || "(unnamed)",
               )}</div>
               <div style="font-size:0.9rem;color:var(--text-muted);">
                 ${started ? started.toLocaleString() : ""}
-                ${l.type ? " • " + escapeHtml(l.type) : ""}
+                ${l.type ? " • " + globalThis.jf_helpers.escapeHtml(l.type) : ""}
               </div>
             </div>
             <div style="text-align:right;">
-              <div style="font-weight:600;color:var(--text);">${humanDuration(
+              <div style="font-weight:600;color:var(--text);">${globalThis.jf_helpers.humanDuration(
                 Number(l.duration_ms || 0),
               )}</div>
-              <div class="task-log-result" style="font-size:0.85rem;color:var(--text-muted);">${escapeHtml(
+              <div class="task-log-result" style="font-size:0.85rem;color:var(--text-muted);">${globalThis.jf_helpers.escapeHtml(
                 l.result || "",
               )}</div>
             </div>
@@ -581,7 +447,7 @@ function maskKey(key) {
 
   async function loadDatabaseInfo() {
     try {
-      const result = await fetchJson("/api/database/info");
+      const result = await globalThis.jf_helpers.fetchJson("/api/database/info");
       if (!result?.ok) {
         console.error("Failed to load database info:", result?.message);
         return;
