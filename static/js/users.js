@@ -29,14 +29,15 @@
       if (!resp.ok) throw new Error("Network error");
 
       const payload = await resp.json();
-      if (!payload || !payload.ok) {
+      if (!payload?.ok) {
         throw new Error(payload?.message || "API error");
       }
 
       const users = Array.isArray(payload.data) ? payload.data : [];
       render(users);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to load users", "error");
+      console.error("Failed to load users: ", error);
       renderEmpty();
     }
   }

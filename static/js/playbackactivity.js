@@ -23,20 +23,6 @@
   let selectedUserIds = null;
 
   /**
-   * Safe toast wrapper.
-   * @param {any} msg Message or Error to display in the toast
-   * @param {string} kind Toast type
-   * @returns {void}
-   */
-  function safeShowToast(msg, kind = "error") {
-    if (typeof showToast === "function") {
-      showToast(msg, kind);
-    } else {
-      console.error(msg);
-    }
-  }
-
-  /**
    * Parse page from URL hash.
    * @returns {number} Parsed page number (at least 1)
    */
@@ -357,8 +343,8 @@
       }
 
       render(payload.data || {});
-    } catch (err) {
-      safeShowToast(`Failed to load activity log: ${err?.message || err}`, "error");
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to load playback acitivity", "error");
       renderEmpty();
     } finally {
       setNavigationDisabled(false);

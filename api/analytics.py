@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 import concurrent.futures
 import json
 import logging
@@ -219,14 +220,12 @@ def create_analytics_blueprint(*, repo, sync, jf):
         :returns: JSON response with date array and per-library counts with HTTP 200, or error details with HTTP 500
         """
         try:
-            from datetime import datetime, timedelta
-
             days = 30
             now = int(time.time())
             cutoff = now - days * 24 * 60 * 60
 
             dates = []
-            today = datetime.now(datetime.UTC).date()
+            today = datetime.now(timezone.utc).date()
             for i in range(days - 1, -1, -1):
                 dates.append((today - timedelta(days=i)).isoformat())
 
@@ -253,7 +252,7 @@ def create_analytics_blueprint(*, repo, sync, jf):
                     except Exception:
                         continue
                     date_str = (
-                        datetime.fromtimestamp(ts, datetime.UTC).date().isoformat()
+                        datetime.fromtimestamp(ts, timezone.utc).date().isoformat()
                     )
                     lib = id_map.get(library_id)
                     if not lib:

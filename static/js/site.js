@@ -24,10 +24,10 @@
 
     if (syncing) {
       const message = getSyncMessage(payload);
-      if (!syncToastId) {
-        syncToastId = Toast.showSyncToast(message);
-      } else {
+      if (syncToastId) {
         Toast.updateSyncToast(syncToastId, message);
+      } else {
+        syncToastId = Toast.showSyncToast(message);
       }
       return;
     }
@@ -44,7 +44,10 @@
       if (!resp.ok) return;
       const payload = await resp.json();
       renderSyncState(payload);
-    } catch (_err) {}
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to fetch sync progress snapshot", "error");
+      console.error("Failed to fetch sync progress snapshot: ", error);
+    }
   }
 
   function startFallbackPolling() {
@@ -82,7 +85,10 @@
       try {
         const payload = JSON.parse(event.data);
         renderSyncState(payload);
-      } catch (_err) {}
+      } catch (error) {
+        globalThis.Toast.showToast("Failed to fetch sync progress", "error");
+        console.error("Invalid sync_progress payload: ", error);
+      }
     });
 
     source.onopen = () => {

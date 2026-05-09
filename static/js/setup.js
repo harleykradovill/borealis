@@ -1,21 +1,4 @@
 (function () {
-  function showToast(message, kind = "success", ttl = 5000) {
-    if (globalThis.Toast && typeof globalThis.Toast.showToast === "function") {
-      return globalThis.Toast.showToast(message, kind, ttl);
-    }
-    const container = document.getElementById("toast-container");
-    if (!container) return null;
-    const el = document.createElement("div");
-    el.className = `toast ${kind}`;
-    el.setAttribute("role", "status");
-    el.textContent = message;
-    container.appendChild(el);
-    if (typeof ttl === "number" && ttl > 0) {
-      setTimeout(() => el.remove(), ttl);
-    }
-    return null;
-  }
-
   async function postJson(path, body, method = "POST") {
     try {
       const resp = await fetch(path, {
@@ -24,11 +7,11 @@
         body: JSON.stringify(body),
       });
       return await resp.json();
-    } catch (err) {
+    } catch (error) {
       return {
         ok: false,
         status: 0,
-        message: err?.message || "Network error",
+        message: error?.message || "Network error",
       };
     }
   }
@@ -75,13 +58,13 @@
 
   function updateProgressIndicator() {
     const progressIndicator = document.getElementById("progress-indicator");
-    if (progressIndicator && progressIndicator.hidden) {
+    if (progressIndicator?.hidden) {
       return;
     }
 
     const dots = document.querySelectorAll(".progress-dot");
     dots.forEach((dot) => {
-      const page = parseInt(dot.dataset.page);
+      const page = Number.parseInt(dot.dataset.page);
       dot.classList.remove("active", "completed");
       if (page === currentPage) {
         dot.classList.add("active");
@@ -112,7 +95,7 @@
   function savePage1() {
     state.hourFormat = formFields.hourFormat?.value || "12";
     state.language = formFields.language?.value || "en";
-    state.syncInterval = parseInt(formFields.syncInterval?.value || "1800");
+    state.syncInterval = Number.parseInt(formFields.syncInterval?.value || "1800");
   }
 
   function loadPage1() {
@@ -207,9 +190,10 @@
         item.appendChild(label);
         librariesList.appendChild(item);
       });
-    } catch (err) {
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to load libraries", "error");
+      console.error("Failed to load libraries: ", error);
       if (librariesEmpty) librariesEmpty.hidden = false;
-      showToast(`Failed to load libraries: ${err.message}`, "error");
     }
   }
 
@@ -234,12 +218,12 @@
       const apiKey = (formFields.jfApiKey?.value || "").trim();
 
       if (!host || !port || !apiKey) {
-        showToast("Please fill in all fields", "error");
+        globalThis.Toast.showToast("Please fill in all fields", "error");
         return;
       }
 
       if (!/^\d+$/.test(port)) {
-        showToast("Port must be a valid number", "error");
+        globalThis.Toast.showToast("Port must be a valid number", "error");
         return;
       }
 
@@ -253,19 +237,19 @@
         "POST",
       );
 
-      if (result && result.ok) {
+      if (result?.ok) {
         testConnectionOk = true;
         state.jfHost = host;
         state.jfPort = port;
         state.jfApiKey = apiKey;
         state.serverName = result.server_name || "";
         state.serverVersion = result.server_version || "";
-        showToast("Connection successful", "success");
+        globalThis.Toast.showToast("Connection successful");
         updatePage2NextButton();
       } else {
         testConnectionOk = false;
         const msg = result?.message || `Failed (status: ${result?.status ?? "n/a"})`;
-        showToast(msg, "error");
+        globalThis.Toast.showToast(msg, "error");
         updatePage2NextButton();
       }
 
@@ -279,7 +263,7 @@
   if (buttons.page2Next) {
     buttons.page2Next.addEventListener("click", () => {
       if (!testConnectionOk) {
-        showToast("Please test connection first", "error");
+        globalThis.Toast.showToast("Test connection before continuing", "error");
         return;
       }
       loadPage3();
@@ -318,13 +302,13 @@
         });
 
         if (!resp.ok) {
-          showToast("Failed to save settings", "error");
+          globalThis.Toast.showToast("Failed to save settings", "error");
           buttons.page3Finish.textContent = original;
           buttons.page3Finish.disabled = false;
           return;
         }
 
-        showToast("Settings saved", "success");
+        globalThis.Toast.showToast("Settings saved");
         showPage("sync");
 
         const syncText = document.getElementById("jf-first-sync-text");
@@ -344,7 +328,7 @@
             const progressResp = await fetch("/api/analytics/server/sync-progress");
             const progressData = await progressResp.json();
 
-            if (progressData && progressData.ok && !progressData.syncing) {
+            if (progressData?.ok && !progressData.syncing) {
               if (syncText) {
                 syncText.textContent = "Setup complete";
               }
@@ -355,14 +339,17 @@
             }
 
             setTimeout(pollProgress, POLL_INTERVAL);
-          } catch (err) {
+          } catch (error) {
+            globalThis.Toast.showToast("Error polling for sync progress", "error");
+            console.error("Error polling for sync progress: ", error);
             setTimeout(pollProgress, POLL_INTERVAL);
           }
         }
 
         setTimeout(pollProgress, 500);
-      } catch (err) {
-        showToast("Network error while saving", "error");
+      } catch (error) {
+        globalThis.Toast.showToast("Network error while syncing", "error");
+        console.error("Network error: ", error);
         buttons.page3Finish.textContent = original;
         buttons.page3Finish.disabled = false;
       }

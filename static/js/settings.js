@@ -1,22 +1,4 @@
 const jf_helpers = (function () {
-  function showToast(message, kind = "success") {
-    if (globalThis.Toast && typeof globalThis.Toast.showToast === "function") {
-      return globalThis.Toast.showToast(message, kind, 5000);
-    }
-
-    const container = document.getElementById("toast-container");
-    if (!container) return null;
-
-    const el = document.createElement("div");
-    el.className = `toast ${kind}`;
-    el.setAttribute("role", "status");
-    el.textContent = message;
-    container.appendChild(el);
-
-    setTimeout(() => el.remove(), 5000);
-    return null;
-  }
-
   async function fetchJson(path, opts = {}) {
     try {
       const resp = await fetch(path, opts.method ? opts : { method: "GET" });
@@ -33,11 +15,12 @@ const jf_helpers = (function () {
         return data;
       }
       return { ok: true, status: resp.status, data };
-    } catch (err) {
+    } catch (error) {
+      globalThis.Toast.showToast("Network error", "error");
       return {
         ok: false,
         status: 0,
-        message: err?.message || "Network error",
+        message: error?.message || "Network error",
         data: null,
       };
     }
@@ -63,11 +46,12 @@ const jf_helpers = (function () {
         return data;
       }
       return { ok: true, status: resp.status, data };
-    } catch (err) {
+    } catch (error) {
+      globalThis.Toast.showToast("Network error", "error");
       return {
         ok: false,
         status: 0,
-        message: err?.message || "Network error",
+        message: error?.message || "Network error",
         data: null,
       };
     }
@@ -124,7 +108,6 @@ const jf_helpers = (function () {
   }
 
   return {
-    showToast,
     fetchJson,
     postJson,
     escapeHtml,
@@ -135,9 +118,6 @@ const jf_helpers = (function () {
   };
 })();
 
-function showToast(message, kind = "success") {
-  return jf_helpers.showToast(message, kind);
-}
 async function fetchJson(path) {
   return jf_helpers.fetchJson(path);
 }
@@ -263,9 +243,9 @@ function maskKey(key) {
       lastKnown.sync_interval = fields.sync_interval
         ? fields.sync_interval.value
         : null;
-    } catch (err) {
-      showToast("Failed to load settings", "error");
-      console.error(err);
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to load settings", "error");
+      console.error("Failed to load settings: ", error);
     }
   }
 
@@ -287,7 +267,8 @@ function maskKey(key) {
     try {
       const result = await postJson("/api/settings", payload, "PUT");
       if (!result?.ok) {
-        showToast(result?.message || "Failed to save settings", "error");
+        globalThis.Toast.showToast("Failed to save settings", "error");
+        console.error("Failed to save settings: ", result?.message);
         return;
       }
 
@@ -306,10 +287,10 @@ function maskKey(key) {
         lastKnown.sync_interval = fields.sync_interval.value;
       }
 
-      showToast("Settings saved", "success");
-    } catch (err) {
-      showToast("Failed to save settings", "error");
-      console.error(err);
+      globalThis.Toast.showToast("Settings saved");
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to save settings", "error");
+      console.error("Failed to save settings: ", error);
     }
   }
 
@@ -394,13 +375,14 @@ function maskKey(key) {
       try {
         const result = await postJson("/api/sync/periodic", {}, "POST");
         if (!result?.ok) {
-          showToast(result?.message || "Failed to start manual sync", "error");
+          globalThis.Toast.showToast("Failed to start manual sync", "error");
+          console.error("Failed to start manual sync: ", result?.message);
           await refreshManualSyncButtonState();
           return;
         }
-      } catch (err) {
-        showToast("Failed to start manual sync", "error");
-        console.error(err);
+      } catch (error) {
+        globalThis.Toast.showToast("Failed to start manual sync", "error");
+        console.error("Failed to start manual sync: ", error);
       } finally {
         setTimeout(handleSyncComplete, 300);
         refreshSyncStatus().catch(function () {});
@@ -479,8 +461,9 @@ function maskKey(key) {
       if (hasServer) {
         displayServer(data.jf_server_name, data.jf_host, data.jf_port, data.jf_api_key);
       }
-    } catch (err) {
-      console.error("Failed to check server state:", err);
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to check server state", "error");
+      console.error("Failed to check server state: ", error);
     }
   }
 
@@ -502,15 +485,15 @@ function maskKey(key) {
         });
 
         if (!resp.ok) {
-          showToast("Failed to remove server", "error");
+          globalThis.Toast.showToast("Failed to remove server", "error");
           return;
         }
 
-        showToast("Server removed", "success");
+        globalThis.Toast.showToast("Server removed");
         updateServerState(false);
-      } catch (err) {
-        showToast("Error removing server", "error");
-        console.error(err);
+      } catch (error) {
+        globalThis.Toast.showToast("Failed to remove server", "error");
+        console.error("Failed to remove server: ", error);
       }
     });
   }
@@ -577,8 +560,9 @@ function maskKey(key) {
         `;
         list.appendChild(li);
       });
-    } catch (err) {
-      console.error("Error loading task logs", err);
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to load task logs", "error");
+      console.error("Error loading task logs: ", error);
       if (empty) empty.hidden = false;
       if (list) list.hidden = true;
     }
@@ -620,8 +604,9 @@ function maskKey(key) {
           document.getElementById("db-modified").textContent = data.modified_at;
         }
       }
-    } catch (err) {
-      console.error("Error loading database info:", err);
+    } catch (error) {
+      globalThis.Toast.showToast("Error loading database info", "error");
+      console.error("Error loading database info: ", error);
     }
   }
 

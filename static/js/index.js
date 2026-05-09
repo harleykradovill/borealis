@@ -40,8 +40,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       return all;
-    } catch (err) {
-      console.error("Failed to load activity", err);
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to load activity", "error");
+      console.error("Failed to load activity: ", error);
       return [];
     }
   }
@@ -496,8 +497,9 @@ document.addEventListener("DOMContentLoaded", () => {
       setText(elTotalUsers, numberFmt.format(Number(data.total_users || 0)));
 
       if (grid) grid.hidden = false;
-    } catch (err) {
-      console.error("Failed to load glance totals", err);
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to load glance", "error");
+      console.error("Failed to load glance totals: ", error);
       setText(elActiveSessions, "-");
       setText(elTotalPlays, "-");
       setText(elTotalItems, "-");
@@ -700,8 +702,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       renderSessions(result.data);
-    } catch (err) {
-      console.error("Failed to load sessions:", err);
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to load sessions", "error");
+      console.error("Failed to load sessions: ", error);
       renderSessions([]);
     }
   }
@@ -830,8 +833,9 @@ document.addEventListener("DOMContentLoaded", () => {
         (r) => r?.name ?? "",
         (r) => fmtDate(r?.last_watched_at),
       );
-    } catch (err) {
-      console.error("Failed to load watch statistics:", err);
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to load watch statistics", "error");
+      console.error("Failed to load watch statistics: ", error);
     } finally {
       clearStatsSkeleton();
     }
@@ -998,8 +1002,9 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!payload?.ok) return;
 
       renderResolutionsChart(payload.data?.sections?.resolutions || []);
-    } catch (err) {
-      console.error("Failed to load resolution stats:", err);
+    } catch (error) {
+      globalThis.Toast.showToast("Failed to load resolutions", "error");
+      console.error("Failed to load resolution stats: ", error);
     } finally {
       if (resolutionLoading) resolutionLoading.hidden = true;
     }
