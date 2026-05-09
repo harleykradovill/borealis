@@ -29,7 +29,7 @@
 }
 
 .settings-tab.active {
-  background: var(--white);
+  background: var(--accent);
   color: var(--black);
 }
 
