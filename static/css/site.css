@@ -1,7 +1,7 @@
 :root {
-  --bg: #0b1014;
-  --surface: #191e27;
-  --highlight: #39445a;
+  --bg: #0a1011;
+  --surface: #161d20;
+  --highlight: #365553;
   --accent: #0fb9b1;
   --border: #29293b;
   --text: #f0f0f0;
@@ -22,15 +22,13 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family:
-    Helvetica,
-    "Helvetica Neue",
-    Arial,
+    "Noto Sans",
     system-ui,
     -apple-system,
-    Segoe UI,
+    "Segoe UI",
     Roboto,
-    "Apple Color Emoji",
-    "Segoe UI Emoji";
+    Arial,
+    sans-serif;
   line-height: 1.5;
 }
 
