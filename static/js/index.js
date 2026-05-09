@@ -1,121 +1,184 @@
+function toLocalISO(date) {
+  const yr = date.getFullYear();
+  const mo = String(date.getMonth() + 1).padStart(2, "0");
+  const da = String(date.getDate()).padStart(2, "0");
+  return `${yr}-${mo}-${da}`;
+}
+
+function addDays(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+async function loadActivity(days = 182) {
+  try {
+    const perPage = 1000;
+    const maxPages = 20;
+    let page = 1;
+    const all = [];
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+
+    while (page <= maxPages) {
+      const resp = await fetch(
+        `/api/analytics/activitylog?page=${page}&per_page=${perPage}`,
+      );
+      if (!resp.ok) break;
+      const payload = await resp.json();
+      if (!payload?.ok) break;
+
+      const pageItems = Array.isArray(payload.data?.items) ? payload.data.items : [];
+      if (!pageItems.length) break;
+
+      const stopOnlyItems = pageItems.filter((it) =>
+        (it.event_name || "").startsWith("VideoPlaybackStopped||"),
+      );
+
+      all.push(...stopOnlyItems);
+
+      const minTsSec = Math.min(...pageItems.map((it) => Number(it.activity_at || 0)));
+      if (Number.isFinite(minTsSec) && minTsSec * 1000 <= cutoff) break;
+
+      if (pageItems.length < perPage) break;
+      page += 1;
+    }
+
+    return all;
+  } catch (error) {
+    globalThis.Toast.showToast("Failed to load activity", "error");
+    console.error("Failed to load activity: ", error);
+    return [];
+  }
+}
+
+function buildMatrix(items, days = 182) {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const startDate = new Date(now);
+  startDate.setDate(startDate.getDate() - (days - 1));
+  startDate.setDate(startDate.getDate() - startDate.getDay());
+
+  const counts = {};
+  items.forEach((it) => {
+    const ts = Number(it.activity_at || 0) * 1000;
+    if (!ts) return;
+    const d = new Date(ts);
+    const iso = toLocalISO(d);
+    counts[iso] = (counts[iso] || 0) + 1;
+  });
+
+  const data = [];
+  let maxV = 0;
+  let weekIdx = 0;
+
+  for (let cursor = new Date(startDate); cursor <= now; cursor = addDays(cursor, 1)) {
+    const iso = toLocalISO(cursor);
+    const v = counts[iso] || 0;
+    if (v > maxV) maxV = v;
+
+    const weekday = cursor.getDay();
+    data.push({
+      x: weekIdx + 1,
+      y: weekday + 1,
+      v,
+      date: iso,
+    });
+
+    if (weekday === 6) weekIdx += 1;
+  }
+
+  return { data, maxV, weeks: weekIdx + 1 };
+}
+
+function colorFor(v, maxV) {
+  const palette = [
+    "#2b313d",
+    "#2d3647",
+    "#2f3c52",
+    "#364c6d",
+    "#35537a",
+    "#3869a5",
+    "#346daf",
+    "#2a73c7",
+    "#187ddb",
+  ];
+  if (!v) return "#191e27";
+  const t = Math.min(1, v / Math.max(1, maxV));
+  const idx = Math.max(
+    0,
+    Math.min(palette.length - 1, Math.round(t * (palette.length - 1))),
+  );
+  return palette[idx];
+}
+
+function generateMonthLabels(data, weeks) {
+  const shortMonths = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const labels = new Array(weeks).fill("");
+  const seenMonths = new Set();
+
+  data.forEach((point) => {
+    const dateStr = point.date;
+    const date = new Date(dateStr + "T00:00:00Z");
+    const month = shortMonths[date.getUTCMonth()];
+    const weekIdx = point.x - 1;
+
+    const monthKey = `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
+    if (!seenMonths.has(monthKey) && weekIdx < weeks) {
+      labels[weekIdx] = month;
+      seenMonths.add(monthKey);
+    }
+  });
+
+  return labels;
+}
+
+function buildTrendSeries(items, days = 14) {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const counts = {};
+  items.forEach((it) => {
+    const ts = Number(it.activity_at || 0) * 1000;
+    if (!ts) return;
+    const d = new Date(ts);
+    const iso = toLocalISO(d);
+    counts[iso] = (counts[iso] || 0) + 1;
+  });
+
+  const labels = [];
+  const values = [];
+  const start = addDays(now, -(days - 1));
+
+  for (let cursor = new Date(start); cursor <= now; cursor = addDays(cursor, 1)) {
+    const iso = toLocalISO(cursor);
+    const label = `${cursor.getMonth() + 1}/${cursor.getDate()}`;
+    labels.push(label);
+    values.push(counts[iso] || 0);
+  }
+
+  return { labels, values };
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("plays-matrix");
   const emptyEl = document.getElementById("matrix-chart-empty-files");
   const matrixLoading = document.getElementById("matrix-loading");
   const trendLoading = document.getElementById("plays-trend-loading");
   if (!canvas) return;
-
-  async function loadActivity(days = 182) {
-    try {
-      const perPage = 1000;
-      const maxPages = 20;
-      let page = 1;
-      const all = [];
-      const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-
-      while (page <= maxPages) {
-        const resp = await fetch(
-          `/api/analytics/activitylog?page=${page}&per_page=${perPage}`,
-        );
-        if (!resp.ok) break;
-        const payload = await resp.json();
-        if (!payload?.ok) break;
-
-        const pageItems = Array.isArray(payload.data?.items) ? payload.data.items : [];
-        if (!pageItems.length) break;
-
-        const stopOnlyItems = pageItems.filter((it) =>
-          (it.event_name || "").startsWith("VideoPlaybackStopped||"),
-        );
-
-        all.push(...stopOnlyItems);
-
-        const minTsSec = Math.min(
-          ...pageItems.map((it) => Number(it.activity_at || 0)),
-        );
-        if (isFinite(minTsSec) && minTsSec * 1000 <= cutoff) break;
-
-        if (pageItems.length < perPage) break;
-        page++;
-      }
-
-      return all;
-    } catch (error) {
-      globalThis.Toast.showToast("Failed to load activity", "error");
-      console.error("Failed to load activity: ", error);
-      return [];
-    }
-  }
-
-  function buildMatrix(items, days = 182) {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
-    const startDate = new Date(now);
-    startDate.setDate(startDate.getDate() - (days - 1));
-    startDate.setDate(startDate.getDate() - startDate.getDay());
-
-    const toLocalISO = (d) => {
-      const yr = d.getFullYear();
-      const mo = String(d.getMonth() + 1).padStart(2, "0");
-      const da = String(d.getDate()).padStart(2, "0");
-      return `${yr}-${mo}-${da}`;
-    };
-
-    const counts = {};
-    items.forEach((it) => {
-      const ts = Number(it.activity_at || 0) * 1000;
-      if (!ts) return;
-      const d = new Date(ts);
-      const iso = toLocalISO(d);
-      counts[iso] = (counts[iso] || 0) + 1;
-    });
-
-    const data = [];
-    let maxV = 0;
-    let weekIdx = 0;
-    const curr = new Date(startDate);
-
-    while (curr <= now) {
-      const iso = toLocalISO(curr);
-      const v = counts[iso] || 0;
-      if (v > maxV) maxV = v;
-
-      const weekday = curr.getDay();
-      data.push({
-        x: weekIdx + 1,
-        y: weekday + 1,
-        v,
-        date: iso,
-      });
-
-      if (weekday === 6) weekIdx++;
-      curr.setDate(curr.getDate() + 1);
-    }
-
-    return { data, maxV, weeks: weekIdx + 1 };
-  }
-
-  function colorFor(v, maxV) {
-    const palette = [
-      "#2b313d",
-      "#2d3647",
-      "#2f3c52",
-      "#364c6d",
-      "#35537a",
-      "#3869a5",
-      "#346daf",
-      "#2a73c7",
-      "#187ddb",
-    ];
-    if (!v) return "#191e27";
-    const t = Math.min(1, v / Math.max(1, maxV));
-    const idx = Math.max(
-      0,
-      Math.min(palette.length - 1, Math.round(t * (palette.length - 1))),
-    );
-    return palette[idx];
-  }
 
   async function render() {
     try {
@@ -125,15 +188,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (emptyEl) emptyEl.hidden = false;
         canvas.style.display = "none";
         return;
-      } else {
-        if (emptyEl) emptyEl.hidden = true;
-        canvas.style.display = "";
       }
+
+      if (emptyEl) emptyEl.hidden = true;
+      canvas.style.display = "";
 
       const monthLabels = generateMonthLabels(data, weeks);
       const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-      const canvasContainer = canvas.parentElement;
       const labelsWrapper = document.createElement("div");
       labelsWrapper.className = "matrix-labels-wrapper";
 
@@ -169,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
       labelsWrapper.appendChild(topLabels);
       labelsWrapper.appendChild(contentWrapper);
 
-      canvasContainer.replaceChild(labelsWrapper, canvas);
+      canvas.replaceWith(labelsWrapper);
 
       const ctx = newCanvas.getContext("2d");
 
@@ -186,15 +248,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 return colorFor(v, maxV);
               },
               width: ({ chart }) => {
-                const areaW = (chart.chartArea || {}).width || canvas.width;
-                const areaH = (chart.chartArea || {}).height || canvas.height;
+                const areaW = chart.chartArea?.width || canvas.width;
+                const areaH = chart.chartArea?.height || canvas.height;
                 const cellW = Math.max(2, Math.floor(areaW / weeks) - 1);
                 const cellH = Math.max(2, Math.floor(areaH / 7) - 1);
                 return Math.max(2, Math.min(cellW, cellH));
               },
               height: ({ chart }) => {
-                const areaW = (chart.chartArea || {}).width || canvas.width;
-                const areaH = (chart.chartArea || {}).height || canvas.height;
+                const areaW = chart.chartArea?.width || canvas.width;
+                const areaH = chart.chartArea?.height || canvas.height;
                 const cellW = Math.max(2, Math.floor(areaW / weeks) - 1);
                 const cellH = Math.max(2, Math.floor(areaH / 7) - 1);
                 return Math.max(2, Math.min(cellW, cellH));
@@ -212,8 +274,8 @@ document.addEventListener("DOMContentLoaded", () => {
             tooltip: {
               callbacks: {
                 title: () => "",
-                label: (ctx) => {
-                  const r = ctx.raw;
+                label: (ctxArg) => {
+                  const r = ctxArg.raw;
                   return `${r.date} - ${r.v} plays`;
                 },
               },
@@ -240,9 +302,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       if (globalThis.__playsMatrixChart) {
-        try {
-          globalThis.__playsMatrixChart.destroy();
-        } catch (e) {}
+        globalThis.__playsMatrixChart.destroy();
         globalThis.__playsMatrixChart = null;
       }
       globalThis.__playsMatrixChart = new Chart(ctx, config);
@@ -252,40 +312,6 @@ document.addEventListener("DOMContentLoaded", () => {
         matrixLoading.style.display = "none";
       }
     }
-  }
-
-  function generateMonthLabels(data, weeks) {
-    const shortMonths = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    const labels = Array(weeks).fill("");
-    const seenMonths = new Set();
-
-    data.forEach((point) => {
-      const dateStr = point.date;
-      const date = new Date(dateStr + "T00:00:00Z");
-      const month = shortMonths[date.getUTCMonth()];
-      const weekIdx = point.x - 1;
-
-      const monthKey = `${date.getUTCFullYear()}-${date.getUTCMonth()}`;
-      if (!seenMonths.has(monthKey) && weekIdx < weeks) {
-        labels[weekIdx] = month;
-        seenMonths.add(monthKey);
-      }
-    });
-
-    return labels;
   }
 
   function scheduleHeatmapRender() {
@@ -304,42 +330,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   scheduleHeatmapRender();
-
-  function buildTrendSeries(items, days = 14) {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
-    const toLocalISO = (d) => {
-      const yr = d.getFullYear();
-      const mo = String(d.getMonth() + 1).padStart(2, "0");
-      const da = String(d.getDate()).padStart(2, "0");
-      return `${yr}-${mo}-${da}`;
-    };
-
-    const counts = {};
-    items.forEach((it) => {
-      const ts = Number(it.activity_at || 0) * 1000;
-      if (!ts) return;
-      const d = new Date(ts);
-      const iso = toLocalISO(d);
-      counts[iso] = (counts[iso] || 0) + 1;
-    });
-
-    const labels = [];
-    const values = [];
-    const cursor = new Date(now);
-    cursor.setDate(cursor.getDate() - (days - 1));
-
-    while (cursor <= now) {
-      const iso = toLocalISO(cursor);
-      const label = `${cursor.getMonth() + 1}/${cursor.getDate()}`;
-      labels.push(label);
-      values.push(counts[iso] || 0);
-      cursor.setDate(cursor.getDate() + 1);
-    }
-
-    return { labels, values };
-  }
 
   async function renderTrend() {
     const trendCanvas = document.getElementById("plays-trend-chart");
@@ -421,9 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       if (globalThis.__playsTrendChart) {
-        try {
-          globalThis.__playsTrendChart.destroy();
-        } catch (e) {}
+        globalThis.__playsTrendChart.destroy();
         globalThis.__playsTrendChart = null;
       }
       globalThis.__playsTrendChart = new Chart(ctx, config);
@@ -864,7 +852,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pageIndex = Math.max(0, Math.min(pageIndex, pages - 1));
 
     const cardWidth = cards[0].getBoundingClientRect().width;
-    const gap = parseFloat(getComputedStyle(track).gap || "0");
+    const gap = Number.parseFloat(getComputedStyle(track).gap || "0");
     const offset = (cardWidth + gap) * pageIndex * perView;
 
     track.style.transform = `translateX(-${offset}px)`;
@@ -977,9 +965,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (globalThis.__resolutionsChart) {
-      try {
-        globalThis.__resolutionsChart.destroy();
-      } catch (e) {}
+      globalThis.__resolutionsChart.destroy();
       globalThis.__resolutionsChart = null;
     }
     globalThis.__resolutionsChart = new Chart(ctx, config);
