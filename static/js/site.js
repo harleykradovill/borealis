@@ -222,6 +222,19 @@ globalThis.jf_helpers = (function () {
     return `${key.slice(0, 4)}${"•".repeat(Math.max(8, key.length - 4))}`;
   }
 
+  function toLocalISO(date) {
+    const yr = date.getFullYear();
+    const mo = String(date.getMonth() + 1).padStart(2, "0");
+    const da = String(date.getDate()).padStart(2, "0");
+    return `${yr}-${mo}-${da}`;
+  }
+
+  function addDays(date, days) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
   return {
     fetchJson,
     postJson,
@@ -230,5 +243,7 @@ globalThis.jf_helpers = (function () {
     humanBytes,
     humanTime,
     maskKey,
+    toLocalISO,
+    addDays,
   };
 })();

@@ -1,16 +1,3 @@
-function toLocalISO(date) {
-  const yr = date.getFullYear();
-  const mo = String(date.getMonth() + 1).padStart(2, "0");
-  const da = String(date.getDate()).padStart(2, "0");
-  return `${yr}-${mo}-${da}`;
-}
-
-function addDays(date, days) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
-
 async function loadActivity(days = 182) {
   try {
     const perPage = 1000;
@@ -64,7 +51,7 @@ function buildMatrix(items, days = 182) {
     const ts = Number(it.activity_at || 0) * 1000;
     if (!ts) return;
     const d = new Date(ts);
-    const iso = toLocalISO(d);
+    const iso = globalThis.jf_helpers.toLocalISO(d);
     counts[iso] = (counts[iso] || 0) + 1;
   });
 
@@ -72,8 +59,12 @@ function buildMatrix(items, days = 182) {
   let maxV = 0;
   let weekIdx = 0;
 
-  for (let cursor = new Date(startDate); cursor <= now; cursor = addDays(cursor, 1)) {
-    const iso = toLocalISO(cursor);
+  for (
+    let cursor = new Date(startDate);
+    cursor <= now;
+    cursor = globalThis.jf_helpers.addDays(cursor, 1)
+  ) {
+    const iso = globalThis.jf_helpers.toLocalISO(cursor);
     const v = counts[iso] || 0;
     if (v > maxV) maxV = v;
 
@@ -155,16 +146,20 @@ function buildTrendSeries(items, days = 14) {
     const ts = Number(it.activity_at || 0) * 1000;
     if (!ts) return;
     const d = new Date(ts);
-    const iso = toLocalISO(d);
+    const iso = globalThis.jf_helpers.toLocalISO(d);
     counts[iso] = (counts[iso] || 0) + 1;
   });
 
   const labels = [];
   const values = [];
-  const start = addDays(now, -(days - 1));
+  const start = globalThis.jf_helpers.addDays(now, -(days - 1));
 
-  for (let cursor = new Date(start); cursor <= now; cursor = addDays(cursor, 1)) {
-    const iso = toLocalISO(cursor);
+  for (
+    let cursor = new Date(start);
+    cursor <= now;
+    cursor = globalThis.jf_helpers.addDays(cursor, 1)
+  ) {
+    const iso = globalThis.jf_helpers.toLocalISO(cursor);
     const label = `${cursor.getMonth() + 1}/${cursor.getDate()}`;
     labels.push(label);
     values.push(counts[iso] || 0);

@@ -8,7 +8,21 @@
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
-    return h ? `${h}h ${m}m` : m ? `${m}m ${s}s` : `${s}s`;
+    let result = "";
+
+    if (h > 0) {
+      result += `${h}h `;
+    }
+
+    if (m > 0 || h === 0) {
+      result += `${m}m `;
+    }
+
+    if (s > 0 || (h === 0 && m === 0)) {
+      result += `${s}s`;
+    }
+
+    return result.trim();
   }
 
   function formatLastSeen(timestamp) {
