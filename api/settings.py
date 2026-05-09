@@ -421,13 +421,13 @@ def create_settings_blueprint(*, svc, repo, sync):
                 200,
             )
 
-        except Exception as exc:
+        except Exception:
             logging.exception("[ERROR] Failed to retrieve database info")
             return make_response(
                 jsonify(
                     {
                         "ok": False,
-                        "message": f"Failed to retrieve database info: {str(exc)}",
+                        "message": "Failed to retrieve database info",
                     }
                 ),
                 500,
