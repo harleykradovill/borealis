@@ -721,163 +721,164 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 (function () {
-  const LIMIT = 5;
-  const statLists = document.querySelectorAll(
-    ".statistics-item.skeleton, .statistics-value.skeleton",
-  );
+  const statisticsSection = document.querySelector(".statistics-section");
+  if (!statisticsSection) return;
 
-  function clearStatsSkeleton() {
-    statLists.forEach((el) => el.classList.remove("skeleton"));
-  }
+  const statsCanvas = document.getElementById("watch-statistics-chart");
+  const statsLoading = document.getElementById("watch-statistics-loading");
+  if (!statsCanvas) return;
 
-  function fmtHours(seconds) {
-    if (seconds === null || seconds === undefined || seconds === "") return "";
-    const sec = Number(seconds);
-    if (!Number.isFinite(sec)) return "";
-    return `${Math.round(sec / 3600)}h`;
-  }
+  const navItems = statisticsSection.querySelectorAll(".statistics-nav li");
+  const palette = [
+    "#00df96",
+    "#10aa4d",
+    "#078f63",
+    "#0b7b68",
+    "#19646a",
+    "#0a5962",
+    "#114751",
+    "#193842",
+    "#1f2b31",
+  ];
 
-  function fmtDate(tsSec) {
-    const ts = Number(tsSec);
-    if (!Number.isFinite(ts) || ts <= 0) return "";
-    const d = new Date(ts * 1000);
-    if (Number.isNaN(d.getTime())) return "";
-    return d.toLocaleDateString();
-  }
+  const statTypes = [
+    {
+      key: "top_users_by_plays",
+      valueKey: "plays",
+      format: (v) => String(Number(v)),
+    },
+    {
+      key: "top_items_by_plays",
+      valueKey: "plays",
+      format: (v) => String(Number(v)),
+    },
+    {
+      key: "top_libraries_by_plays",
+      valueKey: "plays",
+      format: (v) => String(Number(v)),
+    },
+    {
+      key: "top_users_by_watch_time",
+      valueKey: "watch_seconds",
+      format: (v) => {
+        const sec = Number(v);
+        if (!Number.isFinite(sec)) return "";
+        return `${Math.round(sec / 3600)}h`;
+      },
+    },
+  ];
 
-  function renderRows(nameListId, valueListId, rows, nameFn, valueFn) {
-    const nameList = document.getElementById(nameListId);
-    const valueList = document.getElementById(valueListId);
-    if (!nameList || !valueList) return;
+  let cachedData = null;
 
-    const safeRows = Array.isArray(rows) ? rows.slice(0, LIMIT) : [];
-    while (safeRows.length < LIMIT) safeRows.push(null);
-
-    nameList.innerHTML = safeRows
-      .map((row) => `<li class="statistics-item">${nameFn(row)}</li>`)
-      .join("");
-
-    valueList.innerHTML = safeRows
-      .map((row) => `<li class="statistics-value">${valueFn(row)}</li>`)
-      .join("");
-  }
-
-  async function loadWatchStatistics() {
+  async function fetchStatsData() {
     try {
       const resp = await fetch("/api/analytics/stats/dashboard");
-      if (!resp.ok) return;
+      if (!resp.ok) return null;
 
       const payload = await resp.json();
-      if (!payload?.ok) return;
-
-      const sections = payload.data?.sections || {};
-
-      renderRows(
-        "stat-top-users-names",
-        "stat-top-users-values",
-        sections.top_users_by_plays,
-        (r) => r?.name ?? "",
-        (r) =>
-          r?.plays === null || r?.plays === undefined ? "" : String(Number(r.plays)),
-      );
-
-      renderRows(
-        "stat-top-items-names",
-        "stat-top-items-values",
-        sections.top_items_by_plays,
-        (r) => r?.name ?? "",
-        (r) =>
-          r?.plays === null || r?.plays === undefined ? "" : String(Number(r.plays)),
-      );
-
-      renderRows(
-        "stat-top-libraries-names",
-        "stat-top-libraries-values",
-        sections.top_libraries_by_plays,
-        (r) => r?.name ?? "",
-        (r) =>
-          r?.plays === null || r?.plays === undefined ? "" : String(Number(r.plays)),
-      );
-
-      renderRows(
-        "stat-watch-time-names",
-        "stat-watch-time-values",
-        sections.top_users_by_watch_time,
-        (r) => r?.name ?? "",
-        (r) => fmtHours(r?.watch_seconds),
-      );
-
-      renderRows(
-        "stat-active-day-names",
-        "stat-active-day-values",
-        sections.most_active_weekdays,
-        (r) => r?.weekday ?? "",
-        (r) =>
-          r?.plays === null || r?.plays === undefined ? "" : String(Number(r.plays)),
-      );
-
-      renderRows(
-        "stat-recent-names",
-        "stat-recent-values",
-        sections.recently_watched,
-        (r) => r?.name ?? "",
-        (r) => fmtDate(r?.last_watched_at),
-      );
+      return payload?.ok ? payload.data?.sections : null;
     } catch (error) {
-      globalThis.Toast.showToast("Failed to load watch statistics", "error");
-      console.error("Failed to load watch statistics: ", error);
-    } finally {
-      clearStatsSkeleton();
+      console.error("Failed to fetch statistics data:", error);
+      return null;
     }
   }
 
-  document.addEventListener("DOMContentLoaded", loadWatchStatistics);
-})();
+  function renderChart(data, typeIndex) {
+    if (!data) return;
 
-(function () {
-  const group = document.querySelector(".statistics-section");
-  if (!group) return;
+    const stat = statTypes[typeIndex];
+    const rows = (Array.isArray(data[stat.key]) ? data[stat.key] : []).slice(0, 5);
 
-  const track = group.querySelector("[data-carousel-track]");
-  const prevBtn = group.querySelector('[data-carousel-action="prev"]');
-  const nextBtn = group.querySelector('[data-carousel-action="next"]');
+    const labels = rows.map((r) => r?.name ?? "");
+    const values = rows.map((r) => Number(r?.[stat.valueKey] || 0));
 
-  if (!track || !prevBtn || !nextBtn) return;
+    const maxV = values.length ? Math.max(...values) : 0;
+    if (!maxV) {
+      statsCanvas.style.display = "none";
+      return;
+    }
 
-  const listCards = () =>
-    Array.from(track.children).filter((el) => el.classList.contains("statistics-card"));
+    const span = Math.max(1, maxV);
+    const pad = Math.max(1, Math.round(span * 0.2));
+    const xMax = maxV + pad;
 
-  let pageIndex = 0;
+    const ctx = statsCanvas.getContext("2d");
 
-  function updateCarousel() {
-    const cards = listCards();
-    if (!cards.length) return;
+    const config = {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            backgroundColor: values.map(
+              (_, idx) => palette[Math.min(idx, palette.length - 1)],
+            ),
+            borderRadius: 100,
+            barThickness: 18,
+          },
+        ],
+      },
+      options: {
+        indexAxis: "y",
+        animation: { duration: 200 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctxArg) => stat.format(rows[ctxArg.dataIndex]?.[stat.valueKey]),
+            },
+          },
+        },
+        scales: {
+          x: {
+            display: true,
+            title: { display: false },
+            ticks: { color: "#b3b3b3", precision: 0, padding: 6 },
+            grid: { display: false },
+            min: 0,
+            max: xMax,
+          },
+          y: {
+            display: true,
+            title: { display: false },
+            ticks: { color: "#b3b3b3" },
+            grid: { display: false },
+          },
+        },
+        maintainAspectRatio: false,
+        responsive: true,
+      },
+    };
 
-    const perView = 3;
-    const pages = Math.max(1, Math.ceil(cards.length / perView));
-    pageIndex = Math.max(0, Math.min(pageIndex, pages - 1));
-
-    const cardWidth = cards[0].getBoundingClientRect().width;
-    const gap = Number.parseFloat(getComputedStyle(track).gap || "0");
-    const offset = (cardWidth + gap) * pageIndex * perView;
-
-    track.style.transform = `translateX(-${offset}px)`;
-    prevBtn.disabled = pageIndex === 0;
-    nextBtn.disabled = pageIndex >= pages - 1;
+    if (globalThis.__statsChart) {
+      globalThis.__statsChart.destroy();
+      globalThis.__statsChart = null;
+    }
+    globalThis.__statsChart = new Chart(ctx, config);
+    statsCanvas.style.display = "";
   }
 
-  prevBtn.addEventListener("click", () => {
-    pageIndex -= 1;
-    updateCarousel();
+  async function switchStatistic(index) {
+    navItems.forEach((item, i) => {
+      item.classList.toggle("active", i === index);
+    });
+
+    if (!cachedData) {
+      if (statsLoading) statsLoading.hidden = false;
+      statsCanvas.style.display = "none";
+      cachedData = await fetchStatsData();
+      if (statsLoading) statsLoading.hidden = true;
+    }
+
+    renderChart(cachedData, index);
+  }
+
+  navItems.forEach((item, index) => {
+    item.addEventListener("click", () => switchStatistic(index));
   });
 
-  nextBtn.addEventListener("click", () => {
-    pageIndex += 1;
-    updateCarousel();
-  });
-
-  window.addEventListener("resize", updateCarousel);
-  updateCarousel();
+  switchStatistic(0);
 })();
 
 (function () {
