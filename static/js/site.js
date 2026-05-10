@@ -35,6 +35,7 @@
     if (syncToastId) {
       Toast.hideSyncToast(syncToastId);
       syncToastId = null;
+      globalThis.Toast.showToast("Sync complete");
     }
   }
 
