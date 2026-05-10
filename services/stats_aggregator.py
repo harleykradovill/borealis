@@ -18,18 +18,16 @@ from sqlalchemy.orm import Session
 from typing import Any, Dict, List, Optional
 
 
-def _playback_event_kind(event_name: Optional[str]) -> str:
+def _playback_event_kind(playback_type: Optional[str]) -> str:
     """
-    Classify playback events as start or stop using encoded event_name.
+    Classify playback events as start or stop using playback_type column.
 
-    :param event_name: Encoded event name string with type prefix
+    :param event_name: Playback type value from database
     :returns: Event classification as either "start" or "stop"
     """
-    if not event_name:
+    if playback_type == "VideoPlaybackStopped":
         return "stop"
-    if event_name.startswith("VideoPlaybackStopped||"):
-        return "stop"
-    if event_name.startswith("VideoPlayback||"):
+    if playback_type == "VideoPlayback":
         return "start"
     return "stop"
 
@@ -60,7 +58,7 @@ def _calculate_watch_metrics(
             PlaybackActivity.user_id,
             PlaybackActivity.item_id,
             PlaybackActivity.activity_at,
-            PlaybackActivity.event_name,
+            PlaybackActivity.playback_type,
             Item.runtime_seconds,
             PlaybackActivity.id,
         )
@@ -85,14 +83,14 @@ def _calculate_watch_metrics(
     qualified_plays_by_user: Dict[str, int] = {}
     qualified_plays_by_item: Dict[str, int] = {}
 
-    for user_id, item_id, activity_at, event_name, runtime_seconds, _ in rows:
+    for user_id, item_id, activity_at, playback_type, runtime_seconds, _ in rows:
         user_id = str(user_id)
         item_id = str(item_id)
         ts = int(activity_at or 0)
         if ts <= 0:
             continue
 
-        kind = _playback_event_kind(event_name)
+        kind = _playback_event_kind(playback_type)
         key = (user_id, item_id)
 
         if kind == "start":
@@ -149,19 +147,6 @@ def _calculate_watch_metrics(
     )
 
 
-def _stop_playback_filter():
-    """
-    Generate filter condition for stop playback events including legacy untyped rows.
-
-    :returns: SQLAlchemy filter expression matching sotp events and legacy rows
-    """
-    return or_(
-        PlaybackActivity.event_name.is_(None),
-        ~PlaybackActivity.event_name.like("VideoPlayback||%"),
-        PlaybackActivity.event_name.like("VideoPlaybackStopped||%"),
-    )
-
-
 class StatsAggregator:
 
     @staticmethod
@@ -173,7 +158,7 @@ class StatsAggregator:
         :returns: Counts of processed libraries, items, and users
         :raises Exception: Propagates database/query errors from SQLAlchemy
         """
-        stop_filter = _stop_playback_filter()
+        stop_filter = PlaybackActivity.playback_type == "VideoPlaybackStopped"
         qualified_play_seconds = 120
         (
             watch_seconds_by_user,

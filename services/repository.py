@@ -273,10 +273,8 @@ class Repository:
 
             user_ids = [u.jellyfin_id for u in users if u.jellyfin_id]
 
-            stop_playback_filter = or_(
-                PlaybackActivity.event_name.is_(None),
-                ~PlaybackActivity.event_name.like("VideoPlayback||%"),
-                PlaybackActivity.event_name.like("VideoPlaybackStopped||%"),
+            stop_playback_filter = (
+                PlaybackActivity.playback_type == "VideoPlaybackStopped"
             )
 
             total_rows = (
@@ -886,6 +884,7 @@ class Repository:
                 if pa:
                     pa.user_id = d.get("user_id", pa.user_id)
                     pa.item_id = d.get("item_id", pa.item_id)
+                    pa.playback_type = d.get("playback_type", pa.playback_type)
                     pa.event_name = d.get("event_name", pa.event_name)
                     pa.activity_at = d.get("activity_at", pa.activity_at)
                     pa.username_denorm = d.get("username_denorm", pa.username_denorm)
@@ -895,6 +894,7 @@ class Repository:
                             activity_log_id=act_id,
                             user_id=d.get("user_id"),
                             item_id=d.get("item_id"),
+                            playback_type=d.get("playback_type"),
                             event_name=d.get("event_name"),
                             activity_at=d.get("activity_at") or _now(),
                             username_denorm=d.get("username_denorm"),

@@ -195,6 +195,7 @@ class PlaybackActivity(Base):
     activity_log_id = Column(Integer, nullable=False, unique=True)
     user_id = Column(String(128), nullable=False)
     item_id = Column(String(128), nullable=False)
+    playback_type = Column(String(64), nullable=True)
     event_name = Column(String(512), nullable=True)
     activity_at = Column(BigInteger, nullable=False)
     username_denorm = Column(String(255), nullable=True)
@@ -204,6 +205,7 @@ class PlaybackActivity(Base):
         Index("idx_playback_user_id", "user_id"),
         Index("idx_playback_item_id", "item_id"),
         Index("idx_playback_activity_at", "activity_at"),
+        Index("idx_playback_type", "playback_type"),
     )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -217,6 +219,7 @@ class PlaybackActivity(Base):
             "activity_log_id": self.activity_log_id,
             "user_id": self.user_id,
             "item_id": self.item_id,
+            "playback_type": self.playback_type,
             "event_name": self.event_name,
             "activity_at": self.activity_at,
             "username_denorm": self.username_denorm,

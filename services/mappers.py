@@ -242,23 +242,6 @@ def map_items(
 # -------------------------
 
 
-def _encode_playback_event_name(jf_event: Dict[str, Any]) -> str:
-    """
-    Build an event_name that preserves Jellyfin event type and name.
-
-    :param jf_event: Jellyfin playback event object
-    :returns: Encoded event name string used to distinguish playback events
-    """
-    event_type = _clean_str(jf_event.get("Type"))
-    event_name = _clean_str(jf_event.get("Name"))
-
-    if event_type and event_name:
-        return f"{event_type}||{event_name}"
-    if event_type:
-        return event_type
-    return event_name
-
-
 def map_playback_event(
     jf_event: Dict[str, Any],
     username: Optional[str] = None,
@@ -284,7 +267,8 @@ def map_playback_event(
         "activity_log_id": jf_event.get("Id") or jf_event.get("ActivityId"),
         "user_id": user_id,
         "item_id": item_id,
-        "event_name": _encode_playback_event_name(jf_event),
+        "playback_type": _clean_str(jf_event.get("Type")),
+        "event_name": _clean_str(jf_event.get("Name")),
         "activity_at": activity_at,
         "username_denorm": username,
     }

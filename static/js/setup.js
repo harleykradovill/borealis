@@ -217,7 +217,6 @@
       const result = await globalThis.jf_helpers.postJson(
         "/api/test-connection-with-credentials",
         { jf_host: host, jf_port: port, jf_api_key: apiKey },
-        "POST",
       );
 
       if (result?.ok) {

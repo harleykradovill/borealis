@@ -17,8 +17,8 @@ async function loadActivity(days = 182) {
       const pageItems = Array.isArray(payload.data?.items) ? payload.data.items : [];
       if (!pageItems.length) break;
 
-      const stopOnlyItems = pageItems.filter((it) =>
-        (it.event_name || "").startsWith("VideoPlaybackStopped||"),
+      const stopOnlyItems = pageItems.filter(
+        (it) => it.playback_type === "VideoPlaybackStopped",
       );
 
       all.push(...stopOnlyItems);
