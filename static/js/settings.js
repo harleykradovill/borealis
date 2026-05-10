@@ -403,6 +403,11 @@
         else if (res === "FAILED" || res === "ERROR") li.classList.add("failed");
 
         const started = l.started_at ? new Date(Number(l.started_at) * 1000) : null;
+        const iconSrc =
+          res === "SUCCESS"
+            ? "/assets/icons/tasklog-success.svg"
+            : "/assets/icons/tasklog-failed.svg";
+
         li.innerHTML = `
           <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
             <div>
@@ -415,11 +420,9 @@
               </div>
             </div>
             <div style="text-align:right;">
+              <img src="${iconSrc}" alt="${res}" style="width:25px;height:25px;flex-shrink:0;">
               <div style="font-weight:600;color:var(--text);">${globalThis.jf_helpers.humanDuration(
                 Number(l.duration_ms || 0),
-              )}</div>
-              <div class="task-log-result" style="font-size:0.85rem;color:var(--text-muted);">${globalThis.jf_helpers.escapeHtml(
-                l.result || "",
               )}</div>
             </div>
           </div>

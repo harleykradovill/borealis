@@ -16,6 +16,7 @@
   margin: 0 0 0.75rem 0;
   color: var(--text);
   font-size: 1rem;
+  font-weight: 600;
 }
 
 /* ============== */
@@ -42,8 +43,6 @@
   color: var(--text-muted);
   font-size: 0.8rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
 }
 
 .glance-value {
