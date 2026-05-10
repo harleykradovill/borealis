@@ -328,6 +328,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function renderTrend() {
     const trendCanvas = document.getElementById("plays-trend-chart");
+    const totalCountEl = document.getElementById("plays-trend-total");
+    const numberFmt = new Intl.NumberFormat();
+
     if (!trendCanvas) return;
 
     if (trendLoading) trendLoading.hidden = false;
@@ -336,6 +339,11 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const items = await loadActivity(14);
       const { labels, values } = buildTrendSeries(items, 14);
+
+      const totalPlays = values.reduce((sum, value) => sum + Number(value || 0), 0);
+      if (totalCountEl) {
+        totalCountEl.textContent = numberFmt.format(totalPlays);
+      }
 
       const minV = Math.min(...values);
       const maxV = Math.max(...values);
@@ -353,14 +361,14 @@ document.addEventListener("DOMContentLoaded", () => {
           datasets: [
             {
               data: values,
-              borderColor: "#10aa4d",
-              backgroundColor: "#10aa4d1F",
+              borderColor: "#0c1310",
+              backgroundColor: "#198544cc",
               fill: true,
               tension: 0.5,
               pointRadius: 3,
               pointHoverRadius: 4,
-              pointBackgroundColor: "#12813e",
-              pointBorderColor: "#10aa4d",
+              pointBackgroundColor: "#0c1310",
+              pointBorderColor: "#0c1310",
               borderWidth: 2,
             },
           ],
@@ -380,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
               display: true,
               title: { display: false },
               ticks: {
-                color: "#b3b3b3",
+                color: "#000000",
                 autoSkip: false,
                 maxRotation: 0,
                 minRotation: 0,
@@ -392,7 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
               display: true,
               title: { display: false },
               ticks: {
-                color: "#b3b3b3",
+                color: "#000000",
                 precision: 0,
               },
               grid: { display: false },
@@ -411,6 +419,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       globalThis.__playsTrendChart = new Chart(ctx, config);
       trendCanvas.style.display = "";
+      const cardHeader = document.getElementById("plays-trend-card-header");
+      if (cardHeader) {
+        cardHeader.removeAttribute("hidden");
+      }
     } finally {
       if (trendLoading) trendLoading.hidden = true;
     }

@@ -233,22 +233,47 @@
   flex: 1 1 0;
   min-width: 0;
   border: 1px solid var(--border);
+  background-color: var(--accent);
   border-radius: 12px;
-  padding: 0.75rem;
 }
 
 .plays-trend-card {
-  height: 250px;
+  position: relative;
+  height: 280px;
+  padding: 1rem;
+}
+
+.plays-trend-card-header {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.plays-trend-card-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--black);
+}
+
+.plays-trend-card-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--black);
 }
 
 .plays-trend-card canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 3rem;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
 }
 
 #plays-trend-loading .wrapper > div {
-  height: 250px;
+  height: 280px;
   border-radius: 12px;
 }
 
