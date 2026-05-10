@@ -67,7 +67,7 @@
 }
 
 .activitylog-filter-btn.active {
-  background: var(--highlight);
+  background: var(--accent);
 }
 
 .activitylog-filter-icon {

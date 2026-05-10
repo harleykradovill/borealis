@@ -84,15 +84,15 @@ function buildMatrix(items, days = 182) {
 
 function colorFor(v, maxV) {
   const palette = [
-    "#2b313d",
-    "#2c3542",
-    "#2d3f4f",
-    "#31536a",
-    "#2f5e78",
-    "#2b6f90",
-    "#1f7ea0",
-    "#1690a8",
-    "#0fb9b1",
+    "#1f2b31",
+    "#193842",
+    "#114751",
+    "#0a5962",
+    "#19646a",
+    "#0b7b68",
+    "#078f63",
+    "#10aa4d",
+    "#00df96",
   ];
   if (!v) return "#2b313d";
   const t = Math.min(1, v / Math.max(1, maxV));
@@ -353,14 +353,14 @@ document.addEventListener("DOMContentLoaded", () => {
           datasets: [
             {
               data: values,
-              borderColor: "#0fb9b1",
-              backgroundColor: "#2b6f901F",
+              borderColor: "#10aa4d",
+              backgroundColor: "#10aa4d1F",
               fill: true,
               tension: 0.5,
               pointRadius: 3,
               pointHoverRadius: 4,
-              pointBackgroundColor: "#e7ecf3",
-              pointBorderColor: "#0fb9b1",
+              pointBackgroundColor: "#12813e",
+              pointBorderColor: "#10aa4d",
               borderWidth: 2,
             },
           ],
@@ -877,15 +877,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!resolutionCanvas) return;
 
   const resolutionPalette = [
-    "#0fb9b1",
-    "#1690a8",
-    "#1f7ea0",
-    "#2b6f90",
-    "#2f5e78",
-    "#31536a",
-    "#2d3f4f",
-    "#2c3542",
-    "#2b313d",
+    "#00df96",
+    "#10aa4d",
+    "#078f63",
+    "#0b7b68",
+    "#19646a",
+    "#0a5962",
+    "#114751",
+    "#193842",
+    "#1f2b31",
   ];
 
   function renderResolutionsChart(rows) {
