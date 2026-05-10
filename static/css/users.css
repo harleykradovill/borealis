@@ -37,7 +37,7 @@
 }
 
 .users-table tbody tr:hover {
-  background: rgba(138, 180, 248, 0.05);
+  background: var(--highlight);
 }
 
 .users-table td {

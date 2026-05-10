@@ -6,7 +6,7 @@
 }
 
 .table tbody tr td {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  border-bottom: 1px solid var(--border);
   color: var(--text);
   vertical-align: middle;
   white-space: nowrap;
@@ -14,8 +14,12 @@
   text-overflow: ellipsis;
 }
 
+.table tr:nth-child(even) {
+  background-color: var(--surface);
+}
+
 .table tbody tr:hover td {
-  background: rgba(0, 0, 0, 0.02);
+  background: var(--highlight);
 }
 
 .pagination {
@@ -58,7 +62,7 @@
 }
 
 .activitylog-filter-btn:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--highlight);
 }
 
 .activitylog-filter-btn:focus-visible {

@@ -210,6 +210,32 @@
     setNavigationDisabled(true);
   }
 
+  function formatPlaybackType(playbackType) {
+    const typeMap = {
+      VideoPlayback: "Start Playback",
+      VideoPlaybackStopped: "Stop Playback",
+    };
+    return typeMap[playbackType] || playbackType || "";
+  }
+
+  function extractMediaItemName(eventName, playbackType) {
+    if (!eventName) return "";
+
+    let name = eventName;
+
+    if (playbackType === "VideoPlayback") {
+      const match = name.match(/is playing (.+)$/);
+      name = match ? match[1] : name;
+    } else if (playbackType === "VideoPlaybackStopped") {
+      const match = name.match(/has finished playing (.+)$/);
+      name = match ? match[1] : name;
+    }
+
+    name = name.replace(/ on .+$/, "");
+
+    return name;
+  }
+
   /**
    * Render table and pagination.
    * @param {*} data
@@ -248,9 +274,21 @@
         currentNameById.get(it.user_id) || it.username_denorm || "Deleted User";
       tr.appendChild(userTd);
 
+      const typeTd = document.createElement("td");
+      typeTd.style.padding = "0.5rem";
+      typeTd.textContent = formatPlaybackType(it.playback_type);
+
+      if (it.playback_type === "VideoPlayback") {
+        typeTd.style.color = "#10aa4d";
+      } else if (it.playback_type === "VideoPlaybackStopped") {
+        typeTd.style.color = "#e74c3c";
+      }
+
+      tr.appendChild(typeTd);
+
       const eventTd = document.createElement("td");
       eventTd.style.padding = "0.5rem";
-      eventTd.textContent = it.event_name || "";
+      eventTd.textContent = extractMediaItemName(it.event_name, it.playback_type);
       tr.appendChild(eventTd);
 
       const dateTd = document.createElement("td");

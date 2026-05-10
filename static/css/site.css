@@ -6,7 +6,7 @@
   --border: #1f2b22;
   --text: #e8ebe0;
   --text-muted: #b3b3b3;
-  --positive: #2da30c;
+  --positive: #309914;
   --negative: #8f1616;
   --white: #ffffff;
   --black: #000000;
@@ -140,12 +140,7 @@ body {
 }
 
 .btn:hover {
-  background: var(--text-muted);
-}
-
-.btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
+  background: var(--highlight);
 }
 
 .btn:disabled {
