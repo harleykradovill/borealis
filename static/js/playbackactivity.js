@@ -76,8 +76,8 @@
     const icon = filterBtn.querySelector(".activitylog-filter-icon");
     if (icon) {
       icon.src = hasFilter
-        ? "/assets/icons/filter.png"
-        : "/assets/icons/filter_off.png";
+        ? "/assets/icons/filter.svg"
+        : "/assets/icons/filter_off.svg";
     }
   }
 

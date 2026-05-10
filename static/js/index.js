@@ -527,7 +527,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const isPaused = !!playState?.IsPaused;
     return {
       isPaused,
-      iconUrl: isPaused ? "/assets/icons/pause.png" : "/assets/icons/play.png",
+      iconUrl: isPaused ? "/assets/icons/pause.svg" : "/assets/icons/play.svg",
       iconAlt: isPaused ? "Paused" : "Playing",
     };
   }
