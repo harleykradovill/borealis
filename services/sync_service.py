@@ -173,12 +173,6 @@ class SyncService:
                 errors=errors,
             )
 
-            self.repository.complete_task_log(
-                task_id=task_id,
-                result="SUCCESS" if result.success else "FAILED",
-                log_data=result.to_dict(),
-            )
-
             logging.info("[INFO] Metadata Sync Complete")
 
             return result
@@ -217,18 +211,6 @@ class SyncService:
         errors: List[str] = []
         events_count = 0
         total_events = 0
-
-        task_id = self.repository.create_task_log(
-            name="Activity Log Sync (Full)", task_type="sync", execution_type="full"
-        )
-        self.repository.update_task_log_progress(
-            task_id,
-            {
-                "phase": "starting",
-                "items_synced": 0,
-                "total_events": 0,
-            },
-        )
 
         try:
             # Build user lookup for username denormalization
@@ -296,15 +278,6 @@ class SyncService:
                 total_fetched += len(items)
                 start_index += page_size
 
-                self.repository.update_task_log_progress(
-                    task_id,
-                    {
-                        "phase": "running",
-                        "items_synced": int(events_count),
-                        "total_events": int(total_events),
-                    },
-                )
-
                 if total_fetched > 500000:
                     error_msg = (
                         "Activity log exceeded 500,000 entries, "
@@ -331,16 +304,6 @@ class SyncService:
                 errors=errors,
             )
 
-            log_data = result.to_dict()
-            log_data["phase"] = "complete" if result.success else "failed"
-            log_data["total_events"] = int(total_events)
-
-            self.repository.complete_task_log(
-                task_id=task_id,
-                result="SUCCESS" if result.success else "FAILED",
-                log_data=log_data,
-            )
-
             logging.info("[INFO] Full Activity Log Sync Complete")
             return result
 
@@ -355,16 +318,6 @@ class SyncService:
                 libraries_synced=0,
                 items_synced=events_count,
                 errors=errors,
-            )
-
-            log_data = result.to_dict()
-            log_data["phase"] = "failed"
-            log_data["total_events"] = int(total_events)
-
-            self.repository.complete_task_log(
-                task_id=task_id,
-                result="FAILED",
-                log_data=log_data,
             )
 
             return result
