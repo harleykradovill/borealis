@@ -308,6 +308,8 @@
   margin: 0 0 0.5rem 0;
   align-items: center;
   overflow: auto;
+  background-color: var(--surface);
+  border-radius: 100px;
 }
 
 .statistics-nav li {
@@ -320,6 +322,7 @@
   cursor: pointer;
   white-space: nowrap;
   transition: color 120ms ease;
+  border-radius: 100px;
 }
 
 .statistics-nav li:hover,
@@ -329,7 +332,8 @@
 
 .statistics-nav li.active {
   color: var(--accent);
-  border-bottom: 1px solid var(--accent);
+  background-color: var(--highlight);
+  transition: all 120ms ease;
 }
 
 .watch-statistics-card {

@@ -799,7 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const span = Math.max(1, maxV);
-    const pad = Math.max(1, Math.round(span * 0.2));
+    const pad = Math.max(1, Math.round(span * 0.05));
     const xMax = maxV + pad;
 
     const ctx = statsCanvas.getContext("2d");
@@ -815,7 +815,7 @@ document.addEventListener("DOMContentLoaded", () => {
               (_, idx) => palette[Math.min(idx, palette.length - 1)],
             ),
             borderRadius: 100,
-            barThickness: 18,
+            barThickness: 22,
           },
         ],
       },
