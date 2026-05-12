@@ -97,10 +97,16 @@ def map_user(jf_user: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if not jf_id or not name:
         return None
 
+    image_tag = _clean_str(jf_user.get("PrimaryImageTag")) or _clean_str(
+        jf_user.get("ImageTags", {}).get("Primary")
+    )
+    image_url = f"/Users/{jf_id}/Images/Primary?tag={image_tag}" if image_tag else None
+
     return {
         "jellyfin_id": jf_id,
         "name": name,
         "is_admin": bool(jf_user.get("Policy", {}).get("IsAdministrator")),
+        "image_url": image_url,
     }
 
 

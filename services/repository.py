@@ -209,12 +209,14 @@ class Repository:
                 if user:
                     user.name = data.get("name", user.name)
                     user.is_admin = data.get("is_admin", user.is_admin)
+                    user.image_url = data.get("image_url", user.image_url)
                     user.archived = False
                 else:
                     user = User(
                         jellyfin_id=jf_id,
                         name=data.get("name", "Unknown"),
                         is_admin=data.get("is_admin", False),
+                        image_url=data.get("image_url"),
                         archived=False,
                     )
                     session.add(user)

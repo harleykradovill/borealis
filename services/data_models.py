@@ -44,6 +44,7 @@ class User(Base):
     total_watch_time_seconds = Column(Integer, default=0)
     last_seen_at = Column(BigInteger, nullable=True)
     archived = Column(Boolean, default=False)
+    image_url = Column(String(1024), nullable=True)
 
     __table_args__ = (
         Index("idx_user_jellyfin_id", "jellyfin_id"),
@@ -66,6 +67,7 @@ class User(Base):
             "total_plays": self.total_plays,
             "total_watch_time_seconds": self.total_watch_time_seconds,
             "last_seen_at": self.last_seen_at,
+            "image_url": self.image_url,
         }
 
 
