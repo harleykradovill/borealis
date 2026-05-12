@@ -1,0 +1,47 @@
+(function () {
+  async function loadSidebarUsers() {
+    const list = document.getElementById("sidebar-users-list");
+    if (!list) return;
+
+    const result = await jf_helpers.fetchJson("/api/analytics/stats/users");
+
+    if (!result.ok || !result.data) {
+      console.error("Failed to load users:", result.message);
+      return;
+    }
+
+    const users = result.data;
+    if (!users.length) return;
+
+    users.forEach((user) => {
+      const li = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = `/users/${user.id}`;
+
+      const img = document.createElement("img");
+      img.src = "/assets/icons/profile_small.png";
+      img.alt = "";
+      img.className = "sidebar-user-icon";
+
+      const span = document.createElement("span");
+      span.textContent = user.name;
+      span.title = user.name;
+
+      link.appendChild(img);
+      link.appendChild(span);
+
+      if (globalThis.location.pathname === `/users/${user.id}`) {
+        link.classList.add("active");
+      }
+
+      li.appendChild(link);
+      list.appendChild(li);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadSidebarUsers);
+  } else {
+    loadSidebarUsers();
+  }
+})();

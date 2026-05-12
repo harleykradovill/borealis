@@ -117,6 +117,53 @@ body {
   flex-shrink: 0;
 }
 
+.sidebar-users-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-user-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: 100px;
+}
+
+.sidebar-users-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-left: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.sidebar-users-list a {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.5rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: 12px;
+  font-size: 0.95em;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.sidebar-users-list a:hover {
+  background-color: var(--highlight);
+}
+
+.sidebar-users-list a.active {
+  background-color: var(--surface);
+  color: var(--text);
+}
+
 .content {
   flex: 1;
   max-width: 1500px;
