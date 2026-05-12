@@ -268,7 +268,9 @@ def create_settings_blueprint(*, svc, repo, sync):
                 try:
                     sync.sync_initial()
                 except Exception as exc:
-                    logging.error("[ERROR] Initial sync failed: %s", exc, exc_info=True)
+                    logging.exception(
+                        "[ERROR] Initial sync failed: %s", exc, exc_info=True
+                    )
 
             sync_thread = threading.Thread(target=run_initial_sync, daemon=True)
             sync_thread.start()
