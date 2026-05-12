@@ -55,8 +55,11 @@ def create_settings_blueprint(*, svc, repo, sync):
             except Exception:
                 log_data = {}
 
-        processed = int(log_data.get("items_synced") or 0)
-        total = int(log_data.get("total_events") or 0)
+        step = int(log_data.get("step") or 0)
+        step_total = int(log_data.get("step_total") or 0)
+
+        processed = step if step > 0 else int(log_data.get("items_synced") or 0)
+        total = step_total if step_total > 0 else int(log_data.get("total_events") or 0)
 
         phase_from_log = str(log_data.get("phase") or "").strip().lower()
         message_from_log = str(log_data.get("message") or "").strip()

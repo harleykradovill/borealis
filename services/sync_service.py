@@ -59,7 +59,7 @@ class SyncService:
     repository: Repository
     settings_service: Any
 
-    def sync_metadata(self) -> SyncResult:
+    def sync_metadata(self, task_id: Optional[int] = None) -> SyncResult:
         """
         Perform a full metadata sync: users → libraries → items.
 
@@ -73,10 +73,24 @@ class SyncService:
         users_count = 0
         libraries_count = 0
         items_count = 0
+        own_task = task_id is None
+        step_total = 6 if not own_task else 3
 
-        task_id = self.repository.create_task_log(
-            name="Metadata Sync", task_type="sync", execution_type="full"
-        )
+        if own_task:
+            task_id = self.repository.create_task_log(
+                name="Metadata Sync", task_type="sync", execution_type="full"
+            )
+
+        if task_id is not None:
+            self.repository.update_task_log_progress(
+                task_id,
+                {
+                    "phase": "running",
+                    "step": 1,
+                    "step_total": step_total,
+                    "message": "Syncing users",
+                },
+            )
 
         try:
             # Phase 1: Sync users
@@ -93,8 +107,16 @@ class SyncService:
             else:
                 errors.append(f"Users sync failed: {users_result.get('message')}")
 
+            time.sleep(2.5)
             # Phase 2: Sync libraries
             libs_result = self.jellyfin_client.libraries()
+
+            if task_id is not None:
+                self.repository.update_task_log_progress(
+                    task_id,
+                    {"step": 2, "message": "Syncing libraries"},
+                )
+
             if libs_result.get("ok"):
                 libs_data = libs_result.get("data")
 
@@ -122,8 +144,15 @@ class SyncService:
                 active_lib_ids = [lib["jellyfin_id"] for lib in mapped_libs]
                 self.repository.archive_missing_libraries(active_lib_ids)
 
+                time.sleep(1.5)
                 # Phase 3: Sync items for each library
                 libraries = self.repository.list_libraries(include_archived=False)
+
+                if task_id is not None:
+                    self.repository.update_task_log_progress(
+                        task_id,
+                        {"step": 3, "message": "Syncing items"},
+                    )
 
                 for lib in libraries:
                     lib_jf_id = lib["jellyfin_id"]
@@ -173,11 +202,12 @@ class SyncService:
                 errors=errors,
             )
 
-            self.repository.complete_task_log(
-                task_id=task_id,
-                result="SUCCESS" if result.success else "FAILED",
-                log_data=result.to_dict(),
-            )
+            if own_task and task_id is not None:
+                self.repository.complete_task_log(
+                    task_id=task_id,
+                    result="SUCCESS" if result.success else "FAILED",
+                    log_data=result.to_dict(),
+                )
 
             logging.info("[INFO] Metadata Sync Complete")
 
@@ -196,11 +226,12 @@ class SyncService:
                 errors=errors,
             )
 
-            self.repository.complete_task_log(
-                task_id=task_id,
-                result="FAILED",
-                log_data=result.to_dict(),
-            )
+            if own_task and task_id is not None:
+                self.repository.complete_task_log(
+                    task_id=task_id,
+                    result="FAILED",
+                    log_data=result.to_dict(),
+                )
 
             return result
 
@@ -533,7 +564,7 @@ class SyncService:
         and full activity log pull.
 
         :returns: SyncResult combining metrics from metadata, activity, and dashboard operations
-        :raises Exception: Continues execution on sub task failures, aggregates all errors
+        :raises Exception: Continues execution on individual phase failures, aggregates all errors
         """
         logging.info("[INFO] Starting Initial Sync")
 
@@ -655,7 +686,6 @@ class SyncService:
         :returns: SyncResult with aggregated metrics from all sync phases
         :raises Exception: Continues on individual phase failures, aggregates all errors
         """
-
         logging.info("[INFO] Starting Periodic Sync")
 
         start_time = time.time()
@@ -667,9 +697,10 @@ class SyncService:
         self.repository.update_task_log_progress(
             task_id,
             {
-                "phase": "starting",
+                "phase": "running",
                 "message": "Starting periodic sync",
-                "step": "1/4",
+                "step": 1,
+                "step_total": 6,
                 "items_synced": 0,
                 "total_events": 0,
             },
@@ -677,7 +708,7 @@ class SyncService:
 
         try:
             # Step 1: Sync users, libraries, and items
-            metadata_result = self.sync_metadata()
+            metadata_result = self.sync_metadata(task_id=task_id)
             if not metadata_result.success and metadata_result.errors:
                 errors.extend(metadata_result.errors)
 
@@ -685,13 +716,12 @@ class SyncService:
                 task_id,
                 {
                     "phase": "running",
-                    "message": "Metadata sync complete, syncing activity log",
-                    "step": "2/4",
-                    "items_synced": int(metadata_result.items_synced),
+                    "message": "Syncing activity log",
+                    "step": 4,
                 },
             )
 
-            # Step 2: Sync activity log incrementally
+            # Step 4: Sync activity log incrementally
             activity_result = self.sync_activity_log_incremental()
             if not activity_result.success and activity_result.errors:
                 errors.extend(activity_result.errors)
@@ -701,15 +731,13 @@ class SyncService:
                 {
                     "phase": "running",
                     "message": "Refreshing play stats",
-                    "step": "3/4",
-                    "items_synced": int(
-                        metadata_result.items_synced + activity_result.items_synced
-                    ),
-                    "total_events": int(activity_result.items_synced),
+                    "step": 5,
                 },
             )
 
-            # Step 3: Refresh play statistics
+            time.sleep(2)
+
+            # Step 5: Refresh play statistics
             try:
                 self.repository.refresh_play_stats()
             except Exception:
@@ -720,11 +748,12 @@ class SyncService:
                 {
                     "phase": "running",
                     "message": "Refreshing dashboard stats",
-                    "step": "4/4",
+                    "step": 6,
                 },
             )
+            time.sleep(1.5)
 
-            # Step 4: Refresh dashboard stats
+            # Step 6: Refresh dashboard stats
             try:
                 self._refresh_dashboard_cache()
             except Exception:
@@ -747,13 +776,15 @@ class SyncService:
             log_data["message"] = (
                 "Periodic sync complete" if result.success else "Periodic sync failed"
             )
-            log_data["step"] = "4/4"
+            log_data["step"] = 6
 
             self.repository.complete_task_log(
                 task_id=task_id,
                 result="SUCCESS" if result.success else "FAILED",
                 log_data=log_data,
             )
+
+            time.sleep(1.5)
 
             logging.info("[INFO] Periodic Sync Complete")
             return result

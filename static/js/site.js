@@ -9,11 +9,11 @@
 
   function getSyncMessage(payload) {
     const message = String(payload?.message || "Sync in progress");
-    const processed = Number(payload?.processed_events || 0);
-    const total = Number(payload?.total_events || 0);
+    const step = Number(payload?.step || payload?.processed_events || 0);
+    const total = Number(payload?.step_total || payload?.total_events || 0);
 
-    if (total > 0) {
-      return `${message} (${Math.min(processed, total)}/${total})`;
+    if (step > 0 && total > 0) {
+      return `${message} (${Math.min(step, total)}/${total})`;
     }
     return message;
   }
