@@ -60,10 +60,7 @@
       const payload = await resp.json();
       renderSyncState(payload);
     } catch (error) {
-      globalThis.jf_helpers.handleError(
-        "Failed to fetch sync progress snapshot",
-        error,
-      );
+      globalThis.helpers.handleError("Failed to fetch sync progress snapshot", error);
     }
   }
 
@@ -119,7 +116,7 @@
         const payload = JSON.parse(event.data);
         renderSyncState(payload);
       } catch (error) {
-        globalThis.jf_helpers.handleError("Failed to fetch sync progress", error);
+        globalThis.helpers.handleError("Failed to fetch sync progress", error);
       }
     });
 
@@ -145,7 +142,7 @@
   fetchSyncSnapshot();
 })();
 
-globalThis.jf_helpers = (function () {
+globalThis.helpers = (function () {
   /**
    * Fetches JSON from the given path.
    * @param {string} path The URL to request
@@ -169,7 +166,7 @@ globalThis.jf_helpers = (function () {
       }
       return { ok: true, status: resp.status, data };
     } catch (error) {
-      globalThis.jf_helpers.handleError("Network error", error);
+      globalThis.helpers.handleError("Network error", error);
       return {
         ok: false,
         status: 0,
@@ -207,7 +204,7 @@ globalThis.jf_helpers = (function () {
       }
       return { ok: true, status: resp.status, data };
     } catch (error) {
-      globalThis.jf_helpers.handleError("Network error", error);
+      globalThis.helpers.handleError("Network error", error);
       return {
         ok: false,
         status: 0,

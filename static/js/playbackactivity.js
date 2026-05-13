@@ -382,7 +382,7 @@
 
       render(payload.data || {});
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to load playback activity", error);
+      globalThis.helpers.handleError("Failed to load playback activity", error);
       renderEmpty();
     } finally {
       setNavigationDisabled(false);

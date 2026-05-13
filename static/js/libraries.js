@@ -20,7 +20,7 @@
         try {
           globalThis.updateLibrariesChart(libs);
         } catch (error) {
-          globalThis.jf_helpers.handleError("Failed to load chart", error);
+          globalThis.helpers.handleError("Failed to load chart", error);
         }
       }
 
@@ -31,11 +31,11 @@
         try {
           globalThis.updateItemsAddedChart(libs);
         } catch (error) {
-          globalThis.jf_helpers.handleError("Failed to load items added", error);
+          globalThis.helpers.handleError("Failed to load items added", error);
         }
       }
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to load libraries", error);
+      globalThis.helpers.handleError("Failed to load libraries", error);
       if (empty) empty.hidden = false;
       if (container) container.hidden = true;
     }
@@ -67,12 +67,12 @@
         { label: "Type", value: typeText },
         {
           label: "Total Time",
-          value: globalThis.jf_helpers.humanTime(lib.total_time_seconds || 0),
+          value: globalThis.helpers.humanTime(lib.total_time_seconds || 0),
         },
-        { label: "Size", value: globalThis.jf_helpers.humanBytes(lib.size_bytes || 0) },
+        { label: "Size", value: globalThis.helpers.humanBytes(lib.size_bytes || 0) },
         {
           label: "Total Playback",
-          value: globalThis.jf_helpers.humanTime(lib.total_playback_seconds || 0),
+          value: globalThis.helpers.humanTime(lib.total_playback_seconds || 0),
         },
         { label: "Last Played", value: lib.last_played_item_name || "-" },
       ];
@@ -113,7 +113,7 @@
   let itemLineChart = null;
 
   function paletteFor(n) {
-    return globalThis.jf_helpers.getPalette(n);
+    return globalThis.helpers.getPalette(n);
   }
 
   function generateDateRange(days = 30) {
@@ -245,7 +245,7 @@
         },
       });
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to load items added", error);
+      globalThis.helpers.handleError("Failed to load items added", error);
       return;
     }
   }

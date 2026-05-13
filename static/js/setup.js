@@ -174,7 +174,7 @@
         librariesList.appendChild(item);
       });
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to load libraries", error);
+      globalThis.helpers.handleError("Failed to load libraries", error);
       if (librariesEmpty) librariesEmpty.hidden = false;
     }
   }
@@ -213,7 +213,7 @@
       const original = buttons.page2Test.textContent;
       buttons.page2Test.textContent = "Testing...";
 
-      const result = await globalThis.jf_helpers.postJson(
+      const result = await globalThis.helpers.postJson(
         "/api/test-connection-with-credentials",
         { jf_host: host, jf_port: port, jf_api_key: apiKey },
       );
@@ -283,7 +283,7 @@
         });
 
         if (!resp.ok) {
-          globalThis.jf_helpers.handleError("Failed to save settings", error);
+          globalThis.helpers.handleError("Failed to save settings", error);
           buttons.page3Finish.textContent = original;
           buttons.page3Finish.disabled = false;
           return;
@@ -321,14 +321,14 @@
 
             setTimeout(pollProgress, POLL_INTERVAL);
           } catch (error) {
-            globalThis.jf_helpers.handleError("Failed to poll sync progress", error);
+            globalThis.helpers.handleError("Failed to poll sync progress", error);
             setTimeout(pollProgress, POLL_INTERVAL);
           }
         }
 
         setTimeout(pollProgress, 500);
       } catch (error) {
-        globalThis.jf_helpers.handleError("Network error while syncing", error);
+        globalThis.helpers.handleError("Network error while syncing", error);
         buttons.page3Finish.textContent = original;
         buttons.page3Finish.disabled = false;
       }

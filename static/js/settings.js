@@ -71,7 +71,7 @@
   }
 
   async function refreshSyncStatus() {
-    let result = await globalThis.jf_helpers.fetchJson("/api/settings/sync-status");
+    let result = await globalThis.helpers.fetchJson("/api/settings/sync-status");
     if (!result?.ok) return;
     let payload = result.data && typeof result.data === "object" ? result.data : result;
     renderSyncStatus(payload);
@@ -102,7 +102,7 @@
         ? fields.sync_interval.value
         : null;
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to load settings", error);
+      globalThis.helpers.handleError("Failed to load settings", error);
     }
   }
 
@@ -122,13 +122,9 @@
 
   async function saveSettings(payload) {
     try {
-      const result = await globalThis.jf_helpers.postJson(
-        "/api/settings",
-        payload,
-        "PUT",
-      );
+      const result = await globalThis.helpers.postJson("/api/settings", payload, "PUT");
       if (!result?.ok) {
-        globalThis.jf_helpers.handleError("Failed to save settings", error);
+        globalThis.helpers.handleError("Failed to save settings", error);
         return;
       }
 
@@ -149,7 +145,7 @@
 
       globalThis.Toast.showToast("Settings saved");
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to save settings", error);
+      globalThis.helpers.handleError("Failed to save settings", error);
     }
   }
 
@@ -203,7 +199,7 @@
   }
 
   async function refreshManualSyncButtonState() {
-    const result = await globalThis.jf_helpers.fetchJson(
+    const result = await globalThis.helpers.fetchJson(
       "/api/analytics/server/sync-progress",
     );
     if (!result?.ok) return;
@@ -234,13 +230,13 @@
       btn.textContent = "Starting...";
 
       try {
-        const result = await globalThis.jf_helpers.postJson(
+        const result = await globalThis.helpers.postJson(
           "/api/sync/periodic",
           {},
           "POST",
         );
         if (!result?.ok) {
-          globalThis.jf_helpers.handleError(
+          globalThis.helpers.handleError(
             "Failed to start manual sync",
             result?.message,
           );
@@ -248,7 +244,7 @@
           return;
         }
       } catch (error) {
-        globalThis.jf_helpers.handleError("Failed to start manual sync", error);
+        globalThis.helpers.handleError("Failed to start manual sync", error);
       } finally {
         setTimeout(handleSyncComplete, 300);
         refreshSyncStatus().catch(function () {});
@@ -309,7 +305,7 @@
       serverHostDisplay.textContent = `${host}:${port}`;
     }
     if (serverKeyDisplay) {
-      const masked = globalThis.jf_helpers.maskKey(apiKey);
+      const masked = globalThis.helpers.maskKey(apiKey);
       serverKeyDisplay.textContent = `API Key: ${masked}`;
     }
   }
@@ -326,7 +322,7 @@
         displayServer(data.jf_server_name, data.jf_host, data.jf_port, data.jf_api_key);
       }
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to check server state", error);
+      globalThis.helpers.handleError("Failed to check server state", error);
     }
   }
 
@@ -348,14 +344,14 @@
         });
 
         if (!resp.ok) {
-          globalThis.jf_helpers.handleError("Failed to remove server", resp?.message);
+          globalThis.helpers.handleError("Failed to remove server", resp?.message);
           return;
         }
 
         globalThis.Toast.showToast("Server removed");
         updateServerState(false);
       } catch (error) {
-        globalThis.jf_helpers.handleError("Failed to remove server", error);
+        globalThis.helpers.handleError("Failed to remove server", error);
       }
     });
   }
@@ -371,7 +367,7 @@
 
   async function loadTaskLogs() {
     try {
-      const result = await globalThis.jf_helpers.fetchJson("/api/analytics/task-logs");
+      const result = await globalThis.helpers.fetchJson("/api/analytics/task-logs");
       if (!result.ok) {
         console.error("Failed to load task logs", result.message);
         if (empty) empty.hidden = false;
@@ -407,17 +403,17 @@
         li.innerHTML = `
           <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
             <div>
-              <div style="font-weight:600;color:var(--text);">${globalThis.jf_helpers.escapeHtml(
+              <div style="font-weight:600;color:var(--text);">${globalThis.helpers.escapeHtml(
                 l.name || "(unnamed)",
               )}</div>
               <div style="font-size:0.9rem;color:var(--text-muted);">
                 ${started ? started.toLocaleString() : ""}
-                ${l.type ? " • " + globalThis.jf_helpers.escapeHtml(l.type) : ""}
+                ${l.type ? " • " + globalThis.helpers.escapeHtml(l.type) : ""}
               </div>
             </div>
             <div style="text-align:right;">
               <img src="${iconSrc}" alt="${res}" style="width:25px;height:25px;flex-shrink:0;">
-              <div style="font-weight:600;color:var(--text);">${globalThis.jf_helpers.humanDuration(
+              <div style="font-weight:600;color:var(--text);">${globalThis.helpers.humanDuration(
                 Number(l.duration_ms || 0),
               )}</div>
             </div>
@@ -426,7 +422,7 @@
         list.appendChild(li);
       });
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to load task logs", error);
+      globalThis.helpers.handleError("Failed to load task logs", error);
       if (empty) empty.hidden = false;
       if (list) list.hidden = true;
     }
@@ -445,7 +441,7 @@
 
   async function loadDatabaseInfo() {
     try {
-      const result = await globalThis.jf_helpers.fetchJson("/api/database/info");
+      const result = await globalThis.helpers.fetchJson("/api/database/info");
       if (!result?.ok) {
         console.error("Failed to load database info:", result?.message);
         return;
@@ -469,7 +465,7 @@
         }
       }
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to load database info", error);
+      globalThis.helpers.handleError("Failed to load database info", error);
     }
   }
 

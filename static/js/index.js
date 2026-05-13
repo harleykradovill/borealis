@@ -32,7 +32,7 @@ async function loadActivity(days = 182) {
 
     return all;
   } catch (error) {
-    globalThis.jf_helpers.handleError("Failed to load activity", error);
+    globalThis.helpers.handleError("Failed to load activity", error);
     return [];
   }
 }
@@ -50,7 +50,7 @@ function buildMatrix(items, days = 182) {
     const ts = Number(it.activity_at || 0) * 1000;
     if (!ts) return;
     const d = new Date(ts);
-    const iso = globalThis.jf_helpers.toLocalISO(d);
+    const iso = globalThis.helpers.toLocalISO(d);
     counts[iso] = (counts[iso] || 0) + 1;
   });
 
@@ -61,9 +61,9 @@ function buildMatrix(items, days = 182) {
   for (
     let cursor = new Date(startDate);
     cursor <= now;
-    cursor = globalThis.jf_helpers.addDays(cursor, 1)
+    cursor = globalThis.helpers.addDays(cursor, 1)
   ) {
-    const iso = globalThis.jf_helpers.toLocalISO(cursor);
+    const iso = globalThis.helpers.toLocalISO(cursor);
     const v = counts[iso] || 0;
     if (v > maxV) maxV = v;
 
@@ -82,7 +82,7 @@ function buildMatrix(items, days = 182) {
 }
 
 function colorFor(v, maxV) {
-  const palette = globalThis.jf_helpers.getPalette();
+  const palette = globalThis.helpers.getPalette();
   if (!v) return "#2b313d";
   const t = Math.min(1, v / Math.max(1, maxV));
   const idx = Math.max(
@@ -135,20 +135,20 @@ function buildTrendSeries(items, days = 14) {
     const ts = Number(it.activity_at || 0) * 1000;
     if (!ts) return;
     const d = new Date(ts);
-    const iso = globalThis.jf_helpers.toLocalISO(d);
+    const iso = globalThis.helpers.toLocalISO(d);
     counts[iso] = (counts[iso] || 0) + 1;
   });
 
   const labels = [];
   const values = [];
-  const start = globalThis.jf_helpers.addDays(now, -(days - 1));
+  const start = globalThis.helpers.addDays(now, -(days - 1));
 
   for (
     let cursor = new Date(start);
     cursor <= now;
-    cursor = globalThis.jf_helpers.addDays(cursor, 1)
+    cursor = globalThis.helpers.addDays(cursor, 1)
   ) {
-    const iso = globalThis.jf_helpers.toLocalISO(cursor);
+    const iso = globalThis.helpers.toLocalISO(cursor);
     const label = `${cursor.getMonth() + 1}/${cursor.getDate()}`;
     labels.push(label);
     values.push(counts[iso] || 0);
@@ -472,13 +472,13 @@ document.addEventListener("DOMContentLoaded", () => {
       setText(elTotalItems, numberFmt.format(Number(data.total_items || 0)));
       setText(
         elTotalSize,
-        globalThis.jf_helpers.humanBytes(Number(data.total_size_bytes || 0)),
+        globalThis.helpers.humanBytes(Number(data.total_size_bytes || 0)),
       );
       setText(elTotalUsers, numberFmt.format(Number(data.total_users || 0)));
 
       if (grid) grid.hidden = false;
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to load glance", error);
+      globalThis.helpers.handleError("Failed to load glance", error);
       setText(elActiveSessions, "-");
       setText(elTotalPlays, "-");
       setText(elTotalItems, "-");
@@ -681,7 +681,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderSessions(result.data);
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to load sessions", error);
+      globalThis.helpers.handleError("Failed to load sessions", error);
       renderSessions([]);
     }
   }
@@ -716,7 +716,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!statsCanvas) return;
 
   const navItems = statisticsSection.querySelectorAll(".statistics-nav li");
-  const palette = globalThis.jf_helpers.getPalette(null, true);
+  const palette = globalThis.helpers.getPalette(null, true);
 
   const statTypes = [
     {
@@ -865,7 +865,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!resolutionCanvas) return;
 
-  const resolutionPalette = globalThis.jf_helpers.getPalette(null, true);
+  const resolutionPalette = globalThis.helpers.getPalette(null, true);
 
   function renderResolutionsChart(rows) {
     const safeRows = Array.isArray(rows) ? rows : [];
@@ -960,7 +960,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderResolutionsChart(payload.data?.sections?.resolutions || []);
     } catch (error) {
-      globalThis.jf_helpers.handleError("Failed to load resolutions", error);
+      globalThis.helpers.handleError("Failed to load resolutions", error);
     } finally {
       if (resolutionLoading) resolutionLoading.hidden = true;
     }
