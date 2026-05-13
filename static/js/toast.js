@@ -94,6 +94,11 @@
     toasts.delete(id);
     return true;
   }
+  /**
+   * Show a sync toast with spinner.
+   * @param {string} message Displayed next to the spinner
+   * @returns {string} The generated toast ID
+   */
 
   function showSyncToast(message = "Syncing") {
     const container = getContainer();
@@ -118,6 +123,11 @@
     return id;
   }
 
+  /**
+   * Update the message of an existing sync toast.
+   * @param {string} toastId Toast ID to update
+   * @param {string} message New message text
+   */
   function updateSyncToast(toastId, message) {
     const toast = toasts.get(toastId);
     if (toast?.el) {
@@ -128,6 +138,10 @@
     }
   }
 
+  /**
+   * Hide a sync toast.
+   * @param {string} toastId Toast ID to hide
+   */
   function hideSyncToast(toastId) {
     removeToast(toastId);
   }

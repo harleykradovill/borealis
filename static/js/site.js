@@ -7,6 +7,11 @@
   let fallbackTimer = null;
   const fallbackIntervalMs = 45000;
 
+  /**
+   * Builds a user-facing sync progress message from the payload.
+   * @param {Object} payload Sync payload from the server
+   * @returns {string} A formatted message, including progress counts when available
+   */
   function getSyncMessage(payload) {
     const message = String(payload?.message || "Sync in progress");
     const step = Number(payload?.step || payload?.processed_events || 0);
@@ -18,6 +23,11 @@
     return message;
   }
 
+  /**
+   * Updates the sync toast UI based on the latest payload.
+   * @param {Object} payload Sync state payload from the server or stream
+   * @returns {void}
+   */
   function renderSyncState(payload) {
     if (!payload || payload.ok === false) return;
     const syncing = Boolean(payload.syncing);
@@ -39,6 +49,10 @@
     }
   }
 
+  /**
+   * Fetches the current sync progress snapshot from the server.
+   * @returns {Promise<void>} Resolves after the snapshot has been fetched and rendered
+   */
   async function fetchSyncSnapshot() {
     try {
       const resp = await fetch("/api/analytics/server/sync-progress");
@@ -51,12 +65,20 @@
     }
   }
 
+  /**
+   * Starts fallback polling for sync progress when server-send events are unavailable.
+   * @returns {void}
+   */
   function startFallbackPolling() {
     if (fallbackTimer) return;
     fallbackTimer = setInterval(fetchSyncSnapshot, fallbackIntervalMs);
     fetchSyncSnapshot();
   }
 
+  /**
+   * Disconnects the current sync event stream and stops fallback polling.
+   * @returns {void}
+   */
   function disconnectSyncStream() {
     stopFallbackPolling();
 
@@ -66,12 +88,20 @@
     }
   }
 
+  /**
+   * Stops the fallback polling timer if it is active.
+   * @returns {void}
+   */
   function stopFallbackPolling() {
     if (!fallbackTimer) return;
     clearInterval(fallbackTimer);
     fallbackTimer = null;
   }
 
+  /**
+   * Opens the server-send events stream for sync progress and falls back to polling on error.
+   * @returns {void}
+   */
   function connectSyncStream() {
     disconnectSyncStream();
 
@@ -115,6 +145,12 @@
 })();
 
 globalThis.jf_helpers = (function () {
+  /**
+   * Fetches JSON from the given path.
+   * @param {string} path The URL to request
+   * @param {Object} opts Optional fetch options (method, headers, etc.)
+   * @returns {Promise<Object>} Resolves with an object containing 'ok', 'status', and 'data' or error details.
+   */
   async function fetchJson(path, opts = {}) {
     try {
       const resp = await fetch(path, opts.method ? opts : { method: "GET" });
@@ -142,6 +178,13 @@ globalThis.jf_helpers = (function () {
     }
   }
 
+  /**
+   * Sends a JSON payload via POST to the given path.
+   * @param {string} path The URL to send the request to
+   * @param {Object} body The JS object to serialize as JSON
+   * @param {string} method HTTP method to use
+   * @returns {Promise<Object>} Resolves with the parsed response or error details
+   */
   async function postJson(path, body, method = "POST") {
     try {
       const resp = await fetch(path, {
@@ -173,6 +216,11 @@ globalThis.jf_helpers = (function () {
     }
   }
 
+  /**
+   * Escapes special HTML characters in a string for safe insertion into DOM.
+   * @param {(string|null|undefined)} s The input string to escape
+   * @returns {string} The escaped string, emptry if input is null/undefined
+   */
   function escapeHtml(s) {
     if (s === null || s === undefined) return "";
     return String(s).replaceAll(
@@ -188,6 +236,11 @@ globalThis.jf_helpers = (function () {
     );
   }
 
+  /**
+   * Converts a duration in ms to a human-readable string.
+   * @param {number} ms Duration in milliseconds
+   * @returns {string} Human-readable representation (e.g., "1h 5m")
+   */
   function humanDuration(ms) {
     if (!ms || ms <= 0) return "0s";
     let s = Math.floor(ms / 1000);
@@ -200,6 +253,11 @@ globalThis.jf_helpers = (function () {
     return `${sec}s`;
   }
 
+  /**
+   * Converts a byte count into a readable unit string.
+   * @param {number} bytes Number of bytes
+   * @returns {string} Human-readable representation (e.g., "12.34 MB")
+   */
   function humanBytes(bytes) {
     if (!bytes || bytes === 0) return "0 B";
     const units = ["B", "KB", "MB", "GB", "TB"];
@@ -207,6 +265,11 @@ globalThis.jf_helpers = (function () {
     return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${units[i]}`;
   }
 
+  /**
+   * Converts seconds into a human-readable string.
+   * @param {number} seconds Time in seconds
+   * @returns {string} Human-readable representation (e.g., "2h 30m")
+   */
   function humanTime(seconds) {
     if (!seconds || seconds === 0) return "0s";
     const h = Math.floor(seconds / 3600);
@@ -217,12 +280,22 @@ globalThis.jf_helpers = (function () {
     return `${s}s`;
   }
 
+  /**
+   * Masks a key, showing only the first four characters and replacing the rest with dots.
+   * @param {string} key The key to mask
+   * @returns {string} Masked key string
+   */
   function maskKey(key) {
     if (!key) return "";
     if (key.length <= 4) return "•".repeat(key.length);
     return `${key.slice(0, 4)}${"•".repeat(Math.max(8, key.length - 4))}`;
   }
 
+  /**
+   * Converts a Date object into an ISO-8601 date string (YYYY-MM-DD)
+   * @param {Date} date The date to format
+   * @returns {string} ISO date string
+   */
   function toLocalISO(date) {
     const yr = date.getFullYear();
     const mo = String(date.getMonth() + 1).padStart(2, "0");
@@ -230,6 +303,12 @@ globalThis.jf_helpers = (function () {
     return `${yr}-${mo}-${da}`;
   }
 
+  /**
+   * Adds a specified number of days to a Date object and returns the new date.
+   * @param {Date} date Original date
+   * @param {number} days Number of days to add
+   * @returns {Date} New date with added days
+   */
   function addDays(date, days) {
     const d = new Date(date);
     d.setDate(d.getDate() + days);
