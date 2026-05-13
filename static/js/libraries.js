@@ -117,15 +117,10 @@
   }
 
   function generateDateRange(days = 30) {
-    const dates = [];
     const now = new Date();
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      const iso = d.toISOString().slice(0, 10);
-      dates.push(iso);
-    }
-    return dates;
+    now.setHours(0, 0, 0, 0);
+    const start = globalThis.helpers.addDays(now, -(days - 1));
+    return globalThis.helpers.generateDateLabels(start, days);
   }
 
   function initializeItemsByDatePerLibrary(libraries, dates) {

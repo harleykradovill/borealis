@@ -364,6 +364,21 @@ globalThis.helpers = (function () {
     return colors;
   }
 
+  /**
+   * Generates an array of ISO date strings for a date range.
+   * @param {Date} startDate Starting date
+   * @param {number} days Number of days to include
+   * @returns {Array<string>} Array of ISO date strings (YYYY-MM-DD)
+   */
+  function generateDateLabels(startDate, days = 14) {
+    const dates = [];
+    for (let i = 0; i < days; i++) {
+      const d = addDays(startDate, i);
+      dates.push(toLocalISO(d));
+    }
+    return dates;
+  }
+
   return {
     fetchJson,
     postJson,
@@ -376,5 +391,6 @@ globalThis.helpers = (function () {
     addDays,
     handleError,
     getPalette,
+    generateDateLabels,
   };
 })();

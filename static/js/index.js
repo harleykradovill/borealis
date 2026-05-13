@@ -58,16 +58,13 @@ function buildMatrix(items, days = 182) {
   let maxV = 0;
   let weekIdx = 0;
 
-  for (
-    let cursor = new Date(startDate);
-    cursor <= now;
-    cursor = globalThis.helpers.addDays(cursor, 1)
-  ) {
-    const iso = globalThis.helpers.toLocalISO(cursor);
+  const dateLabels = globalThis.helpers.generateDateLabels(startDate, days);
+  dateLabels.forEach((iso) => {
     const v = counts[iso] || 0;
     if (v > maxV) maxV = v;
 
-    const weekday = cursor.getDay();
+    const date = new Date(iso + "T00:00:00Z");
+    const weekday = date.getUTCDay();
     data.push({
       x: weekIdx + 1,
       y: weekday + 1,
@@ -76,7 +73,7 @@ function buildMatrix(items, days = 182) {
     });
 
     if (weekday === 6) weekIdx += 1;
-  }
+  });
 
   return { data, maxV, weeks: weekIdx + 1 };
 }
@@ -143,16 +140,13 @@ function buildTrendSeries(items, days = 14) {
   const values = [];
   const start = globalThis.helpers.addDays(now, -(days - 1));
 
-  for (
-    let cursor = new Date(start);
-    cursor <= now;
-    cursor = globalThis.helpers.addDays(cursor, 1)
-  ) {
-    const iso = globalThis.helpers.toLocalISO(cursor);
-    const label = `${cursor.getMonth() + 1}/${cursor.getDate()}`;
+  const dateLabels = globalThis.helpers.generateDateLabels(start, days);
+  dateLabels.forEach((iso) => {
+    const date = new Date(iso + "T00:00:00Z");
+    const label = `${date.getUTCMonth() + 1}/${date.getUTCDate()}`;
     labels.push(label);
     values.push(counts[iso] || 0);
-  }
+  });
 
   return { labels, values };
 }
