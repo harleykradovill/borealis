@@ -326,6 +326,47 @@ globalThis.jf_helpers = (function () {
     console.error(`${message}: `, error);
   }
 
+  /**
+   * Gets a color palette, optionally generating interpolated colors.
+   * @param {number} count Number of colors to generate/return
+   * @param {boolean} reverse Reverse palette order
+   * @returns {Array<string>} Array of hex color strings
+   */
+  function getPalette(count = null, reverse = false) {
+    const palette = [
+      "#1f2b31",
+      "#193842",
+      "#114751",
+      "#0a5962",
+      "#19646a",
+      "#0b7b68",
+      "#078f63",
+      "#10aa4d",
+      "#00df96",
+    ];
+
+    let result = reverse ? [...palette].reverse() : [...palette];
+
+    if (count === null) return result;
+    if (count <= palette.length) {
+      return result.slice(0, count);
+    }
+
+    // Generate interpolated colors for count > palette length
+    const colors = [];
+    const hue = 198;
+    const sat = 52;
+    const minL = 32;
+    const maxL = 76;
+
+    for (let i = 0; i < count; i++) {
+      const t = count === 1 ? 0.5 : i / (count - 1);
+      const l = Math.round(minL + (maxL - minL) * t);
+      colors.push(`hsl(${hue} ${sat}% ${l}%)`);
+    }
+    return colors;
+  }
+
   return {
     fetchJson,
     postJson,
@@ -337,5 +378,6 @@ globalThis.jf_helpers = (function () {
     toLocalISO,
     addDays,
     handleError,
+    getPalette,
   };
 })();

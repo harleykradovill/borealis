@@ -113,39 +113,7 @@
   let itemLineChart = null;
 
   function paletteFor(n) {
-    const palette = [
-      "#9bbfe0",
-      "#82b0db",
-      "#69a1d6",
-      "#5092d1",
-      "#3783cc",
-      "#1f75c6",
-      "#1567b3",
-      "#0b5990",
-      "#004c6d",
-    ];
-    if (!n || n <= 0) return [];
-
-    if (n <= palette.length) {
-      const colors = [];
-      for (let i = 0; i < n; i++) {
-        const idx = Math.round((i * (palette.length - 1)) / (n - 1));
-        colors.push(palette[idx]);
-      }
-      return colors;
-    }
-
-    const colors = [];
-    const hue = 198;
-    const sat = 52;
-    const minL = 32;
-    const maxL = 76;
-    for (let i = 0; i < n; i++) {
-      const t = n === 1 ? 0.5 : i / (n - 1);
-      const l = Math.round(minL + (maxL - minL) * t);
-      colors.push(`hsl(${hue} ${sat}% ${l}%)`);
-    }
-    return colors;
+    return globalThis.jf_helpers.getPalette(n);
   }
 
   function generateDateRange(days = 30) {

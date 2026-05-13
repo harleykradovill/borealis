@@ -82,17 +82,7 @@ function buildMatrix(items, days = 182) {
 }
 
 function colorFor(v, maxV) {
-  const palette = [
-    "#1f2b31",
-    "#193842",
-    "#114751",
-    "#0a5962",
-    "#19646a",
-    "#0b7b68",
-    "#078f63",
-    "#10aa4d",
-    "#00df96",
-  ];
+  const palette = globalThis.jf_helpers.getPalette();
   if (!v) return "#2b313d";
   const t = Math.min(1, v / Math.max(1, maxV));
   const idx = Math.max(
@@ -726,17 +716,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!statsCanvas) return;
 
   const navItems = statisticsSection.querySelectorAll(".statistics-nav li");
-  const palette = [
-    "#00df96",
-    "#10aa4d",
-    "#078f63",
-    "#0b7b68",
-    "#19646a",
-    "#0a5962",
-    "#114751",
-    "#193842",
-    "#1f2b31",
-  ];
+  const palette = globalThis.jf_helpers.getPalette(null, true);
 
   const statTypes = [
     {
@@ -885,17 +865,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!resolutionCanvas) return;
 
-  const resolutionPalette = [
-    "#00df96",
-    "#10aa4d",
-    "#078f63",
-    "#0b7b68",
-    "#19646a",
-    "#0a5962",
-    "#114751",
-    "#193842",
-    "#1f2b31",
-  ];
+  const resolutionPalette = globalThis.jf_helpers.getPalette(null, true);
 
   function renderResolutionsChart(rows) {
     const safeRows = Array.isArray(rows) ? rows : [];
