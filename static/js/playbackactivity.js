@@ -27,7 +27,7 @@
    * @returns {number} Parsed page number (at least 1)
    */
   function parseHashPage() {
-    const match = location.hash.match(/page=(\d+)/);
+    const match = new RegExp(/page=(\d+)/).exec(location.hash);
     return match ? Math.max(1, Number(match[1])) : 1;
   }
 
@@ -174,13 +174,13 @@
       return left.localeCompare(right);
     });
 
-    if (!(selectedUserIds instanceof Set)) {
-      selectedUserIds = new Set(allUsers.map((u) => u.user_id));
-    } else {
+    if (selectedUserIds instanceof Set) {
       const validUserIds = new Set(allUsers.map((u) => u.user_id));
       selectedUserIds = new Set(
         Array.from(selectedUserIds).filter((id) => validUserIds.has(id)),
       );
+    } else {
+      selectedUserIds = new Set(allUsers.map((u) => u.user_id));
     }
 
     renderFilterOptions();

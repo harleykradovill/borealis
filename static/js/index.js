@@ -731,11 +731,7 @@ document.addEventListener("DOMContentLoaded", () => {
     {
       key: "top_users_by_watch_time",
       valueKey: "watch_seconds",
-      format: (v) => {
-        const sec = Number(v);
-        if (!Number.isFinite(sec)) return "";
-        return `${Math.round(sec / 3600)}h`;
-      },
+      format: (v) => globalThis.helpers.humanTime(Number(v)),
     },
   ];
 

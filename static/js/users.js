@@ -3,28 +3,6 @@
   const empty = document.getElementById("users-empty");
   const tbody = document.getElementById("users-tbody");
 
-  function formatWatchTime(seconds) {
-    if (!seconds || seconds === 0) return "0s";
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    let result = "";
-
-    if (h > 0) {
-      result += `${h}h `;
-    }
-
-    if (m > 0 || h === 0) {
-      result += `${m}m `;
-    }
-
-    if (s > 0 || (h === 0 && m === 0)) {
-      result += `${s}s`;
-    }
-
-    return result.trim();
-  }
-
   function formatLastSeen(timestamp) {
     if (!timestamp) return "Never";
     const ts = Number(timestamp);
@@ -86,7 +64,9 @@
 
       const watchTimeCell = document.createElement("td");
       watchTimeCell.className = "align-right cell-value";
-      watchTimeCell.textContent = formatWatchTime(user.total_watch_time_seconds || 0);
+      watchTimeCell.textContent = globalThis.helpers.humanTime(
+        user.total_watch_time_seconds || 0,
+      );
 
       const lastSeenCell = document.createElement("td");
       lastSeenCell.className = "align-right cell-muted";
