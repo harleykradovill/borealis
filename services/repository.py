@@ -257,7 +257,9 @@ class Repository:
             return [u.to_dict() for u in query.all()]
 
     def get_users_with_stats(
-        self, include_archived: bool = False
+        self,
+        include_archived: bool = False,
+        jf_settings: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
         """
         Retrieve users with computed play statistics and last activity info.
@@ -415,6 +417,12 @@ class Repository:
                         else:
                             item_name = item_meta.get("name")
 
+                image_url = None
+                if user.image_url and jf_settings:
+                    host = jf_settings.get("jf_host", "127.0.0.1")
+                    port = jf_settings.get("jf_port", "8096")
+                    image_url = f"http://{host}:{port}{user.image_url}"
+
                 results.append(
                     {
                         "id": user.id,
@@ -430,6 +438,7 @@ class Repository:
                         "last_watched_item_name": item_name,
                         "last_device": user.last_device,
                         "last_seen_at": (latest.get("activity_at") if latest else None),
+                        "image_url": image_url,
                     }
                 )
 

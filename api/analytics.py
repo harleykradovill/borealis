@@ -26,7 +26,7 @@ Create the analytics API blueprint and register all analytics routes.
 """
 
 
-def create_analytics_blueprint(*, repo, sync, jf):
+def create_analytics_blueprint(*, repo, sync, jf, svc):
     bp = Blueprint("analytics_api", __name__, url_prefix="/api")
 
     def _build_sync_progress_payload() -> dict:
@@ -112,7 +112,10 @@ def create_analytics_blueprint(*, repo, sync, jf):
         :returns: JSON response with user records and HTTP 200, or error details with HTTP 500
         """
         try:
-            users = repo.get_users_with_stats(include_archived=False)
+            settings = svc.get()
+            users = repo.get_users_with_stats(
+                include_archived=False, jf_settings=settings
+            )
             return make_response(jsonify({"ok": True, "data": users}), 200)
         except Exception:
             logger.exception("[ERROR] Failed to fetch users")

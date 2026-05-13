@@ -19,9 +19,12 @@
       link.href = `/users/${user.id}`;
 
       const img = document.createElement("img");
-      img.src = "/assets/icons/profile_small.png";
       img.alt = "";
       img.className = "sidebar-user-icon";
+      img.src = user.image_url || "/assets/icons/profile_small.png";
+      img.onerror = () => {
+        img.src = "/assets/icons/profile_small.png";
+      };
 
       const span = document.createElement("span");
       span.textContent = user.name;
