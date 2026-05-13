@@ -60,8 +60,10 @@
       const payload = await resp.json();
       renderSyncState(payload);
     } catch (error) {
-      globalThis.Toast.showToast("Failed to fetch sync progress snapshot", "error");
-      console.error("Failed to fetch sync progress snapshot: ", error);
+      globalThis.jf_helpers.handleError(
+        "Failed to fetch sync progress snapshot",
+        error,
+      );
     }
   }
 
@@ -117,8 +119,7 @@
         const payload = JSON.parse(event.data);
         renderSyncState(payload);
       } catch (error) {
-        globalThis.Toast.showToast("Failed to fetch sync progress", "error");
-        console.error("Invalid sync_progress payload: ", error);
+        globalThis.jf_helpers.handleError("Failed to fetch sync progress", error);
       }
     });
 
@@ -168,7 +169,7 @@ globalThis.jf_helpers = (function () {
       }
       return { ok: true, status: resp.status, data };
     } catch (error) {
-      globalThis.Toast.showToast("Network error", "error");
+      globalThis.jf_helpers.handleError("Network error", error);
       return {
         ok: false,
         status: 0,
@@ -206,7 +207,7 @@ globalThis.jf_helpers = (function () {
       }
       return { ok: true, status: resp.status, data };
     } catch (error) {
-      globalThis.Toast.showToast("Network error", "error");
+      globalThis.jf_helpers.handleError("Network error", error);
       return {
         ok: false,
         status: 0,
@@ -315,6 +316,16 @@ globalThis.jf_helpers = (function () {
     return d;
   }
 
+  /**
+   * Sends a toast, as well as a console error for user-facing errors.
+   * @param {string} message Message to display
+   * @param {string} error Raw error for console
+   */
+  function handleError(message, error) {
+    globalThis.Toast.showToast(message, "error");
+    console.error(`${message}: `, error);
+  }
+
   return {
     fetchJson,
     postJson,
@@ -325,5 +336,6 @@ globalThis.jf_helpers = (function () {
     maskKey,
     toLocalISO,
     addDays,
+    handleError,
   };
 })();

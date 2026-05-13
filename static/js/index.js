@@ -32,8 +32,7 @@ async function loadActivity(days = 182) {
 
     return all;
   } catch (error) {
-    globalThis.Toast.showToast("Failed to load activity", "error");
-    console.error("Failed to load activity: ", error);
+    globalThis.jf_helpers.handleError("Failed to load activity", error);
     return [];
   }
 }
@@ -489,8 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (grid) grid.hidden = false;
     } catch (error) {
-      globalThis.Toast.showToast("Failed to load glance", "error");
-      console.error("Failed to load glance totals: ", error);
+      globalThis.jf_helpers.handleError("Failed to load glance", error);
       setText(elActiveSessions, "-");
       setText(elTotalPlays, "-");
       setText(elTotalItems, "-");
@@ -693,8 +691,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderSessions(result.data);
     } catch (error) {
-      globalThis.Toast.showToast("Failed to load sessions", "error");
-      console.error("Failed to load sessions: ", error);
+      globalThis.jf_helpers.handleError("Failed to load sessions", error);
       renderSessions([]);
     }
   }
@@ -993,8 +990,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderResolutionsChart(payload.data?.sections?.resolutions || []);
     } catch (error) {
-      globalThis.Toast.showToast("Failed to load resolutions", "error");
-      console.error("Failed to load resolution stats: ", error);
+      globalThis.jf_helpers.handleError("Failed to load resolutions", error);
     } finally {
       if (resolutionLoading) resolutionLoading.hidden = true;
     }

@@ -50,8 +50,7 @@
       const users = Array.isArray(payload.data) ? payload.data : [];
       render(users);
     } catch (error) {
-      globalThis.Toast.showToast("Failed to load users", "error");
-      console.error("Failed to load users: ", error);
+      globalThis.jf_helpers.handleError("Failed to load users", error);
       renderEmpty();
     }
   }

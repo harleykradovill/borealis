@@ -102,8 +102,7 @@
         ? fields.sync_interval.value
         : null;
     } catch (error) {
-      globalThis.Toast.showToast("Failed to load settings", "error");
-      console.error("Failed to load settings: ", error);
+      globalThis.jf_helpers.handleError("Failed to load settings", error);
     }
   }
 
@@ -129,8 +128,7 @@
         "PUT",
       );
       if (!result?.ok) {
-        globalThis.Toast.showToast("Failed to save settings", "error");
-        console.error("Failed to save settings: ", result?.message);
+        globalThis.jf_helpers.handleError("Failed to save settings", error);
         return;
       }
 
@@ -151,8 +149,7 @@
 
       globalThis.Toast.showToast("Settings saved");
     } catch (error) {
-      globalThis.Toast.showToast("Failed to save settings", "error");
-      console.error("Failed to save settings: ", error);
+      globalThis.jf_helpers.handleError("Failed to save settings", error);
     }
   }
 
@@ -243,14 +240,15 @@
           "POST",
         );
         if (!result?.ok) {
-          globalThis.Toast.showToast("Failed to start manual sync", "error");
-          console.error("Failed to start manual sync: ", result?.message);
+          globalThis.jf_helpers.handleError(
+            "Failed to start manual sync",
+            result?.message,
+          );
           await refreshManualSyncButtonState();
           return;
         }
       } catch (error) {
-        globalThis.Toast.showToast("Failed to start manual sync", "error");
-        console.error("Failed to start manual sync: ", error);
+        globalThis.jf_helpers.handleError("Failed to start manual sync", error);
       } finally {
         setTimeout(handleSyncComplete, 300);
         refreshSyncStatus().catch(function () {});
@@ -328,8 +326,7 @@
         displayServer(data.jf_server_name, data.jf_host, data.jf_port, data.jf_api_key);
       }
     } catch (error) {
-      globalThis.Toast.showToast("Failed to check server state", "error");
-      console.error("Failed to check server state: ", error);
+      globalThis.jf_helpers.handleError("Failed to check server state", error);
     }
   }
 
@@ -351,15 +348,14 @@
         });
 
         if (!resp.ok) {
-          globalThis.Toast.showToast("Failed to remove server", "error");
+          globalThis.jf_helpers.handleError("Failed to remove server", resp?.message);
           return;
         }
 
         globalThis.Toast.showToast("Server removed");
         updateServerState(false);
       } catch (error) {
-        globalThis.Toast.showToast("Failed to remove server", "error");
-        console.error("Failed to remove server: ", error);
+        globalThis.jf_helpers.handleError("Failed to remove server", error);
       }
     });
   }
@@ -430,8 +426,7 @@
         list.appendChild(li);
       });
     } catch (error) {
-      globalThis.Toast.showToast("Failed to load task logs", "error");
-      console.error("Error loading task logs: ", error);
+      globalThis.jf_helpers.handleError("Failed to load task logs", error);
       if (empty) empty.hidden = false;
       if (list) list.hidden = true;
     }
@@ -474,8 +469,7 @@
         }
       }
     } catch (error) {
-      globalThis.Toast.showToast("Error loading database info", "error");
-      console.error("Error loading database info: ", error);
+      globalThis.jf_helpers.handleError("Failed to load database info", error);
     }
   }
 

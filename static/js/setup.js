@@ -174,8 +174,7 @@
         librariesList.appendChild(item);
       });
     } catch (error) {
-      globalThis.Toast.showToast("Failed to load libraries", "error");
-      console.error("Failed to load libraries: ", error);
+      globalThis.jf_helpers.handleError("Failed to load libraries", error);
       if (librariesEmpty) librariesEmpty.hidden = false;
     }
   }
@@ -284,7 +283,7 @@
         });
 
         if (!resp.ok) {
-          globalThis.Toast.showToast("Failed to save settings", "error");
+          globalThis.jf_helpers.handleError("Failed to save settings", error);
           buttons.page3Finish.textContent = original;
           buttons.page3Finish.disabled = false;
           return;
@@ -322,16 +321,14 @@
 
             setTimeout(pollProgress, POLL_INTERVAL);
           } catch (error) {
-            globalThis.Toast.showToast("Error polling for sync progress", "error");
-            console.error("Error polling for sync progress: ", error);
+            globalThis.jf_helpers.handleError("Failed to poll sync progress", error);
             setTimeout(pollProgress, POLL_INTERVAL);
           }
         }
 
         setTimeout(pollProgress, 500);
       } catch (error) {
-        globalThis.Toast.showToast("Network error while syncing", "error");
-        console.error("Network error: ", error);
+        globalThis.jf_helpers.handleError("Network error while syncing", error);
         buttons.page3Finish.textContent = original;
         buttons.page3Finish.disabled = false;
       }

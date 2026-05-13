@@ -20,8 +20,7 @@
         try {
           globalThis.updateLibrariesChart(libs);
         } catch (error) {
-          globalThis.Toast.showToast("Failed to load chart", "error");
-          console.error("Chart update failed: ", error);
+          globalThis.jf_helpers.handleError("Failed to load chart", error);
         }
       }
 
@@ -32,13 +31,11 @@
         try {
           globalThis.updateItemsAddedChart(libs);
         } catch (error) {
-          globalThis.Toast.showToast("Failed to load items added", "error");
-          console.error("Failed to load items added chart: ", error);
+          globalThis.jf_helpers.handleError("Failed to load items added", error);
         }
       }
     } catch (error) {
-      globalThis.Toast.showToast("Failed to load libraries", "error");
-      console.error("Failed to load libraries: ", error);
+      globalThis.jf_helpers.handleError("Failed to load libraries", error);
       if (empty) empty.hidden = false;
       if (container) container.hidden = true;
     }
@@ -280,8 +277,7 @@
         },
       });
     } catch (error) {
-      globalThis.Toast.showToast("Failed to load items added", "error");
-      console.error("Failed to load items-added chart data: ", error);
+      globalThis.jf_helpers.handleError("Failed to load items added", error);
       return;
     }
   }
