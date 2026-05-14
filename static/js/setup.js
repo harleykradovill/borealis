@@ -39,6 +39,11 @@
     page3Finish: document.getElementById("page3-finish"),
   };
 
+  /**
+   * Update the visible progress indicator for the setup wizard. Marks the
+   * current page as active and any prior pages as completed.
+   * @returns {void}
+   */
   function updateProgressIndicator() {
     const progressIndicator = document.getElementById("progress-indicator");
     if (progressIndicator?.hidden) {
@@ -57,6 +62,11 @@
     });
   }
 
+  /**
+   * Show the requested setup page and hide the others.
+   * @param {number|string} pageNum Page identifier to show
+   * @returns {void}
+   */
   function showPage(pageNum) {
     Object.values(pageElements).forEach((el) => {
       if (el) el.classList.remove("active");
@@ -75,18 +85,30 @@
     window.scrollTo(0, 0);
   }
 
+  /**
+   * Persist page 1 settings from the form into the local setup state.
+   * @returns {void}
+   */
   function savePage1() {
     state.hourFormat = formFields.hourFormat?.value || "12";
     state.language = formFields.language?.value || "en";
     state.syncInterval = Number.parseInt(formFields.syncInterval?.value || "1800");
   }
 
+  /**
+   * Populate page 1 form fields from the current setup state.
+   * @returns {void}
+   */
   function loadPage1() {
     if (formFields.hourFormat) formFields.hourFormat.value = state.hourFormat;
     if (formFields.language) formFields.language.value = state.language;
     if (formFields.syncInterval) formFields.syncInterval.value = state.syncInterval;
   }
 
+  /**
+   * Populate page 2 form fields from the current setup state.
+   * @returns {void}
+   */
   function loadPage2() {
     if (formFields.jfHost) formFields.jfHost.value = state.jfHost;
     if (formFields.jfPort) formFields.jfPort.value = state.jfPort;
@@ -94,12 +116,20 @@
     updatePage2NextButton();
   }
 
+  /**
+   * Enable or disable the page 2 "Next" button based on connection test state.
+   * @returns {void}
+   */
   function updatePage2NextButton() {
     if (buttons.page2Next) {
       buttons.page2Next.disabled = !testConnectionOk;
     }
   }
 
+  /**
+   * Populate page 3 summary fields and load the available Jellyfin libraries.
+   * @returns {Promise<void>}
+   */
   async function loadPage3() {
     const serverNameDisplay = document.getElementById("server-name-display");
     const serverVersionDisplay = document.getElementById("server-version-display");
@@ -114,6 +144,10 @@
     await loadLibraries();
   }
 
+  /**
+   * Fetch Jellyfin libraries for the current connection and render them.
+   * @returns {Promise<void>}
+   */
   async function loadLibraries() {
     const librariesList = document.getElementById("libraries-list");
     const librariesEmpty = document.getElementById("libraries-empty");

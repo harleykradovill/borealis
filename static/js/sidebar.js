@@ -1,4 +1,8 @@
 (function () {
+  /**
+   * Load and render sidebar user entries.
+   * @returns {Promise<void>} Resolves when sidebar rendering is complete.
+   */
   async function loadSidebarUsers() {
     const list = document.getElementById("sidebar-users-list");
     if (!list) return;

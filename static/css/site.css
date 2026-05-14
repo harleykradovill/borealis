@@ -329,7 +329,7 @@ input.form-control:hover {
   display: contents;
 
   --_default-color: var(--surface);
-  --_shimmer-color: var(--border);
+  --_shimmer-color: var(--highlight);
   :not(.wrapper) {
     animation: skeleton-shimmer 1s ease-out infinite;
 
