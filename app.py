@@ -47,6 +47,10 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         template_folder="templates",
     )
 
+    @app.errorhandler(404)
+    def not_found(e):
+        return make_response(render_template("404.html"), 404)
+
     app.config.setdefault("DEBUG", False)
     app.config.setdefault("PORT", 2929)
     app.config.setdefault("DATABASE_URL", "sqlite:///borealis.db")

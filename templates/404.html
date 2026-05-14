@@ -1,0 +1,21 @@
+{% block title %}Page Not Found{% endblock %} {% block body %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}" />
+<h1>Oops! Looks like the page doesn't exist anymore</h1>
+<p id="pageInfo">Redirecting to Home Page after 5 seconds...</p>
+<script>
+  var seconds = 5;
+  var url = "{{ url_for('index') }}";
+
+  function redirect() {
+    if (seconds <= 0) {
+      globalThis.location = url;
+    } else {
+      seconds--;
+      document.getElementById("pageInfo").innerHTML =
+        "Redirecting to Home Page after " + seconds + " seconds.";
+      setTimeout(redirect, 1000);
+    }
+  }
+  window.onload = redirect;
+</script>
+{% endblock %}
