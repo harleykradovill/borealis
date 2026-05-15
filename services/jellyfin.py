@@ -445,6 +445,70 @@ class JellyfinClient:
                 "content_type": self._DEFAULT_IMAGE_CONTENT_TYPE,
             }
 
+    def user_primary_image(
+        self,
+        user_id: str,
+        tag: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Fetch a Jellyfin user's primary image.
+
+        :param user_id: Jellyfin user ID
+        :param tag: Optional image tag for cache/version targeting
+        :returns: Result object with ok/status/body/content_type fields
+        """
+        conn = self._connection()
+        if not conn:
+            return {
+                "ok": False,
+                "status": 404,
+                "body": b"",
+                "content_type": self._DEFAULT_IMAGE_CONTENT_TYPE,
+            }
+
+        if not re.match(r"^[a-zA-Z0-9\-_]+$", user_id):
+            return {
+                "ok": False,
+                "status": 400,
+                "body": b"",
+                "content_type": "text/plain",
+            }
+
+        scheme, host, port, token = conn
+        path = f"/Users/{user_id}/Images/Primary"
+        if tag:
+            encoded_tag = quote(tag, safe="")
+            path = f"{path}?tag={encoded_tag}"
+
+        url = self._build_url(scheme, host, port, path)
+
+        try:
+            req = Request(url)
+            req.add_header("X-MediaBrowser-Token", token)
+            with urlopen(req, timeout=10) as response:
+                return {
+                    "ok": True,
+                    "status": 200,
+                    "body": response.read(),
+                    "content_type": response.headers.get(
+                        "Content-Type", self._DEFAULT_IMAGE_CONTENT_TYPE
+                    ),
+                }
+        except HTTPError as e:
+            return {
+                "ok": False,
+                "status": e.code,
+                "body": b"",
+                "content_type": "text/plain",
+            }
+        except (URLError, TimeoutError):
+            return {
+                "ok": False,
+                "status": 502,
+                "body": b"",
+                "content_type": "text/plain",
+            }
+
 
 def create_client(settings_service: SettingsService) -> JellyfinClient:
     """

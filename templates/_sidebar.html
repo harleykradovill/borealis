@@ -43,7 +43,25 @@
           class="sidebar-icon"
         />
       </a>
-      <ul id="sidebar-users-list" class="sidebar-users-list"></ul>
+
+      <ul id="sidebar-users-list" class="sidebar-users-list">
+        {% for user in sidebar_users %}
+        <li>
+          <a
+            href="/user/{{ user.jellyfin_id }}"
+            class="{% if current_path == '/user/' + user.jellyfin_id %}active{% endif %}"
+          >
+            <img
+              alt=""
+              class="sidebar-user-icon"
+              src="/api/jellyfin/users/{{ user.jellyfin_id }}/images/primary"
+              onerror="this.src = '/assets/icons/profile_small.png'"
+            />
+            <span title="{{ user.name }}">{{ user.name }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
     </li>
     <li>
       <a

@@ -195,39 +195,57 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             return send_from_directory("static/js", filename.removeprefix("js/"))
         return send_from_directory("assets", filename)
 
+    def get_sidebar_context(current_path: str) -> Dict:
+        """
+        Get common sidebar context data for template rendering.
+
+        :param current_path: Current request path for active link detection
+        :returns: Dictionary with users list and current path
+        """
+        users = repo.list_users()
+        return {
+            "sidebar_users": users,
+            "current_path": current_path,
+        }
+
     @app.get("/")
     @require_server
     def index() -> Response:
-        return make_response(render_template("index.html"), 200)
+        context = get_sidebar_context(request.path)
+        return make_response(render_template("index.html", **context), 200)
 
     @app.get("/user/<path:user_jellyfin_id>")
     @require_server
     def user(user_jellyfin_id: str) -> Response:
         user_data = repo.get_user_by_jellyfin_id(user_jellyfin_id)
-
         if not user_data:
             return make_response(render_template("404.html"), 404)
-
-        return make_response(render_template("user.html", user=user_data), 200)
+        context = get_sidebar_context(request.path)
+        context["user"] = user_data
+        return make_response(render_template("user.html", **context), 200)
 
     @app.get("/libraries")
     @require_server
     def libraries() -> Response:
-        return make_response(render_template("libraries.html"), 200)
+        context = get_sidebar_context(request.path)
+        return make_response(render_template("libraries.html", **context), 200)
 
     @app.get("/playbackactivity")
     @require_server
     def playbackactivity() -> Response:
-        return make_response(render_template("playbackactivity.html"), 200)
+        context = get_sidebar_context(request.path)
+        return make_response(render_template("playbackactivity.html", **context), 200)
 
     @app.get("/settings")
     @require_server
     def settings() -> Response:
-        return make_response(render_template("settings.html"), 200)
+        context = get_sidebar_context(request.path)
+        return make_response(render_template("settings.html", **context), 200)
 
     @app.get("/setup")
     def setup() -> Response:
-        return make_response(render_template("setup.html"), 200)
+        context = get_sidebar_context(request.path)
+        return make_response(render_template("setup.html", **context), 200)
 
     @app.get("/api/jellyfin/items/<item_id>/images/primary")
     def api_jellyfin_item_primary_image(item_id: str) -> Response:
@@ -236,6 +254,24 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         """
         tag = (request.args.get("tag") or "").strip() or None
         result = jf.item_primary_image(item_id=item_id, tag=tag)
+
+        if not result.get("ok"):
+            return Response(status=result.get("status", 500))
+
+        return Response(
+            result.get("body", b""),
+            status=result.get("status", 200),
+            mimetype=result.get("content_type", "image/jpeg"),
+            headers={"Cache-Control": "public, max-age=300"},
+        )
+
+    @app.get("/api/jellyfin/users/<user_id>/images/primary")
+    def api_jellyfin_user_primary_image(user_id: str) -> Response:
+        """
+        Proxy Jellyfin primary user image to the frontend.
+        """
+        tag = (request.args.get("tag") or "").strip() or None
+        result = jf.user_primary_image(user_id=user_id, tag=tag)
 
         if not result.get("ok"):
             return Response(status=result.get("status", 500))

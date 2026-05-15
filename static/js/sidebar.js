@@ -1,54 +1,12 @@
 (function () {
-  /**
-   * Load and render sidebar user entries.
-   * @returns {Promise<void>} Resolves when sidebar rendering is complete.
-   */
-  async function loadSidebarUsers() {
-    const list = document.getElementById("sidebar-users-list");
-    if (!list) return;
+  const userArrow = document.getElementById("user-arrow");
+  const usersList = document.getElementById("sidebar-users-list");
 
-    const result = await globalThis.helpers.fetchJson("/api/analytics/stats/users");
+  if (!userArrow || !usersList) return;
 
-    if (!result.ok || !result.data) {
-      console.error("Failed to load users:", result.message);
-      return;
-    }
-
-    const users = result.data;
-    if (!users.length) return;
-
-    users.forEach((user) => {
-      const li = document.createElement("li");
-      const link = document.createElement("a");
-      link.href = `/user/${user.jellyfin_id}`;
-
-      const img = document.createElement("img");
-      img.alt = "";
-      img.className = "sidebar-user-icon";
-      img.src = user.image_url || "/assets/icons/profile_small.png";
-      img.onerror = () => {
-        img.src = "/assets/icons/profile_small.png";
-      };
-
-      const span = document.createElement("span");
-      span.textContent = user.name;
-      span.title = user.name;
-
-      link.appendChild(img);
-      link.appendChild(span);
-
-      if (globalThis.location.pathname === `/user/${user.jellyfin_id}`) {
-        link.classList.add("active");
-      }
-
-      li.appendChild(link);
-      list.appendChild(li);
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", loadSidebarUsers);
-  } else {
-    loadSidebarUsers();
-  }
+  // Toggle users list visibility when clicking Users menu
+  userArrow.closest("a").addEventListener("click", (e) => {
+    e.preventDefault();
+    usersList.style.display = usersList.style.display === "none" ? "" : "none";
+  });
 })();
