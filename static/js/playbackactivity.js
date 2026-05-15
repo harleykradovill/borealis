@@ -262,11 +262,12 @@
 
     tbody.innerHTML = "";
 
+    const currentNameById = new Map(
+      allUsers.map((u) => [u.user_id, u.username_denorm || u.user_id]),
+    );
+
     for (const it of items) {
       const tr = document.createElement("tr");
-      const currentNameById = new Map(
-        allUsers.map((u) => [u.user_id, u.username_denorm || u.user_id]),
-      );
 
       const userTd = document.createElement("td");
       userTd.style.padding = "0.5rem";
