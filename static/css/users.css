@@ -29,7 +29,6 @@
 
 .users-table tbody tr {
   border-bottom: 1px solid var(--border);
-  transition: background-color 120ms ease;
 }
 
 .users-table tbody tr:last-child {

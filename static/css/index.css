@@ -321,7 +321,7 @@
   color: var(--text-muted);
   cursor: pointer;
   white-space: nowrap;
-  transition: color 120ms ease;
+  transition: color 150ms ease;
   border-radius: 100px;
 }
 
@@ -333,7 +333,7 @@
 .statistics-nav li.active {
   color: var(--accent);
   background-color: var(--highlight);
-  transition: all 120ms ease;
+  transition: all 150ms ease;
 }
 
 .watch-statistics-card {

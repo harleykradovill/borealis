@@ -87,9 +87,7 @@ body {
   color: var(--text-muted);
   text-decoration: none;
   border-radius: 12px;
-  transition:
-    background-color 120ms ease,
-    color 120ms ease;
+  transition: all 150ms ease;
 }
 
 .sidebar-links a:hover,
@@ -154,9 +152,7 @@ body {
   text-decoration: none;
   border-radius: 12px;
   font-size: 0.95em;
-  transition:
-    background-color 120ms ease,
-    color 120ms ease;
+  transition: all 150ms ease;
 }
 
 .sidebar-users-list a:hover {
@@ -184,9 +180,7 @@ body {
   font: inherit;
   line-height: 1;
   cursor: pointer;
-  transition:
-    background-color 120ms ease,
-    color 120ms ease;
+  transition: all 150ms ease;
 }
 
 .btn:hover {
@@ -304,10 +298,7 @@ body {
   padding: 0.6rem 0.75rem;
   line-height: 1.25rem;
   outline: none;
-  transition:
-    border-color 120ms ease,
-    box-shadow 120ms ease,
-    background-color 120ms ease;
+  transition: all 150ms ease;
 }
 
 .form-field select {
