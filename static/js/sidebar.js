@@ -7,7 +7,7 @@
     const list = document.getElementById("sidebar-users-list");
     if (!list) return;
 
-    const result = await helpers.fetchJson("/api/analytics/stats/users");
+    const result = await globalThis.helpers.fetchJson("/api/analytics/stats/users");
 
     if (!result.ok || !result.data) {
       console.error("Failed to load users:", result.message);

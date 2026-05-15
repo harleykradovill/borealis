@@ -167,7 +167,10 @@
         }),
       });
 
-      if (!resp.ok) throw new Error("Failed to fetch libraries");
+      if (!resp.ok) {
+        globalThis.helpers.handleError("Failed to fetch libraries", resp?.message);
+      }
+
       const result = await resp.json();
 
       if (!result.ok || !Array.isArray(result.data)) {
@@ -234,12 +237,18 @@
       const apiKey = (formFields.jfApiKey?.value || "").trim();
 
       if (!host || !port || !apiKey) {
-        globalThis.Toast.showToast("Please fill in all fields", "error");
+        globalThis.helpers.handleError(
+          "Please fill in all fields",
+          "Please fill in all fields",
+        );
         return;
       }
 
       if (!/^\d+$/.test(port)) {
-        globalThis.Toast.showToast("Port must be a valid number", "error");
+        globalThis.helpers.handleError(
+          "Port must be a valid number",
+          "Port must be a valid number",
+        );
         return;
       }
 
@@ -264,7 +273,7 @@
       } else {
         testConnectionOk = false;
         const msg = result?.message || `Failed (status: ${result?.status ?? "n/a"})`;
-        globalThis.Toast.showToast(msg, "error");
+        globalThis.helpers.handleError("Failed to connect to Jellyfin server", msg);
         updatePage2NextButton();
       }
 
@@ -278,7 +287,10 @@
   if (buttons.page2Next) {
     buttons.page2Next.addEventListener("click", () => {
       if (!testConnectionOk) {
-        globalThis.Toast.showToast("Test connection before continuing", "error");
+        globalThis.helpers.handleError(
+          "Test connection before continuing",
+          "Test connection before continuing",
+        );
         return;
       }
       loadPage3();
@@ -317,7 +329,7 @@
         });
 
         if (!resp.ok) {
-          globalThis.helpers.handleError("Failed to save settings", error);
+          globalThis.helpers.handleError("Failed to save settings", resp?.message);
           buttons.page3Finish.textContent = original;
           buttons.page3Finish.disabled = false;
           return;

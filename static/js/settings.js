@@ -124,7 +124,7 @@
     try {
       const result = await globalThis.helpers.postJson("/api/settings", payload, "PUT");
       if (!result?.ok) {
-        globalThis.helpers.handleError("Failed to save settings", error);
+        globalThis.helpers.handleError("Failed to save settings", result?.message);
         return;
       }
 
@@ -349,7 +349,6 @@
         }
 
         globalThis.Toast.showToast("Server removed");
-        updateServerState(false);
       } catch (error) {
         globalThis.helpers.handleError("Failed to remove server", error);
       }
