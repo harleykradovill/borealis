@@ -37,7 +37,7 @@
       link.appendChild(img);
       link.appendChild(span);
 
-      if (globalThis.location.pathname === `/users/${user.id}`) {
+      if (globalThis.location.pathname === `/user/${user.jellyfin_id}`) {
         link.classList.add("active");
       }
 
