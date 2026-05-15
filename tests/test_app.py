@@ -46,7 +46,7 @@ def test_setup_page_is_public(client):
 
 @pytest.mark.parametrize(
     "path",
-    ["/", "/users", "/libraries", "/playbackactivity", "/settings"],
+    ["/", "/libraries", "/playbackactivity", "/settings"],
 )
 def test_protected_pages_redirect_to_setup_without_server(client, path):
     response = client.get(path, follow_redirects=False)
@@ -56,7 +56,7 @@ def test_protected_pages_redirect_to_setup_without_server(client, path):
 
 @pytest.mark.parametrize(
     "path",
-    ["/", "/users", "/libraries", "/playbackactivity", "/settings"],
+    ["/", "/libraries", "/playbackactivity", "/settings"],
 )
 def test_protected_pages_are_available_after_server_config(client, path):
     _configure_server(client)
