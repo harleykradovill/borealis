@@ -243,6 +243,42 @@ class Repository:
                 .update({"archived": True}, synchronize_session=False)
             )
 
+    def get_user_by_jellyfin_id(self, jellyfin_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve a single user by Jellyfin ID.
+
+        :param jellyfin_id: The Jellyfin user ID to look up
+        :returns: User dictionary with id, jellyfin_id, name, is_admin, image_url, archived, and stats; or None if not found
+        """
+        if not jellyfin_id:
+            return None
+
+        with self._session() as session:
+            user = (
+                session.query(User)
+                .filter(
+                    User.jellyfin_id == jellyfin_id,
+                    User.archived.is_(False),
+                )
+                .first()
+            )
+
+            if not user:
+                return None
+
+            return {
+                "id": user.id,
+                "jellyfin_id": user.jellyfin_id,
+                "name": user.name,
+                "is_admin": user.is_admin,
+                "image_url": user.image_url,
+                "archived": False,
+                "total_plays": 0,
+                "total_watch_time_seconds": 0,
+                "last_watched_item_name": None,
+                "last_device": None,
+            }
+
     def list_users(self, include_archived: bool = False) -> List[Dict[str, Any]]:
         """
         Retrieve all users as dictionaries.

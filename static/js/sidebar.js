@@ -20,7 +20,7 @@
     users.forEach((user) => {
       const li = document.createElement("li");
       const link = document.createElement("a");
-      link.href = `/users/${user.id}`;
+      link.href = `/user/${user.jellyfin_id}`;
 
       const img = document.createElement("img");
       img.alt = "";

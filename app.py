@@ -200,9 +200,15 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     def index() -> Response:
         return make_response(render_template("index.html"), 200)
 
-    @app.get("/setup")
-    def setup() -> Response:
-        return make_response(render_template("setup.html"), 200)
+    @app.get("/user/<path:user_jellyfin_id>")
+    @require_server
+    def user(user_jellyfin_id: str) -> Response:
+        user_data = repo.get_user_by_jellyfin_id(user_jellyfin_id)
+
+        if not user_data:
+            return make_response(render_template("404.html"), 404)
+
+        return make_response(render_template("user.html", user=user_data), 200)
 
     @app.get("/libraries")
     @require_server
@@ -218,6 +224,10 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     @require_server
     def settings() -> Response:
         return make_response(render_template("settings.html"), 200)
+
+    @app.get("/setup")
+    def setup() -> Response:
+        return make_response(render_template("setup.html"), 200)
 
     @app.get("/api/jellyfin/items/<item_id>/images/primary")
     def api_jellyfin_item_primary_image(item_id: str) -> Response:
