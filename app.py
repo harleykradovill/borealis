@@ -204,11 +204,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     def setup() -> Response:
         return make_response(render_template("setup.html"), 200)
 
-    @app.get("/users")
-    @require_server
-    def users() -> Response:
-        return make_response(render_template("users.html"), 200)
-
     @app.get("/libraries")
     @require_server
     def libraries() -> Response:

@@ -7,9 +7,8 @@
     />
   </a>
 
-  {% set is_dashboard = request.path == url_for('index') %} {% set is_users =
-  request.path == url_for('users') %} {% set is_libraries = request.path ==
-  url_for('libraries') %} {% set is_playbackactivity = request.path ==
+  {% set is_dashboard = request.path == url_for('index') %} {% set is_libraries =
+  request.path == url_for('libraries') %} {% set is_playbackactivity = request.path ==
   url_for('playbackactivity') %} {% set is_settings = request.path ==
   url_for('settings') %} {% set is_setup = request.path == url_for('setup') %}
 
@@ -30,12 +29,7 @@
       </a>
     </li>
     <li>
-      <a
-        role="menuitem"
-        href="/users"
-        class="{{ 'active' if is_users else '' }}"
-        data-path="{{ url_for('users') }}"
-      >
+      <a role="menuitem" class="{{ 'active' if is_users else '' }}">
         <img
           src="{{ url_for('assets', filename='icons/users.svg') }}"
           alt=""
