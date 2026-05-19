@@ -104,25 +104,6 @@ def create_analytics_blueprint(*, repo, sync, jf, svc):
             or ("Sync complete" if phase == "complete" else "Sync failed"),
         }
 
-    @bp.get("/analytics/stats/users")
-    def api_analytics_stats_users() -> Response:
-        """
-        Retrieve all users with their play statistics.
-
-        :returns: JSON response with user records and HTTP 200, or error details with HTTP 500
-        """
-        try:
-            settings = svc.get()
-            users = repo.get_users_with_stats(
-                include_archived=False, jf_settings=settings
-            )
-            return make_response(jsonify({"ok": True, "data": users}), 200)
-        except Exception:
-            logger.exception("[ERROR] Failed to fetch users")
-            return make_response(
-                jsonify({"ok": False, "message": "Failed to fetch users"}), 500
-            )
-
     @bp.get("/analytics/stats/dashboard")
     def api_analytics_stats_dashboard() -> Response:
         """
