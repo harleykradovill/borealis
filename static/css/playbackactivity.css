@@ -1,17 +1,28 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
 .table thead th {
-  border-bottom: 1px solid var(--border);
+  text-align: left;
   padding: 0.5rem;
+  border-bottom: 1px solid var(--border);
   font-weight: 600;
   color: var(--text);
 }
 
-.table tbody tr td {
+.table tbody td {
+  padding: 0.5rem;
   border-bottom: 1px solid var(--border);
   color: var(--text);
   vertical-align: middle;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.table thead th.align-right {
+  text-align: right;
 }
 
 .table tr:nth-child(even) {
@@ -23,8 +34,11 @@
 }
 
 .pagination {
+  margin-top: 1rem;
+  display: flex;
   gap: 0.5rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .pagination .btn {
@@ -38,8 +52,20 @@
 .pagination .btn[aria-current="page"] {
   background: var(--white);
   color: var(--black);
-  background-color: var(--white);
+  background-color: var(--accent);
   border-radius: 12px;
+}
+
+#activitylog-pages {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.activitylog-meta {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 0.95rem;
 }
 
 .activitylog-user-heading {
@@ -82,6 +108,8 @@
 
 #activitylog-container {
   position: relative;
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
 
 .activitylog-filter-menu {

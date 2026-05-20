@@ -16,7 +16,7 @@
   const filterOptions = document.getElementById("activitylog-user-filter-options");
 
   const PER_PAGE = 25;
-  const MAX_PAGE_BUTTONS = 7;
+  const MAX_PAGE_BUTTONS = 5;
 
   let lastKnownTotalPages = 1;
   let allUsers = [];
