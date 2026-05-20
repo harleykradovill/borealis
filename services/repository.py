@@ -93,16 +93,6 @@ class Repository:
         self.session_local = sessionmaker(bind=self.engine, expire_on_commit=False)
         Base.metadata.create_all(self.engine)
 
-        try:
-            from alembic.config import Config
-            from alembic.command import upgrade
-
-            alembic_cfg = Config("alembic.ini")
-            alembic_cfg.set_main_option("sqlalchemy.url", self.database_url)
-            upgrade(alembic_cfg, "head")
-        except Exception as e:
-            logging.exception(f"Failed to run database migrations: {e}")
-
     @contextmanager
     def _session(self):
         """
