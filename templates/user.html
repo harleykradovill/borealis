@@ -60,6 +60,13 @@
     <div id="toast-container" class="toast-container"></div>
 
     <script src="../static/js/toast.js"></script>
+    <script type="application/json" id="user-data">
+      {
+        "total_plays": {{ user.total_plays | default(0) | int }},
+        "total_watch_time_seconds": {{ user.total_watch_time_seconds | default(0) | int }},
+        "last_seen_at": {{ user.last_seen_at | default(null) | tojson }}
+      }
+    </script>
     <script src="../static/js/user.js"></script>
     <script src="../static/js/site.js"></script>
   </body>

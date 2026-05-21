@@ -263,10 +263,11 @@ class Repository:
                 "is_admin": user.is_admin,
                 "image_url": user.image_url,
                 "archived": False,
-                "total_plays": 0,
-                "total_watch_time_seconds": 0,
-                "last_watched_item_name": None,
-                "last_device": None,
+                "total_plays": user.total_plays,
+                "total_watch_time_seconds": user.total_watch_time_seconds,
+                "last_watched_item_name": user.last_watched_item_name,
+                "last_device": user.last_device,
+                "last_seen_at": user.last_seen_at,
             }
 
     def list_users(self, include_archived: bool = False) -> List[Dict[str, Any]]:
