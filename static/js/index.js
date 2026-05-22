@@ -1,3 +1,30 @@
+function updateRowLayout() {
+  const sessionCards = document.querySelectorAll(
+    "#sessions-cards .session-card",
+  ).length;
+  const sessionsSection = document.getElementById("sessions-section");
+  const trendSection = document.querySelector(".plays-trend-section");
+
+  if (sessionCards === 1) {
+    sessionsSection.style.flex = "2.1 1 0";
+    trendSection.style.flex = "7.9 1 0";
+  } else if (sessionCards === 2) {
+    sessionsSection.style.flex = "4.1 1 0";
+    trendSection.style.flex = "5.9 1 0";
+  } else {
+    sessionsSection.style.flex = "7 1 0";
+    trendSection.style.flex = "3 1 0";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const sessionsCards = document.getElementById("sessions-cards");
+  if (sessionsCards) {
+    const observer = new MutationObserver(updateRowLayout);
+    observer.observe(sessionsCards, { childList: true });
+  }
+});
+
 async function loadActivity(days = 182) {
   try {
     const perPage = 1000;
@@ -529,6 +556,7 @@ document.addEventListener("DOMContentLoaded", () => {
         cardsContainer.innerHTML = "";
       }
       if (empty) empty.hidden = false;
+      updateRowLayout();
       return;
     }
 
@@ -648,6 +676,9 @@ document.addEventListener("DOMContentLoaded", () => {
       card.appendChild(progressDiv);
 
       cardsContainer.appendChild(card);
+    });
+    requestAnimationFrame(() => {
+      updateRowLayout();
     });
   }
 
