@@ -5,7 +5,7 @@ function updateRowLayout() {
   const sessionsSection = document.getElementById("sessions-section");
   const trendSection = document.querySelector(".plays-trend-section");
 
-  if (sessionCards === 1) {
+  if (sessionCards <= 1) {
     sessionsSection.style.flex = "2.1 1 0";
     trendSection.style.flex = "7.9 1 0";
   } else if (sessionCards === 2) {
