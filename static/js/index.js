@@ -958,3 +958,105 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadResolutions();
 })();
+
+(function () {
+  const codecsCanvas = document.getElementById("codecs-chart");
+  const codecsLoading = document.getElementById("codecs-loading");
+  if (!codecsCanvas) return;
+
+  const codecsNav = document.querySelectorAll(".codecs-nav li");
+  let cachedData = null;
+
+  async function fetchCodecsData() {
+    try {
+      if (codecsLoading) codecsLoading.hidden = false;
+      codecsCanvas.style.display = "none";
+
+      const resp = await fetch("/api/analytics/stats/dashboard");
+      if (!resp.ok) return;
+
+      const payload = await resp.json();
+      if (!payload?.ok) return;
+
+      cachedData = payload.data?.sections || {};
+    } catch (error) {
+      globalThis.helpers.handleError("Failed to load codecs data", error);
+    } finally {
+      if (codecsLoading) codecsLoading.hidden = true;
+    }
+  }
+
+  function renderChart(codecType) {
+    if (!cachedData) return;
+
+    const dataArray =
+      codecType === 0 ? cachedData.video_codecs : cachedData.audio_codecs;
+    if (!Array.isArray(dataArray) || !dataArray.length) return;
+
+    const codecKey = codecType === 0 ? "video_codec" : "audio_codec";
+    const labels = dataArray.map((r) => r?.[codecKey] || "");
+    const values = dataArray.map((r) => Number(r?.count || 0));
+
+    const palette = globalThis.helpers.getPalette(values.length, true);
+
+    const ctx = codecsCanvas.getContext("2d");
+    const config = {
+      type: "doughnut",
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            backgroundColor: palette,
+            borderWidth: 0,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 200 },
+        plugins: {
+          legend: {
+            display: true,
+            position: "right",
+            labels: {
+              color: "#b3b3b3",
+              font: { size: 12 },
+              padding: 12,
+            },
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctxArg) => `${ctxArg.label}: ${ctxArg.raw}`,
+            },
+          },
+        },
+      },
+    };
+
+    if (globalThis.__codecsChart) {
+      globalThis.__codecsChart.destroy();
+    }
+    globalThis.__codecsChart = new Chart(ctx, config);
+    codecsCanvas.style.display = "";
+  }
+
+  async function switchCodec(index) {
+    codecsNav.forEach((item, i) => {
+      item.classList.toggle("active", i === index);
+    });
+
+    if (!cachedData) {
+      await fetchCodecsData();
+    }
+
+    renderChart(index);
+  }
+
+  codecsNav.forEach((item, index) => {
+    item.addEventListener("click", () => switchCodec(index));
+  });
+
+  switchCodec(0);
+})();
