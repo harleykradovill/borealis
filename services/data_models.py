@@ -146,6 +146,7 @@ class Item(Base):
     video_codec = Column(String(64), nullable=True)
     audio_codec = Column(String(64), nullable=True)
     resolution = Column(String(32), nullable=True)
+    genres = Column(String(64), nullable=True)
 
     library = relationship("Library", back_populates="items")
 
@@ -160,6 +161,7 @@ class Item(Base):
         Index("idx_video_codec", "video_codec"),
         Index("idx_audio_codec", "audio_codec"),
         Index("idx_resolution", "resolution"),
+        Index("idx_genres", "genres"),
     )
 
     def to_dict(self) -> Dict[str, Any]:
@@ -183,6 +185,7 @@ class Item(Base):
             "video_codec": self.video_codec,
             "audio_codec": self.audio_codec,
             "resolution": self.resolution,
+            "genres": json.loads(self.genres) if self.genres else None,
         }
 
 

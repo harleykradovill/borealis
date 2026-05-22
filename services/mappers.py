@@ -195,6 +195,7 @@ def map_item(
     video_codec = None
     audio_codec = None
     resolution = None
+    genres = jf_item.get("Genres", [])
     media_sources = jf_item.get("MediaSources", [])
     if media_sources and isinstance(media_sources[0], dict):
         media_streams = media_sources[0].get("MediaStreams", [])
@@ -226,6 +227,7 @@ def map_item(
         "video_codec": video_codec,
         "audio_codec": audio_codec,
         "resolution": resolution,
+        "genres": genres,
     }
 
 

@@ -595,6 +595,9 @@ class Repository:
                     item.video_codec = data.get("video_codec", item.video_codec)
                     item.audio_codec = data.get("audio_codec", item.audio_codec)
                     item.resolution = data.get("resolution", item.resolution)
+                    item.genres = (
+                        json.dumps(data.get("genres")) if data.get("genres") else None
+                    )
                 else:
                     session.add(
                         Item(
@@ -610,6 +613,11 @@ class Repository:
                             video_codec=data.get("video_codec"),
                             audio_codec=data.get("audio_codec"),
                             resolution=data.get("resolution"),
+                            genres=(
+                                json.dumps(data.get("genres"))
+                                if data.get("genres")
+                                else None
+                            ),
                         )
                     )
 
