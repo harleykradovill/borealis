@@ -533,4 +533,87 @@ def create_analytics_blueprint(*, repo, sync, jf, svc):
                 400,
             )
 
+    @bp.get("/analytics/user/<user_id>/recent-activity")
+    def api_user_recent_activity(user_id: str) -> Response:
+        """
+        Get recent playback activities for a user with calculated watch duration.
+
+        :returns: JSON response with recent activity records including date, media name, and duration watched
+        """
+        try:
+            limit = request.args.get("limit", 10, type=int)
+            limit = max(1, min(100, limit))
+
+            from services.data_models import PlaybackActivity, Item
+            from sqlalchemy import and_
+
+            activities = []
+            with repo._session() as session:
+                stop_events = (
+                    session.query(
+                        PlaybackActivity.id,
+                        PlaybackActivity.user_id,
+                        PlaybackActivity.item_id,
+                        PlaybackActivity.activity_at,
+                    )
+                    .filter(
+                        PlaybackActivity.user_id == user_id,
+                        PlaybackActivity.playback_type == "VideoPlaybackStopped",
+                    )
+                    .order_by(PlaybackActivity.activity_at.desc())
+                    .limit(limit)
+                    .all()
+                )
+
+                for stop_id, usr_id, item_id, stop_ts in stop_events:
+                    start_event = (
+                        session.query(PlaybackActivity.activity_at)
+                        .filter(
+                            PlaybackActivity.user_id == usr_id,
+                            PlaybackActivity.item_id == item_id,
+                            PlaybackActivity.playback_type == "VideoPlayback",
+                            PlaybackActivity.activity_at < stop_ts,
+                        )
+                        .order_by(PlaybackActivity.activity_at.desc())
+                        .first()
+                    )
+
+                    start_ts = start_event[0] if start_event else stop_ts
+                    duration = int(stop_ts or 0) - int(start_ts or 0)
+
+                    if duration < 0:
+                        duration = 0
+
+                    item = (
+                        session.query(Item.name, Item.runtime_seconds)
+                        .filter(Item.jellyfin_id == item_id)
+                        .first()
+                    )
+
+                    item_name = item[0] if item else "Unknown"
+                    runtime = int(item[1] or 0) if item else 0
+
+                    if duration > 12 * 60 * 60:
+                        duration = 0
+                    elif runtime > 0:
+                        duration = min(duration, runtime)
+
+                    activities.append(
+                        {
+                            "item_id": item_id,
+                            "item_name": item_name,
+                            "activity_at": int(stop_ts or 0),
+                            "duration_watched_seconds": max(0, duration),
+                        }
+                    )
+
+            return make_response(jsonify({"ok": True, "data": activities}), 200)
+
+        except Exception:
+            logger.exception("[ERROR] Failed to fetch user recent activity")
+            return make_response(
+                jsonify({"ok": False, "message": "Failed to fetch recent activity"}),
+                500,
+            )
+
     return bp
