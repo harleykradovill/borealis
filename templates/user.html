@@ -31,6 +31,7 @@
                 <h1 class="hero-name">{{ user.name }}</h1>
               </div>
             </section>
+
             <section id="glance-section" class="glance-section">
               <div class="glance-card" data-glance-key="total_plays">
                 <div class="glance-label">Total Plays</div>
@@ -50,8 +51,24 @@
               </div>
             </section>
           </div>
+
           <section id="recent-section" class="recent-section">
             <h2>Recent Activity</h2>
+            <div id="recent-activity-empty" class="recent-activity-placeholder" hidden>
+              <p>No recent activity.</p>
+            </div>
+            <div id="recent-activity-container" hidden>
+              <table class="recent-activity-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Media Name</th>
+                    <th class="align-right">Duration Watched</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-activity-tbody"></tbody>
+              </table>
+            </div>
           </section>
         </div>
       </main>

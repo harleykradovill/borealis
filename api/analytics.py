@@ -541,7 +541,7 @@ def create_analytics_blueprint(*, repo, sync, jf, svc):
         :returns: JSON response with recent activity records including date, media name, and duration watched
         """
         try:
-            limit = request.args.get("limit", 10, type=int)
+            limit = request.args.get("limit", 8, type=int)
             limit = max(1, min(100, limit))
 
             from services.data_models import PlaybackActivity, Item
@@ -565,7 +565,7 @@ def create_analytics_blueprint(*, repo, sync, jf, svc):
                     .all()
                 )
 
-                for stop_id, usr_id, item_id, stop_ts in stop_events:
+                for _, usr_id, item_id, stop_ts in stop_events:
                     start_event = (
                         session.query(PlaybackActivity.activity_at)
                         .filter(

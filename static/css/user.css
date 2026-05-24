@@ -72,4 +72,65 @@
   border-radius: 12px;
   padding: 0.75rem;
   height: 350px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#recent-activity-container {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.recent-activity-placeholder {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.recent-activity-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.recent-activity-table thead th {
+  text-align: left;
+  padding: 0.2rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.recent-activity-table tbody td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85rem;
+}
+
+.recent-activity-table thead th.align-right,
+.recent-activity-table tbody td.align-right {
+  text-align: right;
+}
+
+.recent-activity-table tr:nth-child(even) {
+  background-color: var(--surface);
+}
+
+.recent-activity-table tbody tr:hover td {
+  background: var(--highlight);
+}
+
+.recent-activity-name {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
