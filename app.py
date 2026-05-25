@@ -32,6 +32,9 @@ except ImportError as exc:
 def create_app(test_config: Optional[Dict] = None) -> "Flask":
     """
     Create and configure the Borealis Flask application.
+
+    :param test_config: Optional dictionary containing test configuration settings
+    :returns: Configured Flask application instance
     """
     root_logger = logging.getLogger()
     if not root_logger.handlers:
@@ -49,6 +52,12 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     @app.errorhandler(404)
     def not_found(e):
+        """
+        Handle 404 errors by rendering a 404 page.
+
+        :param e: The error object
+        :returns: Flask response with the 404.html template
+        """
         return make_response(render_template("404.html"), 404)
 
     app.config.setdefault("DEBUG", False)
@@ -176,6 +185,13 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            """
+            Decorator to check if Jellyfin server credentials are configured before serving protected routes.
+
+            :param f: The route handler function to wrap
+            :returns: Wrapped route handler that redirects to setup when unconfigured
+            :raises Exception: Propagates exceptions raised by the wrapped handler
+            """
             if not bool(app.config.get("HAS_SERVER_CONFIGURED")):
                 return redirect("/setup")
             return f(*args, **kwargs)
@@ -251,6 +267,9 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     def api_jellyfin_item_primary_image(item_id: str) -> Response:
         """
         Proxy Jellyfin primary item image to the frontend.
+
+        :param item_id: ID of the Jellyfin item
+        :returns: Flask resposne containing the primary image or an error response
         """
         tag = (request.args.get("tag") or "").strip() or None
         result = jf.item_primary_image(item_id=item_id, tag=tag)
@@ -269,6 +288,9 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     def api_jellyfin_user_primary_image(user_id: str) -> Response:
         """
         Proxy Jellyfin primary user image to the frontend.
+
+        :param user_id: ID of the Jellyfin user
+        :returns: Flask response containing the primary image or an error response
         """
         tag = (request.args.get("tag") or "").strip() or None
         result = jf.user_primary_image(user_id=user_id, tag=tag)
