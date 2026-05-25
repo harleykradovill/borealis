@@ -16,6 +16,8 @@ def main() -> None:
     """
     Resolve host and port from env variables, instantiate app via
     create_app(), and start the server.
+
+    :returns: None
     """
     host = getenv("HOST", "127.0.0.1")
     port = int(getenv("PORT", "2929"))

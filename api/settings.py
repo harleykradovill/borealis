@@ -11,17 +11,16 @@ from flask import Blueprint, Response, current_app, jsonify, request, make_respo
 HTTP_PREFIX = "http://"
 HTTPS_PREFIX = "https://"
 
-"""
-Create the settings API blueprints with routes for configuration and sync management.
-
-:param svc: SettingsService instance
-:param repo: Repository database for users, libraries, items, activity logs
-:param sync: SyncService coordinating metadata syncs with Jellyfin
-:returns: Configured Flask blueprint
-"""
-
 
 def create_settings_blueprint(*, svc, repo, sync):
+    """
+    Create the settings API blueprints with routes for configuration and sync management.
+
+    :param svc: SettingsService instance
+    :param repo: Repository database for users, libraries, items, activity logs
+    :param sync: SyncService coordinating metadata syncs with Jellyfin
+    :returns: Configured Flask blueprint
+    """
     bp = Blueprint("settings_api", __name__, url_prefix="/api")
 
     def _build_sync_progress_payload() -> dict:
@@ -215,6 +214,12 @@ def create_settings_blueprint(*, svc, repo, sync):
         data = svc.get()
 
         def _mask_key(k):
+            """
+            Masks a key by replacing all but the first four characters with asterisks.
+
+            :param k: The key to mask
+            :returns: The masked key
+            """
             if not k:
                 return None
             try:
@@ -268,6 +273,11 @@ def create_settings_blueprint(*, svc, repo, sync):
             svc.set_last_activity_log_sync(ts)
 
             def run_initial_sync():
+                """
+                Run the initial sync process.
+
+                :returns: None
+                """
                 try:
                     sync.sync_initial()
                 except Exception as exc:
@@ -330,6 +340,8 @@ def create_settings_blueprint(*, svc, repo, sync):
     def api_sync_periodic() -> Response:
         """
         Trigger the same sync path used by interval scheduling and reset timer.
+
+        :returns: None
         """
         sched = getattr(current_app, "sync_scheduler", None)
         if sched and hasattr(sched, "trigger_periodic_now"):
@@ -342,6 +354,11 @@ def create_settings_blueprint(*, svc, repo, sync):
         import threading
 
         def run_sync():
+            """
+            Run a manual sync process.
+
+            :returns: None
+            """
             try:
                 sync.sync_periodic()
             except Exception:

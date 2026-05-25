@@ -16,17 +16,16 @@ from flask import (
 
 logger = logging.getLogger(__name__)
 
-"""
-Create the analytics API blueprint and register all analytics routes.
 
-:param svc: SettingsService instance
-:param repo: Repository database for users, libraries, items, activity logs
-:param sync: SyncService coordinating metadata syncs with Jellyfin
-:returns: Configured Flask blueprint
-"""
+def create_analytics_blueprint(*, repo, sync, jf):
+    """
+    Create the analytics API blueprint and register all analytics routes.
 
-
-def create_analytics_blueprint(*, repo, sync, jf, svc):
+    :param svc: SettingsService instance
+    :param repo: Repository database for users, libraries, items, activity logs
+    :param sync: SyncService coordinating metadata syncs with Jellyfin
+    :returns: Configured Flask blueprint
+    """
     bp = Blueprint("analytics_api", __name__, url_prefix="/api")
 
     def _build_sync_progress_payload() -> dict:
@@ -297,6 +296,11 @@ def create_analytics_blueprint(*, repo, sync, jf, svc):
         """
 
         def event_stream():
+            """
+            Stream sync-progress updates as Server-Sent events to clients.
+
+            :returns: Streaming response with text/event-stream MIME type
+            """
             last_payload = None
             heartbeat_every = 15
             last_heartbeat = time.time()
@@ -436,7 +440,16 @@ def create_analytics_blueprint(*, repo, sync, jf, svc):
                 from services.jellyfin import JellyfinClient
 
                 class TempSettings:
+                    """
+                    Temporary settings class for JellyfinClient initialization.
+                    """
+
                     def get(self):
+                        """
+                        Return a dictionary of temporary settings.
+
+                        :returns: Dictionary with jf_host, jf_port, and jf_api_key
+                        """
                         return {
                             "jf_host": host,
                             "jf_port": port,
@@ -463,6 +476,12 @@ def create_analytics_blueprint(*, repo, sync, jf, svc):
                 flat = []
 
             def _is_media_library(lib: dict) -> bool:
+                """
+                Determine if a library is a media library.
+
+                :param lib: Dictionary representing a Jellyfin library
+                :returns: True if the library is a media library, False otherwise
+                """
                 t = lib.get("CollectionType") or lib.get("Type") or ""
                 t_norm = str(t).strip().lower()
                 if not t_norm:
