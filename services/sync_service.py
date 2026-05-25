@@ -129,6 +129,12 @@ class SyncService:
                     libs_list = []
 
                 def _is_media_library(lib: dict) -> bool:
+                    """
+                    Determine if a library is a media library.
+
+                    :param lib: Dictionary representing a Jellyfin media library.
+                    :returns: True if the library is a media library, False otherwise.
+                    """
                     t = lib.get("CollectionType") or lib.get("Type") or ""
                     t_norm = str(t).strip().lower()
                     if not t_norm:
@@ -418,7 +424,7 @@ class SyncService:
         Perform incremental activity log sync for recent entries since last sync marker.
 
         :param minutes_back: Fallback window in minutres if no previous sync marker exists (default 30)
-        :param page_imit: Number of events per API request (default 100)
+        :param page_limit: Number of events per API request (default 100)
         :returns: SyncResult with event counts and any sync errors
         :raises Exception: Re-raises unexpected errors, handles API failures
         """

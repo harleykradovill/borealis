@@ -108,7 +108,7 @@ class SettingsService:
 
         :param values: partial settings payload to persist
         :returns: updated settings dict including decrypted values
-        :raises ValueError: if sync_inverval cannot be converted to int
+        :raises ValueError: if sync_interval cannot be converted to int
         :raises TypeError: if sync_interval has an invalid type for int conversion
         :raises InvalidToken: if encrypted data cannot be decrypted
         """
@@ -143,7 +143,7 @@ class SettingsService:
         """
         Store the timestamp of the last successful activity log sync.
 
-        :param timestamp: unix timestamp to persis
+        :param timestamp: unix timestamp to persist
         :returns: None
         :raises ValueError: if timestamp cannot be converted to int
         :raises TypeError: if timestamp has an invalid type

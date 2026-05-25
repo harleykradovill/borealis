@@ -28,7 +28,7 @@ def _weekday_name(monday_zero_index: int) -> str:
     """
     Convert a Monday-based weekday index to a weekday name.
 
-    :para monday_zero_index: Weekday index where Monday = 0 and Sunday = 6
+    :param monday_zero_index: Weekday index where Monday = 0 and Sunday = 6
     :returns: Weekday name when index is valid, otherwise "Unknown"
     """
     names = [

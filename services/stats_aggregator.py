@@ -22,7 +22,7 @@ def _playback_event_kind(playback_type: Optional[str]) -> str:
     """
     Classify playback events as start or stop using playback_type column.
 
-    :param event_name: Playback type value from database
+    :param playback_type: Playback type value from database
     :returns: Event classification as either "start" or "stop"
     """
     if playback_type == "VideoPlaybackStopped":
@@ -448,7 +448,7 @@ class StatsAggregator:
         Retrieve all libraries with aggregate play counts and item statistics.
 
         :param session: Active SQL session
-        :param include_archive: Whether to include archived libraries (default False)
+        :param include_archived: Whether to include archived libraries (default False)
         :returns: List of dicts containing library metadata, play stats, and item breakdown by type
         """
         query = session.query(Library)

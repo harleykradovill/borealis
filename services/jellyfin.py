@@ -35,7 +35,7 @@ class JellyfinClient:
         """
         Read persisted Jellyfin settings and normalize connection values.
 
-        :returns (scheme, host, port, api_token)
+        :returns: (scheme, host, port, api_token)
         """
         s = self._settings.get()  # Get settings dictionary
         raw_host = (s.get("jf_host") or "").strip()
@@ -93,7 +93,7 @@ class JellyfinClient:
         :param host: Jellyfin host name or IP
         :param port: Jellyfin server port
         :param path: API path
-        :returns Full URL
+        :returns: Full URL
         """
         if not path.startswith("/"):
             path = f"/{path}"
@@ -111,7 +111,7 @@ class JellyfinClient:
         Determine if an error is transient and should be retried.
 
         :param exc: Exception raised during HTTP or network operation
-        :returns bool: True if error is retryable, False otherwise
+        :returns: True if error is retryable, False otherwise
         """
         if isinstance(exc, HTTPError):
             return exc.code in (
@@ -135,7 +135,7 @@ class JellyfinClient:
         :param path: API path to request
         :param max_retries: Max number of retry attempts
         :param backoff_base: Base delay (in sec)
-        :returns dict: Result object containing success flag, status code, and payload/error
+        :returns: Result object containing success flag, status code, and payload/error
         """
         conn = self._connection()
         if not conn:
@@ -515,6 +515,6 @@ def create_client(settings_service: SettingsService) -> JellyfinClient:
     Create a JellyfinClient from the settings service.
 
     :param settings_service: Settings provider containing config
-    : returns JellyfinClient: Initialized Jellyfin client instance
+    :returns: Initialized Jellyfin client instance
     """
     return JellyfinClient(settings_service)
