@@ -418,16 +418,16 @@ def create_settings_blueprint(*, svc, repo, sync):
             )
 
             alembic_version = None
-            try:
-                with repo._session() as session:
-                    result = session.execute(
-                        text("SELECT version_num FROM alembic_version LIMIT 1")
-                    )
-                    row = result.fetchone()
-                    alembic_version = row[0] if row else None
-            except Exception as e:
-                logging.warning(f"[WARN] Failed to get alembic version: {e}")
-                alembic_version = "Error getting database version."
+            # try:
+            #    with repo._session() as session:
+            #        result = session.execute(
+            #            text("SELECT version_num FROM alembic_version LIMIT 1")
+            #        )
+            #        row = result.fetchone()
+            #        alembic_version = row[0] if row else None
+            # except Exception as e:
+            #    logging.warning(f"[WARN] Failed to get alembic version: {e}")
+            #    alembic_version = "Error getting database version."
 
             return make_response(
                 jsonify(

@@ -12,6 +12,7 @@ import traceback
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
 from services.jellyfin import JellyfinClient
 from services.mappers import (
@@ -21,7 +22,6 @@ from services.mappers import (
     map_users,
 )
 from services.repository import Repository
-from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -59,12 +59,175 @@ class SyncService:
     repository: Repository
     settings_service: Any
 
+    def _build_result(
+        self,
+        start_time: float,
+        errors: List[str],
+        users_synced: int = 0,
+        libraries_synced: int = 0,
+        items_synced: int = 0,
+        success: Optional[bool] = None,
+    ) -> SyncResult:
+        """
+        Build a SyncResult with computed duration.
+
+        :param start_time: Epoch time when the operation started
+        :param errors: Error messages collected during the operation
+        :param users_synced: Number of users synced
+        :param libraries_synced: Number of libraries synced
+        :param items_synced: Number of items/events synced
+        :param success: Optional explicit success value
+        :returns: SyncResult instance for the operation
+        """
+        duration_ms = int((time.time() - start_time) * 1000)
+        result_success = success if success is not None else (len(errors) == 0)
+        return SyncResult(
+            success=result_success,
+            duration_ms=duration_ms,
+            users_synced=users_synced,
+            libraries_synced=libraries_synced,
+            items_synced=items_synced,
+            errors=errors,
+        )
+
+    def _update_task_progress(
+        self, task_id: Optional[int], progress: Dict[str, Any]
+    ) -> None:
+        """
+        Update task progress when a task id is available.
+
+        :param task_id: Task log identifier or None
+        :param progress: Progress payload to store in the task log
+        :returns: None
+        """
+        if task_id is None:
+            return
+        self.repository.update_task_log_progress(task_id, progress)
+
+    def _build_user_lookup(self) -> Dict[str, str]:
+        """
+        Build a lookup table from Jellyfin user id to display name.
+
+        :returns: Mapping of Jellyfin user id to username
+        """
+        users = self.repository.list_users(include_archived=True)
+        return {u["jellyfin_id"]: u["name"] for u in users}
+
+    @staticmethod
+    def _is_media_library(lib: Dict[str, Any]) -> bool:
+        """
+        Determine if a library is a media library.
+
+        :param lib: Dictionary representing a Jellyfin media library
+        :returns: True if the library is a media library, False otherwise
+        """
+        t = lib.get("CollectionType") or lib.get("Type") or ""
+        t_norm = str(t).strip().lower()
+        if not t_norm:
+            return False
+        return any(k in t_norm for k in ("movies", "tvshows"))
+
+    def _sync_users(self, errors: List[str]) -> int:
+        """
+        Sync users and archive missing ones.
+
+        :param errors: Error list to append messages to
+        :returns: Count of users synced
+        """
+        users_result = self.jellyfin_client.users()
+        if users_result.get("ok"):
+            users_data = users_result.get("data", [])
+            if isinstance(users_data, list):
+                mapped_users = map_users(users_data)
+                users_count = self.repository.upsert_users(mapped_users)
+
+                active_ids = [u["jellyfin_id"] for u in mapped_users]
+                self.repository.archive_missing_users(active_ids)
+
+                return users_count
+            return 0
+
+        errors.append(f"Users sync failed: {users_result.get('message')}")
+        return 0
+
+    def _sync_libraries_and_items(self, errors: List[str]) -> Dict[str, int]:
+        """
+        Sync libraries and items for each library.
+
+        :param errors: Error list to append messages to
+        :returns: Dictionary containing libraries and items counts
+        """
+        libs_result = self.jellyfin_client.libraries()
+        if not libs_result.get("ok"):
+            errors.append(f"Libraries sync failed: {libs_result.get('message')}")
+            return {"libraries": 0, "items": 0}
+
+        libs_data = libs_result.get("data")
+
+        if isinstance(libs_data, dict):
+            libs_list = libs_data.get("Items", [])
+        elif isinstance(libs_data, list):
+            libs_list = libs_data
+        else:
+            libs_list = []
+
+        filtered_libs = [l for l in libs_list if self._is_media_library(l)]
+
+        mapped_libs = map_libraries(filtered_libs)
+        libraries_count = self.repository.upsert_libraries(mapped_libs)
+
+        active_lib_ids = [lib["jellyfin_id"] for lib in mapped_libs]
+        self.repository.archive_missing_libraries(active_lib_ids)
+
+        time.sleep(1.5)
+
+        libraries = self.repository.list_libraries(include_archived=False)
+        items_count = 0
+
+        for lib in libraries:
+            lib_jf_id = lib["jellyfin_id"]
+            lib_internal_id = lib["id"]
+
+            items_result = self.jellyfin_client.library_items(lib_jf_id)
+
+            if items_result.get("ok"):
+                items_data = items_result.get("data", {})
+                if isinstance(items_data, dict):
+                    items_list = items_data.get("Items", [])
+                else:
+                    items_list = []
+
+                try:
+                    mapped_items = map_items(items_list, lib_internal_id)
+                    count = self.repository.upsert_items(mapped_items)
+                    items_count += count
+
+                    active_item_ids = [it["jellyfin_id"] for it in mapped_items]
+                    self.repository.archive_missing_items(
+                        lib_internal_id, active_item_ids
+                    )
+
+                except Exception:
+                    traceback.print_exc()
+                    errors.append(
+                        f"Items processing failed for library {lib.get('name') or lib_jf_id}"
+                    )
+
+            else:
+                errors.append(
+                    f"Items sync failed for library "
+                    f"{lib['name']}: "
+                    f"{items_result.get('message')}"
+                )
+
+        return {"libraries": libraries_count, "items": items_count}
+
     def sync_metadata(self, task_id: Optional[int] = None) -> SyncResult:
         """
         Perform a full metadata sync: users → libraries → items.
 
+        :param task_id: Optional task log id for progress reporting
         :returns: SyncResult with success status, duration, and sync counts
-        :raises Exception: Re-raises any unexpected errors during sync phases
         """
         logging.info("[INFO] Starting Metadata Sync")
 
@@ -81,131 +244,41 @@ class SyncService:
                 name="Metadata Sync", task_type="sync", execution_type="full"
             )
 
-        if task_id is not None:
-            self.repository.update_task_log_progress(
-                task_id,
-                {
-                    "phase": "running",
-                    "step": 1,
-                    "step_total": step_total,
-                    "message": "Syncing users",
-                },
-            )
+        self._update_task_progress(
+            task_id,
+            {
+                "phase": "running",
+                "step": 1,
+                "step_total": step_total,
+                "message": "Syncing users",
+            },
+        )
 
         try:
-            # Phase 1: Sync users
-            users_result = self.jellyfin_client.users()
-            if users_result.get("ok"):
-                users_data = users_result.get("data", [])
-                if isinstance(users_data, list):
-                    mapped_users = map_users(users_data)
-                    users_count = self.repository.upsert_users(mapped_users)
-
-                    # Archive users not in current list
-                    active_ids = [u["jellyfin_id"] for u in mapped_users]
-                    self.repository.archive_missing_users(active_ids)
-            else:
-                errors.append(f"Users sync failed: {users_result.get('message')}")
+            users_count = self._sync_users(errors)
 
             time.sleep(2.5)
-            # Phase 2: Sync libraries
-            libs_result = self.jellyfin_client.libraries()
 
-            if task_id is not None:
-                self.repository.update_task_log_progress(
-                    task_id,
-                    {"step": 2, "message": "Syncing libraries"},
-                )
+            self._update_task_progress(
+                task_id,
+                {"step": 2, "message": "Syncing libraries"},
+            )
 
-            if libs_result.get("ok"):
-                libs_data = libs_result.get("data")
+            counts = self._sync_libraries_and_items(errors)
+            libraries_count = counts["libraries"]
+            items_count = counts["items"]
 
-                # Handle both dict with Items key and direct list
-                if isinstance(libs_data, dict):
-                    libs_list = libs_data.get("Items", [])
-                elif isinstance(libs_data, list):
-                    libs_list = libs_data
-                else:
-                    libs_list = []
+            self._update_task_progress(
+                task_id,
+                {"step": 3, "message": "Syncing items"},
+            )
 
-                def _is_media_library(lib: dict) -> bool:
-                    """
-                    Determine if a library is a media library.
-
-                    :param lib: Dictionary representing a Jellyfin media library.
-                    :returns: True if the library is a media library, False otherwise.
-                    """
-                    t = lib.get("CollectionType") or lib.get("Type") or ""
-                    t_norm = str(t).strip().lower()
-                    if not t_norm:
-                        return False
-                    return any(k in t_norm for k in ("movies", "tvshows"))
-
-                filtered_libs = [l for l in libs_list if _is_media_library(l)]
-
-                mapped_libs = map_libraries(filtered_libs)
-                libraries_count = self.repository.upsert_libraries(mapped_libs)
-
-                # Archive libraries not in current list
-                active_lib_ids = [lib["jellyfin_id"] for lib in mapped_libs]
-                self.repository.archive_missing_libraries(active_lib_ids)
-
-                time.sleep(1.5)
-                # Phase 3: Sync items for each library
-                libraries = self.repository.list_libraries(include_archived=False)
-
-                if task_id is not None:
-                    self.repository.update_task_log_progress(
-                        task_id,
-                        {"step": 3, "message": "Syncing items"},
-                    )
-
-                for lib in libraries:
-                    lib_jf_id = lib["jellyfin_id"]
-                    lib_internal_id = lib["id"]
-
-                    items_result = self.jellyfin_client.library_items(lib_jf_id)
-
-                    if items_result.get("ok"):
-                        items_data = items_result.get("data", {})
-                        if isinstance(items_data, dict):
-                            items_list = items_data.get("Items", [])
-                        else:
-                            items_list = []
-
-                        try:
-                            mapped_items = map_items(items_list, lib_internal_id)
-                            count = self.repository.upsert_items(mapped_items)
-                            items_count += count
-
-                            active_item_ids = [it["jellyfin_id"] for it in mapped_items]
-                            self.repository.archive_missing_items(
-                                lib_internal_id, active_item_ids
-                            )
-
-                        except Exception:
-                            traceback.print_exc()
-                            errors.append(
-                                f"Items processing failed for library {lib.get('name') or lib_jf_id}"
-                            )
-
-                    else:
-                        errors.append(
-                            f"Items sync failed for library "
-                            f"{lib['name']}: "
-                            f"{items_result.get('message')}"
-                        )
-            else:
-                errors.append(f"Libraries sync failed: {libs_result.get('message')}")
-
-            duration_ms = int((time.time() - start_time) * 1000)
-            result = SyncResult(
-                success=len(errors) == 0,
-                duration_ms=duration_ms,
+            result = self._build_result(
+                start_time,
+                errors,
                 users_synced=users_count,
                 libraries_synced=libraries_count,
                 items_synced=items_count,
-                errors=errors,
             )
 
             if own_task and task_id is not None:
@@ -216,20 +289,17 @@ class SyncService:
                 )
 
             logging.info("[INFO] Metadata Sync Complete")
-
             return result
 
         except Exception:
-            duration_ms = int((time.time() - start_time) * 1000)
             errors.append("Unexpected error")
 
-            result = SyncResult(
-                success=False,
-                duration_ms=duration_ms,
+            result = self._build_result(
+                start_time,
+                errors,
                 users_synced=users_count,
                 libraries_synced=libraries_count,
                 items_synced=items_count,
-                errors=errors,
             )
 
             if own_task and task_id is not None:
@@ -246,7 +316,6 @@ class SyncService:
         Perform initial full activity log sync from Jellyfin to capture all historical playback data.
 
         :returns: SyncResult with events synced count and any errors encountered
-        :raises Exception: Re-raises unexpected errors, continues on pagination failures
         """
         logging.info("[INFO] Starting Full Activity Log Sync")
 
@@ -258,7 +327,7 @@ class SyncService:
         task_id = self.repository.create_task_log(
             name="Activity Log Sync (Full)", task_type="sync", execution_type="full"
         )
-        self.repository.update_task_log_progress(
+        self._update_task_progress(
             task_id,
             {
                 "phase": "starting",
@@ -268,9 +337,7 @@ class SyncService:
         )
 
         try:
-            # Build user lookup for username denormalization
-            users = self.repository.list_users(include_archived=True)
-            user_lookup: Dict[str, str] = {u["jellyfin_id"]: u["name"] for u in users}
+            user_lookup = self._build_user_lookup()
 
             page_size = 1000
             start_index = 0
@@ -333,7 +400,7 @@ class SyncService:
                 total_fetched += len(items)
                 start_index += page_size
 
-                self.repository.update_task_log_progress(
+                self._update_task_progress(
                     task_id,
                     {
                         "phase": "running",
@@ -358,14 +425,10 @@ class SyncService:
             else:
                 self.settings_service.set_last_activity_log_sync(int(time.time()))
 
-            duration_ms = int((time.time() - start_time) * 1000)
-            result = SyncResult(
-                success=len(errors) == 0,
-                duration_ms=duration_ms,
-                users_synced=0,
-                libraries_synced=0,
+            result = self._build_result(
+                start_time,
+                errors,
                 items_synced=events_count,
-                errors=errors,
             )
 
             log_data = result.to_dict()
@@ -382,16 +445,12 @@ class SyncService:
             return result
 
         except Exception:
-            duration_ms = int((time.time() - start_time) * 1000)
             errors.append("Unexpected error")
 
-            result = SyncResult(
-                success=False,
-                duration_ms=duration_ms,
-                users_synced=0,
-                libraries_synced=0,
+            result = self._build_result(
+                start_time,
+                errors,
                 items_synced=events_count,
-                errors=errors,
             )
 
             log_data = result.to_dict()
@@ -423,13 +482,10 @@ class SyncService:
         """
         Perform incremental activity log sync for recent entries since last sync marker.
 
-        :param minutes_back: Fallback window in minutres if no previous sync marker exists (default 30)
-        :param page_limit: Number of events per API request (default 100)
+        :param minutes_back: Fallback window in minutes if no previous sync marker exists
+        :param page_limit: Number of events per API request
         :returns: SyncResult with event counts and any sync errors
-        :raises Exception: Re-raises unexpected errors, handles API failures
         """
-        import time
-
         logging.info("[INFO] Starting Incremental Activity Log Sync")
 
         start_time = time.time()
@@ -444,25 +500,13 @@ class SyncService:
             except Exception:
                 last = None
 
-            if not last:
-                duration_ms = int((time.time() - start_time) * 1000)
-                result = SyncResult(
-                    success=True,
-                    duration_ms=duration_ms,
-                    users_synced=0,
-                    libraries_synced=0,
-                    items_synced=0,
-                    errors=[],
-                )
-
             if last:
                 min_ts = int(last)
             else:
                 min_ts = int(time.time()) - (minutes_back * 60)
 
             min_date = self._ts_to_iso(min_ts)
-            users = self.repository.list_users(include_archived=True)
-            user_lookup: Dict[str, str] = {u["jellyfin_id"]: u["name"] for u in users}
+            user_lookup = self._build_user_lookup()
 
             start_index = 0
             page_num = 0
@@ -537,32 +581,23 @@ class SyncService:
             if processed > 0:
                 self.repository.refresh_play_stats()
 
-            duration_ms = int((time.time() - start_time) * 1000)
-            result = SyncResult(
-                success=(len(errors) == 0),
-                duration_ms=duration_ms,
-                users_synced=0,
-                libraries_synced=0,
+            result = self._build_result(
+                start_time,
+                errors,
                 items_synced=processed,
-                errors=errors,
             )
 
             logging.info("[INFO] Incremental Activity Log Sync Complete")
-
             return result
 
         except Exception:
-            duration_ms = int((time.time() - start_time) * 1000)
             errors.append("Unexpected error during incremental sync")
-            result = SyncResult(
-                success=False,
-                duration_ms=duration_ms,
-                users_synced=0,
-                libraries_synced=0,
+            return self._build_result(
+                start_time,
+                errors,
                 items_synced=processed,
-                errors=errors,
+                success=False,
             )
-            return result
 
     def sync_initial(self) -> SyncResult:
         """
@@ -570,11 +605,8 @@ class SyncService:
         and full activity log pull.
 
         :returns: SyncResult combining metrics from metadata, activity, and dashboard operations
-        :raises Exception: Continues execution on individual phase failures, aggregates all errors
         """
         logging.info("[INFO] Starting Initial Sync")
-
-        import time
 
         start_time = time.time()
         errors: List[str] = []
@@ -582,7 +614,7 @@ class SyncService:
         task_id = self.repository.create_task_log(
             name="Initial Server Setup Sync", task_type="sync", execution_type="initial"
         )
-        self.repository.update_task_log_progress(
+        self._update_task_progress(
             task_id,
             {
                 "phase": "starting",
@@ -594,12 +626,11 @@ class SyncService:
         )
 
         try:
-            # Step 1: Sync users, libraries, and items
             full_result = self.sync_metadata()
             if not full_result.success and full_result.errors:
                 errors.extend(full_result.errors)
 
-            self.repository.update_task_log_progress(
+            self._update_task_progress(
                 task_id,
                 {
                     "phase": "running",
@@ -608,12 +639,11 @@ class SyncService:
                 },
             )
 
-            # Step 2: Sync activity log
             activity_result = self.sync_activity_log_full()
             if not activity_result.success and activity_result.errors:
                 errors.extend(activity_result.errors)
 
-            self.repository.update_task_log_progress(
+            self._update_task_progress(
                 task_id,
                 {
                     "phase": "running",
@@ -626,20 +656,18 @@ class SyncService:
                 },
             )
 
-            # Step 3: Refresh dashboard stats
             try:
                 self._refresh_dashboard_cache()
             except Exception:
                 errors.append("Failed to refresh dashboard stats")
 
-            duration_ms = int((time.time() - start_time) * 1000)
-            result = SyncResult(
-                success=(full_result.success and activity_result.success),
-                duration_ms=duration_ms,
+            result = self._build_result(
+                start_time,
+                errors,
                 users_synced=full_result.users_synced,
                 libraries_synced=full_result.libraries_synced,
                 items_synced=(full_result.items_synced + activity_result.items_synced),
-                errors=errors,
+                success=(full_result.success and activity_result.success),
             )
 
             log_data = result.to_dict()
@@ -659,17 +687,16 @@ class SyncService:
             return result
 
         except Exception:
-            duration_ms = int((time.time() - start_time) * 1000)
             error_msg = "Unexpected error during initial sync"
             errors.append(error_msg)
 
-            result = SyncResult(
-                success=False,
-                duration_ms=duration_ms,
+            result = self._build_result(
+                start_time,
+                errors,
                 users_synced=0,
                 libraries_synced=0,
                 items_synced=0,
-                errors=errors,
+                success=False,
             )
 
             log_data = result.to_dict()
@@ -690,7 +717,6 @@ class SyncService:
         incremental activity log sync (if marker exists), and refresh play statistics.
 
         :returns: SyncResult with aggregated metrics from all sync phases
-        :raises Exception: Continues on individual phase failures, aggregates all errors
         """
         logging.info("[INFO] Starting Periodic Sync")
 
@@ -700,7 +726,7 @@ class SyncService:
         task_id = self.repository.create_task_log(
             name="Periodic Sync", task_type="sync", execution_type="periodic"
         )
-        self.repository.update_task_log_progress(
+        self._update_task_progress(
             task_id,
             {
                 "phase": "running",
@@ -713,12 +739,11 @@ class SyncService:
         )
 
         try:
-            # Step 1: Sync users, libraries, and items
             metadata_result = self.sync_metadata(task_id=task_id)
             if not metadata_result.success and metadata_result.errors:
                 errors.extend(metadata_result.errors)
 
-            self.repository.update_task_log_progress(
+            self._update_task_progress(
                 task_id,
                 {
                     "phase": "running",
@@ -727,12 +752,11 @@ class SyncService:
                 },
             )
 
-            # Step 4: Sync activity log incrementally
             activity_result = self.sync_activity_log_incremental()
             if not activity_result.success and activity_result.errors:
                 errors.extend(activity_result.errors)
 
-            self.repository.update_task_log_progress(
+            self._update_task_progress(
                 task_id,
                 {
                     "phase": "running",
@@ -743,13 +767,12 @@ class SyncService:
 
             time.sleep(2)
 
-            # Step 5: Refresh play statistics
             try:
                 self.repository.refresh_play_stats()
             except Exception:
                 errors.append("Failed to refresh play stats")
 
-            self.repository.update_task_log_progress(
+            self._update_task_progress(
                 task_id,
                 {
                     "phase": "running",
@@ -757,24 +780,23 @@ class SyncService:
                     "step": 6,
                 },
             )
+
             time.sleep(1.5)
 
-            # Step 6: Refresh dashboard stats
             try:
                 self._refresh_dashboard_cache()
             except Exception:
                 errors.append("Failed to refresh dashboard stats")
 
-            duration_ms = int((time.time() - start_time) * 1000)
-            result = SyncResult(
-                success=(metadata_result.success and activity_result.success),
-                duration_ms=duration_ms,
+            result = self._build_result(
+                start_time,
+                errors,
                 users_synced=metadata_result.users_synced,
                 libraries_synced=metadata_result.libraries_synced,
                 items_synced=(
                     metadata_result.items_synced + activity_result.items_synced
                 ),
-                errors=errors,
+                success=(metadata_result.success and activity_result.success),
             )
 
             log_data = result.to_dict()
@@ -796,17 +818,16 @@ class SyncService:
             return result
 
         except Exception:
-            duration_ms = int((time.time() - start_time) * 1000)
             error_msg = "Unexpected error during periodic sync"
             errors.append(error_msg)
 
-            result = SyncResult(
-                success=False,
-                duration_ms=duration_ms,
+            result = self._build_result(
+                start_time,
+                errors,
                 users_synced=0,
                 libraries_synced=0,
                 items_synced=0,
-                errors=errors,
+                success=False,
             )
 
             log_data = result.to_dict()
