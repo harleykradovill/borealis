@@ -379,6 +379,19 @@ globalThis.helpers = (function () {
     return dates;
   }
 
+  function extractMediaItemName(eventName, playbackType) {
+    if (!eventName) return "";
+    let name = eventName;
+    if (playbackType === "VideoPlayback") {
+      const match = name.match(/is playing (.+)$/);
+      name = match ? match[1] : name;
+    } else if (playbackType === "VideoPlaybackStopped") {
+      const match = name.match(/has finished playing (.+)$/);
+      name = match ? match[1] : name;
+    }
+    return name.replace(/ on .+$/, "");
+  }
+
   return {
     fetchJson,
     postJson,
@@ -392,5 +405,6 @@ globalThis.helpers = (function () {
     handleError,
     getPalette,
     generateDateLabels,
+    extractMediaItemName,
   };
 })();

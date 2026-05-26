@@ -218,24 +218,6 @@
     return typeMap[playbackType] || playbackType || "";
   }
 
-  function extractMediaItemName(eventName, playbackType) {
-    if (!eventName) return "";
-
-    let name = eventName;
-
-    if (playbackType === "VideoPlayback") {
-      const match = name.match(/is playing (.+)$/);
-      name = match ? match[1] : name;
-    } else if (playbackType === "VideoPlaybackStopped") {
-      const match = name.match(/has finished playing (.+)$/);
-      name = match ? match[1] : name;
-    }
-
-    name = name.replace(/ on .+$/, "");
-
-    return name;
-  }
-
   /**
    * Render table and pagination.
    * @param {*} data
@@ -289,7 +271,10 @@
 
       const eventTd = document.createElement("td");
       eventTd.style.padding = "0.5rem";
-      eventTd.textContent = extractMediaItemName(it.event_name, it.playback_type);
+      eventTd.textContent = globalThis.helpers.extractMediaItemName(
+        it.event_name,
+        it.playback_type,
+      );
       tr.appendChild(eventTd);
 
       const dateTd = document.createElement("td");

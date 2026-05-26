@@ -49,8 +49,13 @@ function populateRecentActivity() {
         dateTd.textContent = date.toLocaleDateString();
         tr.appendChild(dateTd);
 
+        const displayName = globalThis.helpers.extractMediaItemName(
+          activity.event_name,
+          activity.playback_type,
+        );
+
         const nameTd = document.createElement("td");
-        nameTd.textContent = activity.item_name || "Unknown";
+        nameTd.textContent = displayName || activity.item_name || "Unknown";
         nameTd.className = "recent-activity-name";
         tr.appendChild(nameTd);
 

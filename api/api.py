@@ -574,6 +574,8 @@ def create_api_blueprint(*, repo, sync, jf):
                         PlaybackActivity.user_id,
                         PlaybackActivity.item_id,
                         PlaybackActivity.activity_at,
+                        PlaybackActivity.event_name,
+                        PlaybackActivity.playback_type,
                     )
                     .filter(
                         PlaybackActivity.user_id == user_id,
@@ -584,7 +586,14 @@ def create_api_blueprint(*, repo, sync, jf):
                     .all()
                 )
 
-                for _, usr_id, item_id, stop_ts in stop_events:
+                for (
+                    _,
+                    usr_id,
+                    item_id,
+                    stop_ts,
+                    event_name,
+                    playback_type,
+                ) in stop_events:
                     start_event = (
                         session.query(PlaybackActivity.activity_at)
                         .filter(
@@ -621,6 +630,8 @@ def create_api_blueprint(*, repo, sync, jf):
                         {
                             "item_id": item_id,
                             "item_name": item_name,
+                            "event_name": event_name,
+                            "playback_type": playback_type,
                             "activity_at": int(stop_ts or 0),
                             "duration_watched_seconds": max(0, duration),
                         }
