@@ -16,7 +16,7 @@ class SessionsService:
         self,
         jellyfin_client: Any,
         sync_interval: int = 5,
-        respository: Optional[Any] = None,
+        repository: Optional[Any] = None,
     ) -> None:
         """
         Initialize sessions service.
@@ -27,7 +27,7 @@ class SessionsService:
         """
         self._client = jellyfin_client
         self._sync_interval = sync_interval
-        self._repository = respository
+        self._repository = repository
         self._thread: Optional[Thread] = None
         self._stop_event = Event()
         self._last_sessions: List[Dict[str, Any]] = []

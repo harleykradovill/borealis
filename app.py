@@ -129,7 +129,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     sessions_svc = SessionsService(
         jellyfin_client=jf,
         sync_interval=5,
-        respository=repo,
+        repository=repo,
     )
     app.sessions_service = sessions_svc
 
@@ -267,7 +267,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         Proxy Jellyfin primary item image to the frontend.
 
         :param item_id: ID of the Jellyfin item
-        :returns: Flask resposne containing the primary image or an error response
+        :returns: Flask response containing the primary image or an error response
         """
         tag = (request.args.get("tag") or "").strip() or None
         result = jf.item_primary_image(item_id=item_id, tag=tag)
