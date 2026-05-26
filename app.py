@@ -9,7 +9,7 @@ from typing import Optional, Dict
 from functools import wraps
 from flask import redirect
 from api.settings import create_settings_blueprint
-from api.analytics import create_analytics_blueprint
+from api.api import create_api_blueprint
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +122,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     ## Blueprints
 
     app.register_blueprint(create_settings_blueprint(svc=svc, repo=repo, sync=sync))
-    app.register_blueprint(create_analytics_blueprint(repo=repo, sync=sync, jf=jf))
+    app.register_blueprint(create_api_blueprint(repo=repo, sync=sync, jf=jf))
 
     from services.sessions import SessionsService
 

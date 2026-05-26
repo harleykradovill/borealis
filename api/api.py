@@ -17,9 +17,9 @@ from flask import (
 logger = logging.getLogger(__name__)
 
 
-def create_analytics_blueprint(*, repo, sync, jf):
+def create_api_blueprint(*, repo, sync, jf):
     """
-    Create the analytics API blueprint and register all analytics routes.
+    Create the API blueprint and register all analytics routes.
 
     :param svc: SettingsService instance
     :param repo: Repository database for users, libraries, items, activity logs
