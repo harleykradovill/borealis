@@ -409,4 +409,9 @@
   });
 
   loadPage(parseHashPage());
+
+  document.addEventListener("syncComplete", () => {
+    const currentPage = parseHashPage();
+    loadPage(currentPage);
+  });
 })();

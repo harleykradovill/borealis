@@ -1,3 +1,22 @@
+(function () {
+  /**
+   * Refresh user page data when sync completes.
+   * @returns {void}
+   */
+  function refreshUserData() {
+    try {
+      populateGlanceSection();
+      populateRecentActivity();
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+    }
+  }
+
+  document.addEventListener("syncComplete", () => {
+    refreshUserData();
+  });
+})();
+
 function populateGlanceSection() {
   const data = document.getElementById("user-data");
   if (!data) return;

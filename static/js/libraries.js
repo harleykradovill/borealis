@@ -377,4 +377,9 @@
     });
   }
   globalThis.updateLibrariesChart = updateLibrariesChart;
+
+  document.addEventListener("syncComplete", () => {
+    console.log("Sync complete, refreshing libraries");
+    loadLibraries();
+  });
 })();

@@ -114,6 +114,14 @@
     source.addEventListener("sync_progress", (event) => {
       try {
         const payload = JSON.parse(event.data);
+
+        if (payload.sync_complete && payload.syncing === false) {
+          const syncCompleteEvent = new CustomEvent("syncComplete", {
+            detail: payload,
+          });
+          document.dispatchEvent(syncCompleteEvent);
+        }
+
         renderSyncState(payload);
       } catch (error) {
         globalThis.helpers.handleError("Failed to fetch sync progress", error);

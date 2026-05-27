@@ -1,3 +1,63 @@
+(function () {
+  /**
+   * Refresh all dashboard data when sync completes.
+   * @returns {void}
+   */
+  function refreshAllData() {
+    try {
+      const glanceLoading = document.getElementById("glance-loading");
+      if (glanceLoading && !glanceLoading.classList.contains("skeleton")) {
+        loadGlance().catch((err) => {
+          console.error("Failed to refresh glance data:", err);
+        });
+      }
+
+      const sessionsCard = document.getElementById("sessions-cards");
+      if (sessionsCard && sessionsCard.children.length > 0) {
+        loadSessions().catch((err) => {
+          console.error("Failed to refresh sessions:", err);
+        });
+      }
+
+      const playCanvas = document.getElementById("plays-matrix");
+      if (playCanvas && playCanvas.style.display !== "none") {
+        loadActivity(182)
+          .then(() => {
+            const render = globalThis.__indexRenderHeatmap;
+            if (typeof render === "function") {
+              render().catch((err) => {
+                console.error("Failed to refresh heatmap:", err);
+              });
+            }
+          })
+          .catch((err) => {
+            console.error("Failed to refresh activity data:", err);
+          });
+      }
+
+      const statsCards = document.querySelectorAll("[data-stat-key]");
+      if (statsCards.length > 0) {
+        fetchStatsData().catch((err) => {
+          console.error("Failed to refresh stats:", err);
+        });
+      }
+
+      const codecCards = document.querySelectorAll("[data-codec-key]");
+      if (codecCards.length > 0) {
+        fetchCodecsData().catch((err) => {
+          console.error("Failed to refresh codecs:", err);
+        });
+      }
+    } catch (error) {
+      console.error("Error refreshing dashboard data:", error);
+    }
+  }
+
+  document.addEventListener("syncComplete", () => {
+    refreshAllData();
+  });
+})();
+
 function updateRowLayout() {
   const sessionCards = document.querySelectorAll(
     "#sessions-cards .session-card",

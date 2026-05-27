@@ -16,6 +16,8 @@ from flask import (
 
 logger = logging.getLogger(__name__)
 
+_last_sync_state = {"syncing": False}
+
 
 def create_api_blueprint(*, repo, sync, jf):
     """
@@ -33,12 +35,12 @@ def create_api_blueprint(*, repo, sync, jf):
         Build a normalized sync-progress payload from latest task log.
 
         :returns: Dictionary containing sync state with ok, syncing, phase, task_id, processed_events,
-        total_events, message
+        total_events, message, sync_complete
         """
         task = repo.get_latest_sync_task()
 
         if not task:
-            return {
+            payload = {
                 "ok": True,
                 "syncing": False,
                 "phase": "idle",
@@ -46,7 +48,9 @@ def create_api_blueprint(*, repo, sync, jf):
                 "processed_events": 0,
                 "total_events": 0,
                 "message": "",
+                "sync_complete": False,
             }
+            return payload
 
         result = (task.get("result") or "").upper()
         task_id = task.get("id")
@@ -77,7 +81,7 @@ def create_api_blueprint(*, repo, sync, jf):
                 if phase_from_log in {"starting", "running"}
                 else "running"
             )
-            return {
+            payload = {
                 "ok": True,
                 "syncing": True,
                 "phase": phase,
@@ -85,14 +89,24 @@ def create_api_blueprint(*, repo, sync, jf):
                 "processed_events": processed,
                 "total_events": total,
                 "message": message_from_log or "Sync in progress",
+                "sync_complete": False,
             }
+            _last_sync_state["syncing"] = True
+            return payload
 
         if phase_from_log in {"complete", "failed"}:
             phase = phase_from_log
         else:
             phase = "complete" if result == "SUCCESS" else "failed"
 
-        return {
+        # Detect sync completion: was syncing, now complete/failed
+        sync_complete = _last_sync_state.get("syncing") is True and phase in {
+            "complete",
+            "failed",
+        }
+        _last_sync_state["syncing"] = False
+
+        payload = {
             "ok": True,
             "syncing": False,
             "phase": phase,
@@ -101,7 +115,9 @@ def create_api_blueprint(*, repo, sync, jf):
             "total_events": total,
             "message": message_from_log
             or ("Sync complete" if phase == "complete" else "Sync failed"),
+            "sync_complete": sync_complete,
         }
+        return payload
 
     @bp.get("/analytics/stats/dashboard")
     def api_analytics_stats_dashboard() -> Response:
