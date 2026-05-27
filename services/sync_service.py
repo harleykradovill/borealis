@@ -237,7 +237,7 @@ class SyncService:
         libraries_count = 0
         items_count = 0
         own_task = task_id is None
-        step_total = 6 if not own_task else 3
+        step_total = 5 if not own_task else 3
 
         if own_task:
             task_id = self.repository.create_task_log(
@@ -261,17 +261,12 @@ class SyncService:
 
             self._update_task_progress(
                 task_id,
-                {"step": 2, "message": "Syncing libraries"},
+                {"step": 2, "message": "Syncing libraries and items"},
             )
 
             counts = self._sync_libraries_and_items(errors)
             libraries_count = counts["libraries"]
             items_count = counts["items"]
-
-            self._update_task_progress(
-                task_id,
-                {"step": 3, "message": "Syncing items"},
-            )
 
             result = self._build_result(
                 start_time,
@@ -748,7 +743,7 @@ class SyncService:
                 {
                     "phase": "running",
                     "message": "Syncing activity log",
-                    "step": 4,
+                    "step": 3,
                 },
             )
 
@@ -761,7 +756,7 @@ class SyncService:
                 {
                     "phase": "running",
                     "message": "Refreshing play stats",
-                    "step": 5,
+                    "step": 4,
                 },
             )
 
@@ -777,7 +772,7 @@ class SyncService:
                 {
                     "phase": "running",
                     "message": "Refreshing dashboard stats",
-                    "step": 6,
+                    "step": 5,
                 },
             )
 

@@ -24,10 +24,12 @@ from services.data_models import (
 )
 from services.stats_aggregator import StatsAggregator
 
-from sqlalchemy import create_engine, func, or_
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import Session, sessionmaker
 
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 # -------------------------
 # Helpers
@@ -104,8 +106,9 @@ class Repository:
         try:
             yield session
             session.commit()
-        except Exception:
+        except Exception as error:
             session.rollback()
+            logger.exception(f"[ERROR] Database operation failed: {error}")
             raise
         finally:
             session.close()
@@ -181,39 +184,43 @@ class Repository:
         if not user_dicts:
             return 0
 
-        with self._session() as session:
-            existing = _load_existing_by_key(
-                session,
-                User,
-                User.jellyfin_id,
-                [d.get("jellyfin_id") for d in user_dicts if d.get("jellyfin_id")],
-            )
+        try:
+            with self._session() as session:
+                existing = _load_existing_by_key(
+                    session,
+                    User,
+                    User.jellyfin_id,
+                    [d.get("jellyfin_id") for d in user_dicts if d.get("jellyfin_id")],
+                )
 
-            processed = 0
-            for data in user_dicts:
-                jf_id = data.get("jellyfin_id")
-                if not jf_id:
-                    continue
+                processed = 0
+                for data in user_dicts:
+                    jf_id = data.get("jellyfin_id")
+                    if not jf_id:
+                        continue
 
-                user = existing.get(jf_id)
-                if user:
-                    user.name = data.get("name", user.name)
-                    user.is_admin = data.get("is_admin", user.is_admin)
-                    user.image_url = data.get("image_url", user.image_url)
-                    user.archived = False
-                else:
-                    user = User(
-                        jellyfin_id=jf_id,
-                        name=data.get("name", "Unknown"),
-                        is_admin=data.get("is_admin", False),
-                        image_url=data.get("image_url"),
-                        archived=False,
-                    )
-                    session.add(user)
+                    user = existing.get(jf_id)
+                    if user:
+                        user.name = data.get("name", user.name)
+                        user.is_admin = data.get("is_admin", user.is_admin)
+                        user.image_url = data.get("image_url", user.image_url)
+                        user.archived = False
+                    else:
+                        user = User(
+                            jellyfin_id=jf_id,
+                            name=data.get("name", "Unknown"),
+                            is_admin=data.get("is_admin", False),
+                            image_url=data.get("image_url"),
+                            archived=False,
+                        )
+                        session.add(user)
 
-                processed += 1
+                    processed += 1
 
-            return processed
+                return processed
+        except Exception as error:
+            logger.exception(f"[ERROR] Failed to upsert users: {error}")
+            raise
 
     def archive_missing_users(self, active_jellyfin_ids: List[str]) -> int:
         """
@@ -485,40 +492,48 @@ class Repository:
         if not library_dicts:
             return 0
 
-        with self._session() as session:
-            existing = _load_existing_by_key(
-                session,
-                Library,
-                Library.jellyfin_id,
-                [d.get("jellyfin_id") for d in library_dicts if d.get("jellyfin_id")],
-            )
+        try:
+            with self._session() as session:
+                existing = _load_existing_by_key(
+                    session,
+                    Library,
+                    Library.jellyfin_id,
+                    [
+                        d.get("jellyfin_id")
+                        for d in library_dicts
+                        if d.get("jellyfin_id")
+                    ],
+                )
 
-            processed = 0
-            for data in library_dicts:
-                jf_id = data.get("jellyfin_id")
-                if not jf_id:
-                    continue
+                processed = 0
+                for data in library_dicts:
+                    jf_id = data.get("jellyfin_id")
+                    if not jf_id:
+                        continue
 
-                lib = existing.get(jf_id)
-                if lib:
-                    lib.name = data.get("name", lib.name)
-                    lib.type = data.get("type", lib.type)
-                    lib.image_url = data.get("image_url", lib.image_url)
-                    lib.archived = False
-                else:
-                    session.add(
-                        Library(
-                            jellyfin_id=jf_id,
-                            name=data.get("name", "Unknown"),
-                            type=data.get("type"),
-                            image_url=data.get("image_url"),
-                            archived=False,
+                    lib = existing.get(jf_id)
+                    if lib:
+                        lib.name = data.get("name", lib.name)
+                        lib.type = data.get("type", lib.type)
+                        lib.image_url = data.get("image_url", lib.image_url)
+                        lib.archived = False
+                    else:
+                        session.add(
+                            Library(
+                                jellyfin_id=jf_id,
+                                name=data.get("name", "Unknown"),
+                                type=data.get("type"),
+                                image_url=data.get("image_url"),
+                                archived=False,
+                            )
                         )
-                    )
 
-                processed += 1
+                    processed += 1
 
-            return processed
+                return processed
+        except Exception as error:
+            logger.exception(f"[ERROR] Failed to upsert libraries: {error}")
+            raise
 
     def archive_missing_libraries(self, active_jellyfin_ids: List[str]) -> int:
         """
@@ -565,65 +580,71 @@ class Repository:
         if not item_dicts:
             return 0
 
-        with self._session() as session:
-            existing = _load_existing_by_key(
-                session,
-                Item,
-                Item.jellyfin_id,
-                [d.get("jellyfin_id") for d in item_dicts if d.get("jellyfin_id")],
-            )
+        try:
+            with self._session() as session:
+                existing = _load_existing_by_key(
+                    session,
+                    Item,
+                    Item.jellyfin_id,
+                    [d.get("jellyfin_id") for d in item_dicts if d.get("jellyfin_id")],
+                )
 
-            processed = 0
-            for data in item_dicts:
-                jf_id = data.get("jellyfin_id")
-                if not jf_id:
-                    continue
+                processed = 0
+                for data in item_dicts:
+                    jf_id = data.get("jellyfin_id")
+                    if not jf_id:
+                        continue
 
-                item = existing.get(jf_id)
-                if item:
-                    item.parent_id = data.get("parent_id", item.parent_id)
-                    item.name = data.get("name", item.name)
-                    item.type = data.get("type", item.type)
-                    item.archived = False
-                    item.date_created = data.get("date_created", item.date_created)
-                    item.runtime_seconds = _safe_int(
-                        data.get("runtime_seconds"), item.runtime_seconds or 0
-                    )
-                    item.size_bytes = _safe_int(
-                        data.get("size_bytes"), item.size_bytes or 0
-                    )
-                    item.video_codec = data.get("video_codec", item.video_codec)
-                    item.audio_codec = data.get("audio_codec", item.audio_codec)
-                    item.resolution = data.get("resolution", item.resolution)
-                    item.genres = (
-                        json.dumps(data.get("genres")) if data.get("genres") else None
-                    )
-                else:
-                    session.add(
-                        Item(
-                            jellyfin_id=jf_id,
-                            library_id=data.get("library_id"),
-                            parent_id=data.get("parent_id"),
-                            name=data.get("name", "Unknown"),
-                            type=data.get("type"),
-                            runtime_seconds=_safe_int(data.get("runtime_seconds")),
-                            size_bytes=_safe_int(data.get("size_bytes")),
-                            archived=False,
-                            date_created=data.get("date_created"),
-                            video_codec=data.get("video_codec"),
-                            audio_codec=data.get("audio_codec"),
-                            resolution=data.get("resolution"),
-                            genres=(
-                                json.dumps(data.get("genres"))
-                                if data.get("genres")
-                                else None
-                            ),
+                    item = existing.get(jf_id)
+                    if item:
+                        item.parent_id = data.get("parent_id", item.parent_id)
+                        item.name = data.get("name", item.name)
+                        item.type = data.get("type", item.type)
+                        item.archived = False
+                        item.date_created = data.get("date_created", item.date_created)
+                        item.runtime_seconds = _safe_int(
+                            data.get("runtime_seconds"), item.runtime_seconds or 0
                         )
-                    )
+                        item.size_bytes = _safe_int(
+                            data.get("size_bytes"), item.size_bytes or 0
+                        )
+                        item.video_codec = data.get("video_codec", item.video_codec)
+                        item.audio_codec = data.get("audio_codec", item.audio_codec)
+                        item.resolution = data.get("resolution", item.resolution)
+                        item.genres = (
+                            json.dumps(data.get("genres"))
+                            if data.get("genres")
+                            else None
+                        )
+                    else:
+                        session.add(
+                            Item(
+                                jellyfin_id=jf_id,
+                                library_id=data.get("library_id"),
+                                parent_id=data.get("parent_id"),
+                                name=data.get("name", "Unknown"),
+                                type=data.get("type"),
+                                runtime_seconds=_safe_int(data.get("runtime_seconds")),
+                                size_bytes=_safe_int(data.get("size_bytes")),
+                                archived=False,
+                                date_created=data.get("date_created"),
+                                video_codec=data.get("video_codec"),
+                                audio_codec=data.get("audio_codec"),
+                                resolution=data.get("resolution"),
+                                genres=(
+                                    json.dumps(data.get("genres"))
+                                    if data.get("genres")
+                                    else None
+                                ),
+                            )
+                        )
 
-                processed += 1
+                    processed += 1
 
-            return processed
+                return processed
+        except Exception as error:
+            logger.exception(f"[ERROR] Failed to upsert items: {error}")
+            raise
 
     def archive_missing_items(
         self, library_id: int, active_jellyfin_ids: List[str]
@@ -754,8 +775,12 @@ class Repository:
 
         :returns: Dictionary with counts of processed libraries, items, and users
         """
-        with self._session() as session:
-            return StatsAggregator.refresh_all_stats(session)
+        try:
+            with self._session() as session:
+                return StatsAggregator.refresh_all_stats(session)
+        except Exception as error:
+            logger.exception(f"[ERROR] Failed to refresh play stats: {error}")
+            raise
 
     def get_library_stats(self, include_archived: bool = False) -> List[Dict[str, Any]]:
         """
@@ -880,19 +905,23 @@ class Repository:
         """
         from services.dashboard_stats import DashboardStatsBuilder
 
-        with self._session() as session:
-            sections = DashboardStatsBuilder.build_all(
-                session=session,
-                limit=limit,
-                name_resolver=lambda item_id: (
-                    self._series_or_item_name_in_session(session, item_id)
-                ),
-            )
+        try:
+            with self._session() as session:
+                sections = DashboardStatsBuilder.build_all(
+                    session=session,
+                    limit=limit,
+                    name_resolver=lambda item_id: (
+                        self._series_or_item_name_in_session(session, item_id)
+                    ),
+                )
 
-        for section_key, payload in sections.items():
-            self.upsert_dashboard_stat(section_key, payload)
+            for section_key, payload in sections.items():
+                self.upsert_dashboard_stat(section_key, payload)
 
-        return {"sections_updated": len(sections)}
+            return {"sections_updated": len(sections)}
+        except Exception as error:
+            logger.exception(f"[ERROR] Failed to refresh dashboard stats: {error}")
+            raise
 
     # -------------------------
     # Playback Activity

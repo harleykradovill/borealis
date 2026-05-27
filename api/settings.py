@@ -1,7 +1,6 @@
 from datetime import datetime
 import json
 import logging
-from sqlalchemy import text
 import threading
 import time
 import os
