@@ -19,7 +19,7 @@
   text-decoration: none;
   color: var(--text);
   background: var(--surface);
-  transition: all 150ms ease;
+  transition: var(--transition-all);
 }
 
 .settings-tab:hover {
