@@ -14,7 +14,7 @@
   justify-content: center;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border-radius: 12px;
+  border-radius: var(--border-element);
   border: 1px solid var(--border);
   text-decoration: none;
   color: var(--text);
@@ -55,7 +55,7 @@
   gap: 0.85rem;
   padding: 0.9rem;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
 }
 
 .settings-group-title {
@@ -94,7 +94,7 @@
   justify-content: center;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.75rem 0.85rem;
   min-height: 0;
 }
@@ -139,7 +139,7 @@
   justify-content: center;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.75rem 0.85rem;
   min-height: 0;
 }
@@ -197,7 +197,7 @@
   list-style: none;
   max-height: 40rem;
   overflow-y: auto;
-  border-radius: 12px;
+  border-radius: var(--border-element);
   border: 1px solid var(--border);
 }
 
@@ -229,7 +229,7 @@
   text-decoration: none;
   color: var(--black);
   background: var(--white);
-  border-radius: 100px;
+  border-radius: var(--border-circle);
   padding: 0.35rem 0.65rem;
   line-height: 0.8;
 }

@@ -53,7 +53,7 @@
   background: var(--white);
   color: var(--black);
   background-color: var(--accent);
-  border-radius: 12px;
+  border-radius: var(--border-element);
 }
 
 #activitylog-pages {
@@ -82,7 +82,7 @@
   height: 1.5rem;
   padding: 0;
   border: 1px solid var(--border);
-  border-radius: 100px;
+  border-radius: var(--border-circle);
   background: var(--surface);
   cursor: pointer;
 }
@@ -109,7 +109,7 @@
 #activitylog-container {
   position: relative;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
 }
 
 .activitylog-filter-menu {
@@ -120,7 +120,7 @@
   overflow: auto;
   padding: 0.8rem;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   background: var(--surface);
   box-shadow: 0 14px 36px rgba(0, 0, 0, 1);
   z-index: 50;

@@ -24,7 +24,7 @@
 /* User Hero Section */
 .hero-section {
   height: 235px;
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.75rem 1.2rem;
   flex-shrink: 0;
   background-color: var(--accent);
@@ -39,7 +39,7 @@
 .hero-image {
   width: 50px;
   height: 50px;
-  border-radius: 100px;
+  border-radius: var(--border-circle);
   object-fit: cover;
   flex-shrink: 0;
   box-shadow:
@@ -78,7 +78,7 @@
   flex: 8 1 0;
   min-width: 0;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.75rem;
   height: 350px;
   display: flex;

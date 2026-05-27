@@ -10,6 +10,9 @@
   --negative: #8f1616;
   --white: #ffffff;
   --black: #000000;
+
+  --border-element: 12px;
+  --border-circle: 100px;
 }
 
 * {
@@ -86,7 +89,7 @@ body {
   padding: 0.4rem 0.5rem;
   color: var(--text-muted);
   text-decoration: none;
-  border-radius: 12px;
+  border-radius: var(--border-element);
   transition: all 150ms ease;
 }
 
@@ -129,7 +132,7 @@ body {
   height: 22px;
   flex-shrink: 0;
   object-fit: contain;
-  border-radius: 100px;
+  border-radius: var(--border-circle);
 }
 
 .sidebar-users-list {
@@ -150,7 +153,7 @@ body {
   padding: 0.3rem 0.5rem;
   color: var(--text-muted);
   text-decoration: none;
-  border-radius: 12px;
+  border-radius: var(--border-element);
   font-size: 0.95em;
   transition: all 150ms ease;
 }
@@ -173,7 +176,7 @@ body {
 .btn {
   appearance: none;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--border-element);
   background: var(--text);
   color: var(--bg);
   padding: 0.5rem 0.9rem;
@@ -230,7 +233,7 @@ body {
 
 .toast {
   color: var(--bg);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.5rem 0.8rem;
   box-shadow: 0px 0px 14px 3px #000000;
   min-width: 220px;
@@ -250,7 +253,7 @@ body {
   background: var(--accent);
   color: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.6rem 0.8rem;
   box-shadow: 0px 0px 14px 3px #000000;
   min-width: 220px;
@@ -271,7 +274,7 @@ body {
   height: 16px;
   border: 2px solid rgba(0, 0, 0, 0.1);
   border-top: 2px solid var(--black);
-  border-radius: 100px;
+  border-radius: var(--border-circle);
   animation: spin 0.5s linear infinite;
   flex-shrink: 0;
   order: 1;
@@ -294,7 +297,7 @@ body {
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.6rem 0.75rem;
   line-height: 1.25rem;
   outline: none;

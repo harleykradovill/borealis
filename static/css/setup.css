@@ -4,7 +4,7 @@
   padding: 1.5rem;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
 }
 
 .setup-placeholder {
@@ -36,7 +36,7 @@
   height: 24px;
   border: 3px solid rgba(255, 255, 255, 0.1);
   border-top: 3px solid var(--white);
-  border-radius: 50%;
+  border-radius: var(--border-circle);
   animation: spin 0.5s linear infinite;
   margin: 0 auto 0.5rem;
 }
@@ -109,7 +109,7 @@
 .progress-dot {
   width: 8px;
   height: 8px;
-  border-radius: 100px;
+  border-radius: var(--border-circle);
   background: var(--border);
   transition: background-color 150ms ease;
 }
@@ -143,7 +143,7 @@
 .form-grid .form-field select {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   background: var(--surface);
   color: var(--text);
   font-size: 0.95rem;
@@ -158,7 +158,7 @@
 
 .libraries-tracking {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 1rem;
   background: var(--surface);
 }
@@ -202,7 +202,7 @@
 
 .server-info-display {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 1rem;
   background: var(--surface);
   margin-bottom: 1rem;

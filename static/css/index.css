@@ -35,7 +35,7 @@
   gap: 0.35rem;
   padding: 0.85rem 1rem;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   height: 80px;
 }
 
@@ -79,7 +79,7 @@
   padding: 1rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   height: 260px;
 }
 
@@ -200,7 +200,7 @@
 
 #sessions-container {
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.75rem;
 }
 
@@ -216,7 +216,7 @@
   text-align: center;
   color: var(--text-muted);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   background-color: var(--surface);
   height: 260px;
 }
@@ -226,7 +226,7 @@
   min-width: 0;
   border: 1px solid var(--border);
   background-color: var(--accent);
-  border-radius: 12px;
+  border-radius: var(--border-element);
 }
 
 .plays-trend-card {
@@ -263,7 +263,7 @@
 
 #plays-trend-loading .wrapper > div {
   height: 290px;
-  border-radius: 12px;
+  border-radius: var(--border-element);
 }
 
 /* ================================== */
@@ -273,7 +273,7 @@
 #watch-statistics-loading .wrapper > div,
 #matrix-loading .wrapper > div {
   height: 250px;
-  border-radius: 12px;
+  border-radius: var(--border-element);
 }
 
 .statistics-section {
@@ -285,7 +285,7 @@
   flex: 4 1 0;
   min-width: 0;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.75rem;
 }
 
@@ -309,7 +309,7 @@
   align-items: center;
   overflow: auto;
   background-color: var(--surface);
-  border-radius: 100px;
+  border-radius: var(--border-circle);
 }
 
 .statistics-nav li {
@@ -322,7 +322,7 @@
   cursor: pointer;
   white-space: nowrap;
   transition: color 150ms ease;
-  border-radius: 100px;
+  border-radius: var(--border-circle);
 }
 
 .statistics-nav li:hover,
@@ -353,7 +353,7 @@
   flex: 6 1 0;
   min-width: 0;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.75rem;
 }
 
@@ -434,7 +434,7 @@
   flex: 1 1 0;
   min-width: 0;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.75rem;
 }
 
@@ -450,7 +450,7 @@
 
 #resolutions-loading .wrapper > div {
   height: 250px;
-  border-radius: 12px;
+  border-radius: var(--border-element);
 }
 
 .codecs-section {
@@ -462,7 +462,7 @@
   row-gap: 0;
   min-width: 0;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--border-element);
   padding: 0.75rem;
 }
 
@@ -479,7 +479,7 @@
   align-items: center;
   overflow: auto;
   background-color: var(--surface);
-  border-radius: 100px;
+  border-radius: var(--border-circle);
 }
 
 .codecs-nav li {
@@ -492,7 +492,7 @@
   cursor: pointer;
   white-space: nowrap;
   transition: color 150ms ease;
-  border-radius: 100px;
+  border-radius: var(--border-circle);
 }
 
 .codecs-nav li:hover,
@@ -508,7 +508,7 @@
 
 #codecs-loading .wrapper > div {
   height: 250px;
-  border-radius: 12px;
+  border-radius: var(--border-element);
 }
 
 .codecs-card {
