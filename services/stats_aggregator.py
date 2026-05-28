@@ -16,6 +16,7 @@ from sqlalchemy import and_, func
 from sqlalchemy.orm import Session
 
 from typing import Any, Dict, List, Optional
+import pandas as pd
 
 
 def _playback_event_kind(playback_type: Optional[str]) -> str:
@@ -60,7 +61,6 @@ def _calculate_watch_metrics(
             PlaybackActivity.activity_at,
             PlaybackActivity.playback_type,
             Item.runtime_seconds,
-            PlaybackActivity.id,
         )
         .outerjoin(Item, PlaybackActivity.item_id == Item.jellyfin_id)
         .filter(
@@ -72,72 +72,97 @@ def _calculate_watch_metrics(
             PlaybackActivity.user_id.asc(),
             PlaybackActivity.item_id.asc(),
             PlaybackActivity.activity_at.asc(),
-            PlaybackActivity.id.asc(),
         )
         .all()
     )
 
-    open_starts: Dict[tuple[str, str], List[int]] = {}
-    watch_seconds_by_user: Dict[str, int] = {}
-    watch_seconds_by_item: Dict[str, int] = {}
-    qualified_plays_by_user: Dict[str, int] = {}
-    qualified_plays_by_item: Dict[str, int] = {}
+    if not rows:
+        return {}, {}, {}, {}
 
-    for user_id, item_id, activity_at, playback_type, runtime_seconds, _ in rows:
-        user_id = str(user_id)
-        item_id = str(item_id)
-        ts = int(activity_at or 0)
-        if ts <= 0:
-            continue
+    df = pd.DataFrame(
+        rows,
+        columns=[
+            "user_id",
+            "item_id",
+            "activity_at",
+            "playback_type",
+            "runtime_seconds",
+        ],
+    )
 
-        kind = _playback_event_kind(playback_type)
-        key = (user_id, item_id)
+    df["runtime_seconds"] = df["runtime_seconds"].fillna(0)
 
-        if kind == "start":
-            open_starts.setdefault(key, []).append(ts)
-            continue
+    df = df.astype(
+        {
+            "user_id": "str",
+            "item_id": "str",
+            "activity_at": "int64",
+            "runtime_seconds": "int64",
+        }
+    )
 
-        starts = open_starts.get(key)
-        start_ts = starts.pop() if starts else None
-        if not starts:
-            open_starts.pop(key, None)
+    df["event_kind"] = df["playback_type"].apply(_playback_event_kind)
 
-        if start_ts is None:
-            continue
+    starts = df[df["event_kind"] == "start"][
+        ["user_id", "item_id", "activity_at"]
+    ].copy()
+    starts.columns = ["user_id", "item_id", "start_ts"]
 
-        if ts > 1_000_000_000_000:  # Normalize possible ms timestamps to seconds.
-            ts //= 1000
-        if start_ts > 1_000_000_000_000:
-            start_ts //= 1000
+    stops = df[df["event_kind"] == "stop"][
+        ["user_id", "item_id", "activity_at", "runtime_seconds"]
+    ].copy()
+    stops.columns = ["user_id", "item_id", "stop_ts", "runtime_seconds"]
 
-        duration = ts - int(start_ts)
-        if duration <= 0:
-            continue
+    starts_grouped = starts.groupby(["user_id", "item_id"]).agg(list).reset_index()
+    starts_grouped["start_ts"] = starts_grouped["start_ts"].apply(
+        lambda x: x[-1] if x else None
+    )
 
-        if duration > 12 * 60 * 60:  # Ignore impossible sessions.
-            continue
+    pairs = stops.merge(
+        starts_grouped[["user_id", "item_id", "start_ts"]],
+        on=["user_id", "item_id"],
+        how="inner",
+    )
 
-        cap = int(runtime_seconds or 0)
-        if cap > 0:
-            duration = min(duration, cap)
+    pairs = pairs[pairs["start_ts"].notna()]
 
-        if duration <= 0:
-            continue
+    pairs["start_ts"] = pairs["start_ts"].apply(
+        lambda x: x // 1000 if x > 1_000_000_000_000 else x
+    )
+    pairs["stop_ts"] = pairs["stop_ts"].apply(
+        lambda x: x // 1000 if x > 1_000_000_000_000 else x
+    )
 
-        watch_seconds_by_user[user_id] = (
-            watch_seconds_by_user.get(user_id, 0) + duration
-        )
-        watch_seconds_by_item[item_id] = (
-            watch_seconds_by_item.get(item_id, 0) + duration
-        )
+    pairs["duration"] = pairs["stop_ts"] - pairs["start_ts"]
 
-        if duration >= minimum_play_seconds:
-            qualified_plays_by_user[user_id] = (
-                qualified_plays_by_user.get(user_id, 0) + 1
-            )
-            qualified_plays_by_item[item_id] = (
-                qualified_plays_by_item.get(item_id, 0) + 1
-            )
+    pairs = pairs[(pairs["duration"] > 0) & (pairs["duration"] <= 12 * 60 * 60)]
+
+    pairs["runtime_seconds"] = pairs["runtime_seconds"].fillna(0).astype("int64")
+    pairs.loc[pairs["runtime_seconds"] > 0, "duration"] = pairs.apply(
+        lambda row: (
+            min(row["duration"], row["runtime_seconds"])
+            if row["runtime_seconds"] > 0
+            else row["duration"]
+        ),
+        axis=1,
+    )
+
+    pairs = pairs[pairs["duration"] > 0]
+
+    watch_seconds_by_user = (
+        pairs.groupby("user_id")["duration"].sum().astype("int64").to_dict()
+    )
+    watch_seconds_by_item = (
+        pairs.groupby("item_id")["duration"].sum().astype("int64").to_dict()
+    )
+
+    qualified = pairs[pairs["duration"] >= minimum_play_seconds]
+    qualified_plays_by_user = (
+        qualified.groupby("user_id").size().astype("int64").to_dict()
+    )
+    qualified_plays_by_item = (
+        qualified.groupby("item_id").size().astype("int64").to_dict()
+    )
 
     return (
         watch_seconds_by_user,
