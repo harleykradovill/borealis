@@ -200,7 +200,7 @@
 
 #sessions-container {
   border: 1px solid var(--border);
-  border-radius: var(--border-element);
+  border-radius: var(--border-small);
   padding: 0.75rem;
 }
 
@@ -216,7 +216,7 @@
   text-align: center;
   color: var(--text-muted);
   border: 1px solid var(--border);
-  border-radius: var(--border-element);
+  border-radius: var(--border-small);
   background-color: var(--surface);
   height: 260px;
 }

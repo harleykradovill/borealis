@@ -94,7 +94,7 @@
   justify-content: center;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--border-element);
+  border-radius: var(--border-small);
   padding: 0.75rem 0.85rem;
   min-height: 0;
 }
@@ -139,7 +139,7 @@
   justify-content: center;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--border-element);
+  border-radius: var(--border-small);
   padding: 0.75rem 0.85rem;
   min-height: 0;
 }

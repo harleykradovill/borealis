@@ -46,6 +46,7 @@
   font-size: 0.95rem;
   color: var(--white);
   background-color: var(--surface);
+  border-radius: var(--border-circle);
 }
 
 .pagination .btn.active,
@@ -53,7 +54,7 @@
   background: var(--white);
   color: var(--black);
   background-color: var(--accent);
-  border-radius: var(--border-element);
+  border-radius: var(--border-circle);
 }
 
 #activitylog-pages {

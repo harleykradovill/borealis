@@ -324,6 +324,7 @@
       btn.type = "button";
       btn.className = "btn btn-ghost";
       btn.style.minWidth = "36px";
+      btn.style.borderRadius = "100px";
       btn.textContent = String(p);
       btn.dataset.page = String(p);
 

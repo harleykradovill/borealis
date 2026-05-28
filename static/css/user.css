@@ -90,6 +90,7 @@
   flex: 1;
   overflow-y: auto;
   min-width: 0;
+  border-radius: var(--border-small);
 }
 
 .recent-activity-placeholder {
