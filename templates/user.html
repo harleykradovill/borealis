@@ -29,6 +29,14 @@
                   onerror="this.src = '/assets/icons/profile_small.png'"
                 />
                 <h1 class="hero-name">{{ user.name }}</h1>
+                {% if user.is_admin %}
+                <img
+                  class="hero-admin"
+                  src="../assets/icons/admin-dark.svg"
+                  alt="Administrator"
+                  title="Administrator"
+                />
+                {% endif %}
               </div>
 
               <div id="glance-section" class="glance-section">

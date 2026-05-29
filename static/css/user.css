@@ -25,7 +25,7 @@
 .hero-section {
   height: 235px;
   border-radius: var(--border-element);
-  padding: 0.75rem 1.2rem;
+  padding: 0.75rem 0.75rem;
   flex-shrink: 0;
   background-color: var(--accent);
 }
@@ -50,8 +50,12 @@
 .hero-name {
   margin: 0;
   color: var(--black);
-  font-size: 1.25rem;
+  font-size: 1.4rem;
   font-weight: 600;
+}
+
+.hero-admin {
+  margin-left: auto;
 }
 
 .glance-section {
