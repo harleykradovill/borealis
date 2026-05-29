@@ -368,7 +368,7 @@
     try {
       const result = await globalThis.helpers.fetchJson("/api/analytics/task-logs");
       if (!result.ok) {
-        console.error("Failed to load task logs", result.message);
+        globalThis.helpers.handleError("Failed to load task logs", result.message);
         if (empty) empty.hidden = false;
         if (list) list.hidden = true;
         return;
@@ -442,7 +442,10 @@
     try {
       const result = await globalThis.helpers.fetchJson("/api/database/info");
       if (!result?.ok) {
-        console.error("Failed to load database info:", result?.message);
+        globalThis.helpers.handleError(
+          "Failed to load database info:",
+          result?.message,
+        );
         return;
       }
 

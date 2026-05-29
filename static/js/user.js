@@ -8,7 +8,7 @@
       populateGlanceSection();
       populateRecentActivity();
     } catch (error) {
-      console.error("Error refreshing user data:", error);
+      globalThis.helpers.handleError("Error refreshing user data:", error);
     }
   }
 
