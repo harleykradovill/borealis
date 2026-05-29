@@ -1,4 +1,5 @@
 :root {
+  /* Colours */
   --bg: #0c1310;
   --surface: #16201e;
   --highlight: #294735;
@@ -11,10 +12,12 @@
   --white: #ffffff;
   --black: #000000;
 
+  /* Border Radius */
   --border-element: 12px;
   --border-small: 6px;
   --border-circle: 100px;
 
+  /* Transitions */
   --transition-all: all 150ms ease;
 }
 

@@ -1,14 +1,15 @@
 (function () {
-  const container = document.getElementById("libraries-container");
+  const container = document.getElementById("table-section");
   const empty = document.getElementById("libraries-empty");
-  const cardsContainer = document.getElementById("libraries-cards");
+  const tableContainer = document.getElementById("libraries-table-container");
+  const tbody = document.getElementById("libraries-tbody");
 
   async function loadLibraries() {
     try {
       const resp = await fetch("/api/analytics/stats/libraries");
-      if (!resp.ok) throw new Error("Network error");
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data = await resp.json();
-      if (!data?.ok) throw new Error(data?.message || "API error");
+      if (!data?.ok) throw new Error(data.error || "Unknown error");
 
       const libs = Array.isArray(data.data) ? data.data : [];
       renderLibraries(libs);
@@ -17,27 +18,21 @@
         globalThis.updateLibrariesChart &&
         typeof globalThis.updateLibrariesChart === "function"
       ) {
-        try {
-          globalThis.updateLibrariesChart(libs);
-        } catch (error) {
-          globalThis.helpers.handleError("Failed to load chart", error);
-        }
+        updateLibrariesChart(libs);
       }
 
       if (
         globalThis.updateItemsAddedChart &&
         typeof globalThis.updateItemsAddedChart === "function"
       ) {
-        try {
-          globalThis.updateItemsAddedChart(libs);
-        } catch (error) {
-          globalThis.helpers.handleError("Failed to load items added", error);
-        }
+        updateItemsAddedChart(libs);
       }
     } catch (error) {
       globalThis.helpers.handleError("Failed to load libraries", error);
+
       if (empty) empty.hidden = false;
       if (container) container.hidden = true;
+      if (tableContainer) tableContainer.hidden = true;
     }
   }
 
@@ -45,15 +40,18 @@
     if (!libs || libs.length === 0) {
       if (empty) empty.hidden = false;
       if (container) container.hidden = true;
+      if (tableContainer) tableContainer.hidden = true;
       return;
     }
-    empty.hidden = true;
-    container.hidden = false;
-    cardsContainer.innerHTML = "";
+
+    if (empty) empty.hidden = true;
+    if (container) container.hidden = false;
+    if (tableContainer) tableContainer.hidden = false;
+
+    tbody.innerHTML = "";
 
     libs.forEach((lib) => {
-      const card = document.createElement("div");
-      card.className = "library-card";
+      const tr = document.createElement("tr");
 
       const typeText =
         lib.type === "movies"
@@ -78,23 +76,17 @@
       ];
 
       attrs.forEach((attr) => {
-        const div = document.createElement("div");
-        div.className = "library-card-attr";
-
-        const label = document.createElement("span");
-        label.className = "library-card-attr-label";
-        label.textContent = attr.label;
-
-        const value = document.createElement("span");
-        value.className = `library-card-attr-value ${attr.isName ? "name" : ""}`;
-        value.textContent = attr.value;
-
-        div.appendChild(label);
-        div.appendChild(value);
-        card.appendChild(div);
+        const td = document.createElement("td");
+        if (attr.isName) {
+          td.className = "libraries-table-name";
+          td.textContent = attr.value;
+        } else {
+          td.textContent = attr.value;
+        }
+        tr.appendChild(td);
       });
 
-      cardsContainer.appendChild(card);
+      tbody.appendChild(tr);
     });
   }
 
@@ -379,7 +371,8 @@
   globalThis.updateLibrariesChart = updateLibrariesChart;
 
   document.addEventListener("syncComplete", () => {
-    console.log("Sync complete, refreshing libraries");
     loadLibraries();
+    updateLibrariesChart();
+    updateItemsAddedChart();
   });
 })();

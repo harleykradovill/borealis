@@ -1,4 +1,4 @@
-#charts-hbox {
+#charts-section {
   max-width: 1500px;
   display: flex;
   flex: 2;
@@ -43,57 +43,49 @@
   margin: 0 auto;
 }
 
-.libraries-container {
+#libraries-table-container {
   margin-bottom: 1.5rem;
 }
 
-.libraries-cards {
-  display: flex;
-  gap: 1.5rem;
-  min-width: min-content;
-  justify-content: space-between;
+.libraries-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.library-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--border-element);
-  padding: 1rem;
-  flex: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  min-width: 0;
-}
-
-.library-card-attr {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.95rem;
-}
-
-.library-card-attr-label {
-  color: var(--text-muted);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.library-card-attr-value {
+.libraries-table thead th {
+  text-align: left;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
   color: var(--text);
-  text-align: right;
+}
+
+.libraries-table tbody td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex: 1 1 auto;
-  min-width: 0;
 }
 
-.library-card-attr-value.name {
-  font-weight: 600;
-  color: var(--text);
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
+.libraries-table thead th.align-right {
+  text-align: right;
+}
+
+.libraries-table tbody tr:nth-child(even) {
+  background-color: var(--surface);
+}
+
+.libraries-table tbody tr:hover td {
+  background: var(--highlight);
+}
+
+#libraries-empty {
+  margin-bottom: 1.5rem;
+}
+
+#libraries-tbody {
+  display: table-row-group;
 }

@@ -21,16 +21,29 @@
     <div class="app-shell">
       {% include '_sidebar.html' %}
       <main id="content" class="content" tabindex="-1" role="main">
-        <div id="libraries-container" hidden>
+        <section id="table-section" hidden>
           <div id="libraries-empty" class="settings-placeholder" hidden>
             <p>No libraries found.</p>
           </div>
 
-          <div class="libraries-container">
-            <div id="libraries-cards" class="libraries-cards"></div>
-          </div>
-        </div>
-        <div id="charts-hbox">
+          <section id="libraries-table-container" hidden>
+            <table id="libraries-table" class="libraries-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Total Time</th>
+                  <th>Size</th>
+                  <th>Total Playback</th>
+                  <th>Last Played</th>
+                </tr>
+              </thead>
+              <tbody id="libraries-tbody"></tbody>
+            </table>
+          </section>
+        </section>
+
+        <section id="charts-section">
           <div class="libraries-chart-group">
             <div class="chart-card">
               <h1>Files</h1>
@@ -52,7 +65,8 @@
               </div>
             </div>
           </div>
-        </div>
+        </section>
+
         <div class="libraries-chart-group">
           <div class="chart-card">
             <h1>Items Added in Last 30 Days</h1>
