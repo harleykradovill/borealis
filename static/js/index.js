@@ -230,7 +230,7 @@ function buildTrendSeries(items, days = 14) {
   const dateLabels = globalThis.helpers.generateDateLabels(start, days);
   dateLabels.forEach((iso) => {
     const date = new Date(iso + "T00:00:00Z");
-    const label = `${date.getUTCMonth() + 1}/${date.getUTCDate()}`;
+    const label = globalThis.helpers.toLocalMD(date);
     labels.push(label);
     values.push(counts[iso] || 0);
   });

@@ -400,6 +400,17 @@ globalThis.helpers = (function () {
     return name.replace(/ on .+$/, "");
   }
 
+  /**
+   * Converts a Date object into an M/D format string (e.g., "5/22")
+   * @param {Date} date The date to format
+   * @returns {string} Formatted date string
+   */
+  function toLocalMD(date) {
+    const mo = String(date.getMonth() + 1);
+    const da = String(date.getDate());
+    return `${mo}/${da}`;
+  }
+
   return {
     fetchJson,
     postJson,
@@ -414,5 +425,6 @@ globalThis.helpers = (function () {
     getPalette,
     generateDateLabels,
     extractMediaItemName,
+    toLocalMD,
   };
 })();

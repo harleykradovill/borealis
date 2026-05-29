@@ -3,7 +3,7 @@
   display: flex;
   flex: 2;
   flex-direction: row;
-  height: 400px;
+  height: 320px;
   gap: 1.5rem;
   margin-bottom: 1.5rem;
 }
@@ -20,7 +20,7 @@
   border-radius: var(--border-element);
   padding: 0.75rem;
   box-shadow: none;
-  height: 400px;
+  height: 320px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

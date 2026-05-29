@@ -137,7 +137,11 @@
       if (!payload?.ok) throw new Error(payload?.message || "API error");
 
       const data = payload.data || {};
-      const dates = Array.isArray(data.dates) ? data.dates : generateDateRange(30);
+      const dates = Array.isArray(data.dates)
+        ? data.dates.map((d) => globalThis.helpers.toLocalMD(new Date(d)))
+        : globalThis.helpers
+            .generateDateLabels(start, days)
+            .map(globalThis.helpers.toLocalMD);
 
       const itemsByDate = initializeItemsByDatePerLibrary(libs, dates);
 
@@ -372,7 +376,5 @@
 
   document.addEventListener("syncComplete", () => {
     loadLibraries();
-    updateLibrariesChart();
-    updateItemsAddedChart();
   });
 })();
