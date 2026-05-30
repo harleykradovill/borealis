@@ -350,26 +350,19 @@ globalThis.helpers = (function () {
       "#00df96",
     ];
 
-    let result = reverse ? [...palette].reverse() : [...palette];
+    const colors = reverse ? [...palette].reverse() : [...palette];
 
-    if (count === null) return result;
-    if (count <= palette.length) {
-      return result.slice(0, count);
+    if (count === null || count >= colors.length) return colors;
+
+    if (count === 1) {
+      return [colors[Math.floor((colors.length - 1) / 2)]];
     }
 
-    // Generate interpolated colors for count > palette length
-    const colors = [];
-    const hue = 198;
-    const sat = 52;
-    const minL = 32;
-    const maxL = 76;
-
-    for (let i = 0; i < count; i++) {
-      const t = count === 1 ? 0.5 : i / (count - 1);
-      const l = Math.round(minL + (maxL - minL) * t);
-      colors.push(`hsl(${hue} ${sat}% ${l}%)`);
-    }
-    return colors;
+    const lastIndex = colors.length - 1;
+    return Array.from({ length: count }, (_, i) => {
+      const index = Math.round((i * lastIndex) / (count - 1));
+      return colors[index];
+    });
   }
 
   /**

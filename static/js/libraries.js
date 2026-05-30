@@ -104,17 +104,6 @@
   let playsChart = null;
   let itemLineChart = null;
 
-  function paletteFor(n) {
-    return globalThis.helpers.getPalette(n);
-  }
-
-  function generateDateRange(days = 30) {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const start = globalThis.helpers.addDays(now, -(days - 1));
-    return globalThis.helpers.generateDateLabels(start, days);
-  }
-
   function initializeItemsByDatePerLibrary(libraries, dates) {
     const result = {};
     libraries.forEach((lib) => {
@@ -167,7 +156,7 @@
         getComputedStyle(document.documentElement).getPropertyValue("--bg") ||
         "#121212";
 
-      const colors = paletteFor(libs.length);
+      const colors = globalThis.helpers.getPalette(libs.length);
       const datasets = libs.map((lib, idx) => {
         const libData = itemsByDate[lib.jellyfin_id] || {};
         const values = dates.map((date) => libData[date] || 0);
@@ -262,7 +251,7 @@
     if (totalFiles) {
       if (emptyElFiles) emptyElFiles.hidden = true;
       filesChartCanvas.style.display = "";
-      const bgColors = paletteFor(labels.length);
+      const bgColors = globalThis.helpers.getPalette(labels.length);
       const borderColor =
         getComputedStyle(document.documentElement).getPropertyValue("--border") ||
         "#333";
@@ -328,7 +317,7 @@
 
     if (emptyElPlays) emptyElPlays.hidden = true;
     playsChartCanvas.style.display = "";
-    const bgColors2 = paletteFor(labels.length);
+    const bgColors2 = globalThis.helpers.getPalette(labels.length);
     const borderColor2 =
       getComputedStyle(document.documentElement).getPropertyValue("--border") || "#333";
     const textColor2 =
