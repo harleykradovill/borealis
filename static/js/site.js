@@ -387,14 +387,20 @@ globalThis.helpers = (function () {
     return dates;
   }
 
+  /**
+   * Extract media item title from a playback event string
+   * @param {string} eventName Full event text
+   * @param {string} playbackType Playback event type (e.g, "VideoPlayback", "VideoPlaybackStopped")
+   * @returns {string} Extracted media title, or empty string when not available
+   */
   function extractMediaItemName(eventName, playbackType) {
     if (!eventName) return "";
     let name = eventName;
     if (playbackType === "VideoPlayback") {
-      const match = name.match(/is playing (.+)$/);
+      const match = new RegExp(/is playing (.+)$/).exec(name);
       name = match ? match[1] : name;
     } else if (playbackType === "VideoPlaybackStopped") {
-      const match = name.match(/has finished playing (.+)$/);
+      const match = new RegExp(/has finished playing (.+)$/).exec(name);
       name = match ? match[1] : name;
     }
     return name.replace(/ on .+$/, "");
