@@ -151,7 +151,7 @@
         "#333";
       const textColor =
         getComputedStyle(document.documentElement).getPropertyValue("--text") ||
-        "#f0f0f0";
+        "#b3b3b3";
       const bgColor =
         getComputedStyle(document.documentElement).getPropertyValue("--bg") ||
         "#121212";
@@ -193,15 +193,15 @@
             legend: {
               position: "bottom",
               labels: {
-                color: textColor.trim() || "#f0f0f0",
+                color: textColor.trim() || "#b3b3b3",
                 boxWidth: 12,
                 padding: 8,
                 usePointStyle: true,
               },
             },
             tooltip: {
-              bodyColor: textColor.trim() || "#f0f0f0",
-              titleColor: textColor.trim() || "#f0f0f0",
+              bodyColor: textColor.trim() || "#b3b3b3",
+              titleColor: textColor.trim() || "#b3b3b3",
               backgroundColor: bgColor || "#121212",
               borderColor: borderColor.trim() || "#333",
               borderWidth: 1,
@@ -211,7 +211,7 @@
             x: {
               grid: { color: borderColor.trim() || "#333", drawBorder: true },
               ticks: {
-                color: textColor.trim() || "#f0f0f0",
+                color: textColor.trim() || "#b3b3b3",
                 maxRotation: 45,
                 minRotation: 0,
               },
@@ -219,7 +219,7 @@
             y: {
               beginAtZero: true,
               grid: { color: borderColor.trim() || "#333", drawBorder: true },
-              ticks: { color: textColor.trim() || "#f0f0f0", stepSize: 1 },
+              ticks: { color: textColor.trim() || "#b3b3b3", stepSize: 1 },
             },
           },
         },
@@ -257,7 +257,7 @@
         "#333";
       const textColor =
         getComputedStyle(document.documentElement).getPropertyValue("--text") ||
-        "#f0f0f0";
+        "#b3b3b3";
       const ctx = filesChartCanvas.getContext("2d");
       if (filesChart) filesChart.destroy();
       filesChart = new Chart(ctx, {
@@ -278,16 +278,16 @@
           maintainAspectRatio: false,
           plugins: {
             legend: {
-              position: "bottom",
+              position: "right",
               labels: {
-                color: textColor.trim() || "#f0f0f0",
+                color: textColor.trim() || "#b3b3b3",
                 boxWidth: 12,
                 padding: 8,
               },
             },
             tooltip: {
-              bodyColor: textColor.trim() || "#f0f0f0",
-              titleColor: textColor.trim() || "#f0f0f0",
+              bodyColor: textColor.trim() || "#b3b3b3",
+              titleColor: textColor.trim() || "#b3b3b3",
               backgroundColor:
                 getComputedStyle(document.documentElement).getPropertyValue("--bg") ||
                 "#121212",
@@ -322,7 +322,7 @@
       getComputedStyle(document.documentElement).getPropertyValue("--border") || "#333";
     const textColor2 =
       getComputedStyle(document.documentElement).getPropertyValue("--text") ||
-      "#f0f0f0";
+      "#b3b3b3";
     const ctx2 = playsChartCanvas.getContext("2d");
     if (playsChart) playsChart.destroy();
     playsChart = new Chart(ctx2, {
@@ -343,16 +343,16 @@
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: "bottom",
+            position: "right",
             labels: {
-              color: textColor2.trim() || "#f0f0f0",
+              color: textColor2.trim() || "#b3b3b3",
               boxWidth: 12,
               padding: 8,
             },
           },
           tooltip: {
-            bodyColor: textColor2.trim() || "#f0f0f0",
-            titleColor: textColor2.trim() || "#f0f0f0",
+            bodyColor: textColor2.trim() || "#b3b3b3",
+            titleColor: textColor2.trim() || "#b3b3b3",
             backgroundColor:
               getComputedStyle(document.documentElement).getPropertyValue("--bg") ||
               "#121212",

@@ -4,8 +4,8 @@
   flex: 2;
   flex-direction: row;
   height: 320px;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .libraries-chart-group {
@@ -18,7 +18,6 @@
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--border-element);
-  padding: 0.75rem;
   box-shadow: none;
   height: 320px;
   box-sizing: border-box;
@@ -26,13 +25,24 @@
   flex-direction: column;
   align-items: stretch;
   gap: 0.5rem;
-  padding-bottom: 3rem;
+  padding: 0.75rem;
+}
+
+.libraries-chart-group .chart-card,
+.libraries-table thead th,
+.libraries-table tbody td {
+  padding: 0.75rem;
+}
+
+.libraries-chart-group h1,
+.libraries-table thead th,
+.libraries-table tbody td {
+  color: var(--text);
 }
 
 .libraries-chart-group h1 {
   margin: 0;
   font-size: 1rem;
-  color: var(--text);
 }
 
 .libraries-chart-group canvas {
@@ -43,8 +53,9 @@
   margin: 0 auto;
 }
 
-#libraries-table-container {
-  margin-bottom: 1.5rem;
+#libraries-table-container,
+#libraries-empty {
+  margin-bottom: 1rem;
 }
 
 .libraries-table {
@@ -52,18 +63,17 @@
   border-collapse: collapse;
 }
 
+.libraries-table thead th,
+.libraries-table tbody td {
+  border-bottom: 1px solid var(--border);
+}
+
 .libraries-table thead th {
   text-align: left;
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--border);
   font-weight: 600;
-  color: var(--text);
 }
 
 .libraries-table tbody td {
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
   vertical-align: middle;
   white-space: nowrap;
   overflow: hidden;
@@ -80,10 +90,6 @@
 
 .libraries-table tbody tr:hover td {
   background: var(--highlight);
-}
-
-#libraries-empty {
-  margin-bottom: 1.5rem;
 }
 
 #libraries-tbody {
