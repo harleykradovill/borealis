@@ -3,7 +3,7 @@
 .row-1,
 .row-2,
 .row-3 {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 /* Section Headers */
@@ -26,17 +26,16 @@
 .glance-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .glance-card {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.85rem 1rem;
+  padding: 0.4rem 1rem;
   border: 1px solid var(--border);
   border-radius: var(--border-element);
-  height: 80px;
+  height: 60px;
 }
 
 .glance-label {
@@ -60,7 +59,7 @@
 .row-2,
 .row-3 {
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
   align-items: stretch;
 }
 
@@ -79,7 +78,7 @@
   padding: 1rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--border-element);
+  border-radius: var(--border-small);
   height: 260px;
 }
 
@@ -200,7 +199,7 @@
 
 #sessions-container {
   border: 1px solid var(--border);
-  border-radius: var(--border-small);
+  border-radius: var(--border-element);
   padding: 0.75rem;
 }
 
@@ -423,10 +422,6 @@
 /* ====================== */
 /* Media Overview Row */
 /* ====================== */
-
-.row-3 {
-  gap: 1.5rem;
-}
 
 .resolutions-section,
 .codecs-section,

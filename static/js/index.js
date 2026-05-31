@@ -307,7 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
             {
               data,
               borderWidth: 0,
-              borderRadius: 5,
+              borderRadius: 6,
               backgroundColor: (ctxArg) => {
                 const v = ctxArg.raw.v || 0;
                 return colorFor(v, maxV);
