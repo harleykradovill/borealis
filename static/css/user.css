@@ -1,7 +1,7 @@
 .row-1 {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
   align-items: stretch;
 }
 
@@ -18,7 +18,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 /* User Hero Section */
