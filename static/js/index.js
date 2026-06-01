@@ -731,9 +731,10 @@ document.addEventListener("DOMContentLoaded", () => {
       progressMeta.appendChild(progressLabel);
 
       const userId = session.UserId || "";
+      const fallbackAvatarUrl = "/assets/icons/profile_small.png";
       const userAvatarUrl = userId
         ? `/api/jellyfin/users/${encodeURIComponent(userId)}/images/primary`
-        : "/assets/icons/profile_small.png";
+        : fallbackAvatarUrl;
 
       const userRow = document.createElement("div");
       userRow.className = "session-card-user";
@@ -742,15 +743,14 @@ document.addEventListener("DOMContentLoaded", () => {
       userNameEl.className = "session-card-user-name";
       userNameEl.textContent = `${userName} on ${clientName}`;
 
-      const userAvatar = document.createElement("img");
-      userAvatar.className = "session-card-user-avatar";
-      userAvatar.alt = userName || "User";
-      userAvatar.src = userAvatarUrl;
-      userAvatar.onerror = () => {
-        userAvatar.src = "/assets/icons/profile_small.png";
-      };
+      const userAvatarDiv = document.createElement("div");
+      userAvatarDiv.className = "session-card-user-avatar";
+      userAvatarDiv.style.backgroundImage = `url("${userAvatarUrl}"), url("${fallbackAvatarUrl}")`;
+      userAvatarDiv.style.backgroundSize = "cover";
+      userAvatarDiv.style.backgroundPosition = "center";
+      userAvatarDiv.style.backgroundRepeat = "no-repeat";
 
-      userRow.appendChild(userAvatar);
+      userRow.appendChild(userAvatarDiv);
       userRow.appendChild(userNameEl);
       progressDiv.appendChild(userRow);
 

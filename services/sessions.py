@@ -74,7 +74,7 @@ class SessionsService:
             try:
                 self._fetch_sessions()
             except Exception as exc:
-                logger.error(f"[ERROR] Sessions sync error: {exc}")
+                logger.exception(f"[ERROR] Sessions sync error: {exc}")
 
             self._stop_event.wait(self._sync_interval)
 
