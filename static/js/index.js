@@ -662,7 +662,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const audioIsTranscoding = !!mediaSource.TranscodingInfo?.AudioCodec;
 
       const attrs = [
-        { label: "Client", value: `${clientName} on ${deviceName}` },
+        { label: "Client", value: clientName },
+        { label: "Device", value: deviceName },
         { label: "User", value: userName },
         { label: "IP Address", value: ipAddr },
         {
