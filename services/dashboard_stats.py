@@ -22,6 +22,7 @@ SECTION_RECENTLY_WATCHED = "recently_watched"
 SECTION_RESOLUTIONS = "resolutions"
 SECTION_VIDEO_CODECS = "video_codecs"
 SECTION_AUDIO_CODECS = "audio_codecs"
+SECTION_MOST_POPULAR_GENRES = "most_popular_genres"
 
 
 def _weekday_name(monday_zero_index: int) -> str:
@@ -103,6 +104,9 @@ class DashboardStatsBuilder:
             SECTION_RESOLUTIONS: DashboardStatsBuilder.resolutions(session, limit=8),
             SECTION_VIDEO_CODECS: DashboardStatsBuilder.video_codecs(session, limit=8),
             SECTION_AUDIO_CODECS: DashboardStatsBuilder.audio_codecs(session, limit=8),
+            SECTION_MOST_POPULAR_GENRES: DashboardStatsBuilder.most_popular_genres(
+                session, limit=8
+            ),
         }
 
     @staticmethod
@@ -437,5 +441,53 @@ class DashboardStatsBuilder:
         out.sort(
             key=lambda row: (-int(row.get("count") or 0), row.get("video_codec") or "")
         )
+
+        return out
+
+    @staticmethod
+    def most_popular_genres(session: Session, limit: int) -> List[Dict[str, Any]]:
+        """
+        Return genres ranked by total plays across items that have them.
+
+        :param session: Active SQL session
+        :param limit: Max number of genres to return
+        :returns: List of genre rows with name and total play count
+        """
+        stmt = (
+            session.query(
+                Item.genres,
+                Item.play_count.label("plays"),
+            )
+            .filter(
+                Item.archived.is_(False),
+                Item.genres.isnot(None),
+                func.trim(Item.genres) != "",
+            )
+            .all()
+        )
+
+        genre_plays: Dict[str, int] = {}
+        for row in stmt:
+            genres_str = row.genres if row.genres else ""
+            try:
+                import json
+
+                genres_list = (
+                    json.loads(genres_str) if isinstance(genres_str, str) else []
+                )
+            except (json.JSONDecodeError, TypeError):
+                genres_list = []
+
+            for g in genres_list:
+                g_str = str(g).strip() if g else ""
+                if not g_str:
+                    continue
+                plays = int(row.plays or 0)
+                genre_plays[g_str] = genre_plays.get(g_str, 0) + plays
+
+        out = [
+            {"genre": name, "count": count}
+            for name, count in sorted(genre_plays.items(), key=lambda x: (-x[1], x[0]))
+        ][:limit]
 
         return out
