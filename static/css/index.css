@@ -74,7 +74,7 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.6rem;
   padding: 1rem;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -141,9 +141,9 @@
 }
 
 .session-card-progress {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--highlight);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -151,7 +151,7 @@
 }
 
 .session-card-progress-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text);
   text-align: left;
@@ -163,7 +163,7 @@
 .session-card-progress-meta {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .session-card-progress-bar {
@@ -218,6 +218,30 @@
   border-radius: var(--border-small);
   background-color: var(--surface);
   height: 260px;
+}
+
+.session-card-user {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.session-card-user-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.session-card-user-avatar {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: var(--border-circle);
+  object-fit: cover;
 }
 
 .plays-trend-section {

@@ -662,9 +662,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const audioIsTranscoding = !!mediaSource.TranscodingInfo?.AudioCodec;
 
       const attrs = [
-        { label: "Client", value: clientName },
         { label: "Device", value: deviceName },
-        { label: "User", value: userName },
         { label: "IP Address", value: ipAddr },
         {
           label: "Video",
@@ -731,6 +729,30 @@ document.addEventListener("DOMContentLoaded", () => {
       progressMeta.appendChild(progressIcon);
       progressMeta.appendChild(progressBar);
       progressMeta.appendChild(progressLabel);
+
+      const userId = session.UserId || "";
+      const userAvatarUrl = userId
+        ? `/api/jellyfin/users/${encodeURIComponent(userId)}/images/primary`
+        : "/assets/icons/profile_small.png";
+
+      const userRow = document.createElement("div");
+      userRow.className = "session-card-user";
+
+      const userNameEl = document.createElement("div");
+      userNameEl.className = "session-card-user-name";
+      userNameEl.textContent = `${userName} on ${clientName}`;
+
+      const userAvatar = document.createElement("img");
+      userAvatar.className = "session-card-user-avatar";
+      userAvatar.alt = userName || "User";
+      userAvatar.src = userAvatarUrl;
+      userAvatar.onerror = () => {
+        userAvatar.src = "/assets/icons/profile_small.png";
+      };
+
+      userRow.appendChild(userAvatar);
+      userRow.appendChild(userNameEl);
+      progressDiv.appendChild(userRow);
 
       progressDiv.appendChild(progressTitle);
       progressDiv.appendChild(progressMeta);

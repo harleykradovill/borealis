@@ -113,6 +113,7 @@ class SessionsService:
         """
         root_keys = {
             "Id",
+            "UserId",
             "UserName",
             "Client",
             "DeviceName",
