@@ -66,11 +66,11 @@ function updateRowLayout() {
   const trendSection = document.querySelector(".plays-trend-section");
 
   if (sessionCards <= 1) {
-    sessionsSection.style.flex = "2.1 1 0";
-    trendSection.style.flex = "7.9 1 0";
+    sessionsSection.style.flex = "2.2 1 0";
+    trendSection.style.flex = "7.8 1 0";
   } else if (sessionCards === 2) {
-    sessionsSection.style.flex = "4.1 1 0";
-    trendSection.style.flex = "5.9 1 0";
+    sessionsSection.style.flex = "4.35 1 0";
+    trendSection.style.flex = "5.65 1 0";
   } else {
     sessionsSection.style.flex = "7 1 0";
     trendSection.style.flex = "3 1 0";
