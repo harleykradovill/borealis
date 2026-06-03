@@ -12,13 +12,6 @@
         });
       }
 
-      const sessionsCard = document.getElementById("sessions-cards");
-      if (sessionsCard && sessionsCard.children.length > 0) {
-        loadSessions().catch((error) => {
-          globalThis.helpers.handleError("Failed to refresh sessions:", error);
-        });
-      }
-
       const playCanvas = document.getElementById("plays-matrix");
       if (playCanvas && playCanvas.style.display !== "none") {
         loadActivity(182)
