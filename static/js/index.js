@@ -7,15 +7,15 @@
     try {
       const glanceLoading = document.getElementById("glance-loading");
       if (glanceLoading && !glanceLoading.classList.contains("skeleton")) {
-        loadGlance().catch((err) => {
-          globalThis.helpers.handleError("Failed to refresh glance data:", err);
+        loadGlance().catch((error) => {
+          globalThis.helpers.handleError("Failed to refresh glance data:", error);
         });
       }
 
       const sessionsCard = document.getElementById("sessions-cards");
       if (sessionsCard && sessionsCard.children.length > 0) {
-        loadSessions().catch((err) => {
-          globalThis.helpers.handleError("Failed to refresh sessions:", err);
+        loadSessions().catch((error) => {
+          globalThis.helpers.handleError("Failed to refresh sessions:", error);
         });
       }
 
@@ -25,27 +25,27 @@
           .then(() => {
             const render = globalThis.__indexRenderHeatmap;
             if (typeof render === "function") {
-              render().catch((err) => {
-                globalThis.helpers.handleError("Failed to refresh heatmap:", err);
+              render().catch((error) => {
+                globalThis.helpers.handleError("Failed to refresh heatmap:", error);
               });
             }
           })
-          .catch((err) => {
-            globalThis.helpers.handleError("Failed to refresh activity data:", err);
+          .catch((error) => {
+            globalThis.helpers.handleError("Failed to refresh activity data:", error);
           });
       }
 
       const statsCards = document.querySelectorAll("[data-stat-key]");
       if (statsCards.length > 0) {
-        fetchStatsData().catch((err) => {
-          globalThis.helpers.handleError("Failed to refresh stats:", err);
+        fetchStatsData().catch((error) => {
+          globalThis.helpers.handleError("Failed to refresh stats:", error);
         });
       }
 
       const codecCards = document.querySelectorAll("[data-codec-key]");
       if (codecCards.length > 0) {
-        fetchCodecsData().catch((err) => {
-          globalThis.helpers.handleError("Failed to refresh codecs:", err);
+        fetchCodecsData().catch((error) => {
+          globalThis.helpers.handleError("Failed to refresh codecs:", error);
         });
       }
     } catch (error) {
@@ -381,8 +381,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function scheduleHeatmapRender() {
     const run = () => {
-      render().catch((err) => {
-        globalThis.helpers.handleError("Failed to render plays heatmap:", err);
+      render().catch((error) => {
+        globalThis.helpers.handleError("Failed to render plays heatmap:", error);
       });
     };
 
@@ -500,8 +500,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function scheduleTrendRender() {
     const run = () => {
-      renderTrend().catch((err) => {
-        globalThis.helpers.handleError("Failed to render plays trend:", err);
+      renderTrend().catch((error) => {
+        globalThis.helpers.handleError("Failed to render plays trend:", error);
       });
     };
 

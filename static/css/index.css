@@ -326,13 +326,13 @@
 
 .statistics-nav {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.3rem;
   padding: 0;
   margin: 0 0 0.5rem 0;
   align-items: center;
   overflow: auto;
   background-color: var(--surface);
-  border-radius: var(--border-circle);
+  border-radius: var(--border-small);
 }
 
 .statistics-nav li {
@@ -345,7 +345,7 @@
   cursor: pointer;
   white-space: nowrap;
   transition: var(--transition-all);
-  border-radius: var(--border-circle);
+  border-radius: var(--border-small);
 }
 
 .statistics-nav li:hover,
@@ -492,13 +492,13 @@
 
 .codecs-nav {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.3rem;
   padding: 0;
   margin: 0 0 0.5rem 0;
   align-items: center;
   overflow: auto;
   background-color: var(--surface);
-  border-radius: var(--border-circle);
+  border-radius: var(--border-small);
 }
 
 .codecs-nav li {
@@ -511,7 +511,7 @@
   cursor: pointer;
   white-space: nowrap;
   transition: var(--transition-all);
-  border-radius: var(--border-circle);
+  border-radius: var(--border-small);
 }
 
 .codecs-nav li:hover,
