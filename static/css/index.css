@@ -12,7 +12,7 @@
 .statistics-section h2,
 .resolutions-section h2,
 .codecs-section h2,
-.stale-section h2 {
+.genres-section h2 {
   margin: 0 0 0.75rem 0;
   color: var(--text);
   font-size: 1rem;
@@ -449,7 +449,7 @@
 
 .resolutions-section,
 .codecs-section,
-.stale-section {
+.genres-section {
   flex: 1 1 0;
   min-width: 0;
   border: 1px solid var(--border);

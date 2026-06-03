@@ -18,7 +18,7 @@
           .then(() => {
             const render = globalThis.__indexRenderHeatmap;
             if (typeof render === "function") {
-              render().catch((error) => {
+              renderHeatmap().catch((error) => {
                 globalThis.helpers.handleError("Failed to refresh heatmap:", error);
               });
             }
@@ -238,7 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const trendLoading = document.getElementById("plays-trend-loading");
   if (!canvas) return;
 
-  async function render() {
+  async function renderHeatmap() {
     try {
       const items = await loadActivity(182);
       const { data, maxV, weeks } = buildMatrix(items, 182);
@@ -374,7 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function scheduleHeatmapRender() {
     const run = () => {
-      render().catch((error) => {
+      renderHeatmap().catch((error) => {
         globalThis.helpers.handleError("Failed to render plays heatmap:", error);
       });
     };

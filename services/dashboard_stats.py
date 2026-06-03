@@ -445,21 +445,35 @@ class DashboardStatsBuilder:
         return out
 
     @staticmethod
-    def most_popular_genres(session: Session, limit: int) -> List[Dict[str, Any]]:
+    def most_popular_genres(
+        session: Session,
+        limit: int = 8,
+    ) -> List[Dict[str, Any]]:
         """
-        Return genres ranked by total plays across items that have them.
+        Return top genres overall with per-user playback counts.
 
         :param session: Active SQL session
         :param limit: Max number of genres to return
-        :returns: List of genre rows with name and total play count
+        :returns: List of genre rows with total plays and non-archived user breakdown
         """
-        stmt = (
-            session.query(
-                Item.genres,
-                Item.play_count.label("plays"),
-            )
+        max_rows = max(1, int(limit or 8))
+
+        user_ids = [
+            row.jellyfin_id
+            for row in session.query(User.jellyfin_id)
+            .filter(User.archived.is_(False))
+            .order_by(User.name.asc())
+            .all()
+            if row and row.jellyfin_id
+        ]
+
+        rows = (
+            session.query(PlaybackActivity.user_id, Item.genres)
+            .join(Item, PlaybackActivity.item_id == Item.jellyfin_id)
+            .join(User, PlaybackActivity.user_id == User.jellyfin_id)
             .filter(
                 Item.archived.is_(False),
+                User.archived.is_(False),
                 Item.genres.isnot(None),
                 func.trim(Item.genres) != "",
             )
@@ -467,27 +481,47 @@ class DashboardStatsBuilder:
         )
 
         genre_plays: Dict[str, int] = {}
-        for row in stmt:
-            genres_str = row.genres if row.genres else ""
-            try:
-                import json
+        genre_user_breakdown: Dict[str, Dict[str, int]] = {}
 
+        import json
+
+        for user_id, genres_str in rows:
+            if not user_id:
+                continue
+
+            try:
                 genres_list = (
                     json.loads(genres_str) if isinstance(genres_str, str) else []
                 )
             except (json.JSONDecodeError, TypeError):
-                genres_list = []
+                continue
 
-            for g in genres_list:
-                g_str = str(g).strip() if g else ""
-                if not g_str:
+            for genre in genres_list:
+                genre_name = str(genre).strip()
+                if not genre_name:
                     continue
-                plays = int(row.plays or 0)
-                genre_plays[g_str] = genre_plays.get(g_str, 0) + plays
 
-        out = [
-            {"genre": name, "count": count}
-            for name, count in sorted(genre_plays.items(), key=lambda x: (-x[1], x[0]))
-        ][:limit]
+                genre_plays[genre_name] = genre_plays.get(genre_name, 0) + 1
+
+                if genre_name not in genre_user_breakdown:
+                    genre_user_breakdown[genre_name] = dict.fromkeys(user_ids, 0)
+
+                genre_user_breakdown[genre_name][user_id] = (
+                    genre_user_breakdown[genre_name].get(user_id, 0) + 1
+                )
+
+        out = []
+        for genre, total in sorted(
+            genre_plays.items(), key=lambda item: (-item[1], item[0])
+        )[:max_rows]:
+            out.append(
+                {
+                    "genre": genre,
+                    "total_plays": int(total),
+                    "user_breakdown": genre_user_breakdown.get(
+                        genre, dict.fromkeys(user_ids, 0)
+                    ),
+                }
+            )
 
         return out
