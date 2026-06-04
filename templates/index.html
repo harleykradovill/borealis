@@ -134,7 +134,7 @@
         </div>
 
         <div class="row-3">
-          <div class="resolutions-section">
+          <section class="resolutions-section">
             <h2>Resolutions</h2>
             <div class="resolutions-card">
               <div id="resolutions-loading" class="skeleton">
@@ -144,9 +144,9 @@
               </div>
               <canvas id="resolutions-chart"></canvas>
             </div>
-          </div>
+          </section>
 
-          <div class="codecs-section">
+          <section class="codecs-section">
             <h2>Codecs</h2>
 
             <nav>
@@ -164,11 +164,25 @@
               </div>
               <canvas id="codecs-chart"></canvas>
             </div>
-          </div>
+          </section>
 
-          <div class="genres-section">
+          <section class="genres-section">
             <h2>Genres</h2>
-          </div>
+
+            <div id="genres-loading" class="skeleton">
+              <div class="wrapper">
+                <div></div>
+              </div>
+            </div>
+
+            <div class="genres-card">
+              <canvas id="genres-chart"></canvas>
+            </div>
+
+            <div id="genres-empty" class="settings-placeholder" hidden>
+              <p>No data to display.</p>
+            </div>
+          </section>
         </div>
       </main>
     </div>

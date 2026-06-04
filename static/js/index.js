@@ -1167,3 +1167,137 @@ document.addEventListener("DOMContentLoaded", () => {
 
   switchCodec(0);
 })();
+
+(function () {
+  const genresCanvas = document.getElementById("genres-chart");
+  const genresLoading = document.getElementById("genres-loading");
+  const genresEmpty = document.getElementById("genres-empty");
+
+  if (!genresCanvas) return;
+
+  async function renderGenresChart(genresData, userNameMap) {
+    if (!Array.isArray(genresData) || !genresData.length) {
+      if (genresEmpty) genresEmpty.hidden = false;
+      return;
+    }
+
+    if (genresEmpty) genresEmpty.hidden = true;
+
+    const genreLabels = genresData.map((g) => g.genre || "");
+    const userBreakdowns = genresData.map((g) => g.user_breakdown || {});
+
+    const userIds = new Set();
+    userBreakdowns.forEach((breakdown) => {
+      Object.keys(breakdown).forEach((uid) => userIds.add(uid));
+    });
+    const uniqueUsers = Array.from(userIds);
+
+    const palette = globalThis.helpers.getPalette(uniqueUsers.length, true);
+
+    const datasets = uniqueUsers.map((userId, userIdx) => {
+      const data = genresData.map((g) => {
+        const breakdown = g.user_breakdown || {};
+        return Number(breakdown[userId] || 0);
+      });
+
+      const userName = userNameMap?.[userId] || userId;
+
+      return {
+        label: userName,
+        data,
+        borderColor: palette[userIdx % palette.length],
+        backgroundColor: palette[userIdx % palette.length] + "20",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: palette[userIdx % palette.length],
+      };
+    });
+
+    const ctx = genresCanvas.getContext("2d");
+
+    if (globalThis.__genresChart) {
+      globalThis.__genresChart.destroy();
+    }
+
+    globalThis.__genresChart = new Chart(ctx, {
+      type: "radar",
+      data: {
+        labels: genreLabels,
+        datasets,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 200 },
+        plugins: {
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+              color: "#b3b3b3",
+              font: { size: 12 },
+              padding: 12,
+            },
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctxArg) => `${ctxArg.dataset.label}: ${ctxArg.raw}`,
+            },
+          },
+        },
+        scales: {
+          r: {
+            ticks: {
+              color: "#b3b3b3",
+              backdropColor: "transparent",
+            },
+            grid: {
+              color: "#2b313d",
+            },
+            pointLabels: {
+              color: "#b3b3b3",
+              font: { size: 11 },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async function loadGenres() {
+    if (genresLoading) genresLoading.hidden = false;
+    genresCanvas.style.display = "none";
+
+    try {
+      const [genresResp, usersResp] = await Promise.all([
+        fetch("/api/analytics/stats/dashboard"),
+        fetch("/api/analytics/users"),
+      ]);
+
+      const genresPayload = await genresResp.json();
+      const usersPayload = await usersResp.json();
+
+      const genresData = genresPayload.data?.sections?.most_popular_genres || [];
+
+      const userNameMap = {};
+      if (usersPayload.ok && Array.isArray(usersPayload.data)) {
+        usersPayload.data.forEach((user) => {
+          userNameMap[user.user_id] = user.name;
+        });
+      }
+
+      renderGenresChart(genresData, userNameMap);
+    } catch (error) {
+      globalThis.helpers.handleError("Failed to load genres", error);
+      renderGenresChart([]);
+    } finally {
+      if (genresLoading) genresLoading.hidden = true;
+      genresCanvas.style.display = "";
+    }
+  }
+
+  loadGenres();
+})();

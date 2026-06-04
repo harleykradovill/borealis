@@ -51,9 +51,9 @@
   letter-spacing: 0.2px;
 }
 
-/* ======================= */
+/* ==================== */
 /* Sessions & Trend Row */
-/* ======================= */
+/* ==================== */
 
 .row-1,
 .row-2,
@@ -289,9 +289,9 @@
   border-radius: var(--border-element);
 }
 
-/* ================================== */
+/* ============================== */
 /* Watch Statistics & Heatmap Row */
-/* ================================== */
+/* ============================== */
 
 #watch-statistics-loading .wrapper > div,
 #matrix-loading .wrapper > div {
@@ -443,9 +443,9 @@
   flex: 1;
 }
 
-/* ====================== */
+/* ================== */
 /* Media Overview Row */
-/* ====================== */
+/* ================== */
 
 .resolutions-section,
 .codecs-section,
@@ -539,4 +539,29 @@
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* ============== */
+/* Genres Section */
+/* ============== */
+
+#genres-loading .wrapper > div {
+  height: 250px;
+  border-radius: var(--border-element);
+}
+
+.genres-card {
+  height: 300px;
+  position: relative;
+}
+
+.genres-card canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#genres-empty {
+  padding: 4rem;
+  height: 300px;
 }

@@ -137,6 +137,7 @@ def create_api_blueprint(*, repo, sync, jf):
                 "resolutions",
                 "video_codecs",
                 "audio_codecs",
+                "most_popular_genres",
             ]
 
             rows_by_key = repo.get_dashboard_stats_map(section_keys=section_keys)
@@ -659,6 +660,27 @@ def create_api_blueprint(*, repo, sync, jf):
             logger.exception("[ERROR] Failed to fetch user recent activity")
             return make_response(
                 jsonify({"ok": False, "message": "Failed to fetch recent activity"}),
+                500,
+            )
+
+    @bp.get("/analytics/users")
+    def api_analytics_users() -> Response:
+        """
+        Retrieve list of non-archived users with ID and name.
+
+        :returns: JSON response with user records and HTTP 200, or error details with HTTP 500
+        """
+        try:
+            users = repo.list_users(include_archived=False)
+            data = [
+                {"user_id": user["jellyfin_id"], "name": user.get("name", "Unknown")}
+                for user in users
+            ]
+            return make_response(jsonify({"ok": True, "data": data}), 200)
+        except Exception:
+            logger.exception("[ERROR] Failed to fetch users")
+            return make_response(
+                jsonify({"ok": False, "message": "Failed to fetch users"}),
                 500,
             )
 
