@@ -1236,7 +1236,7 @@ document.addEventListener("DOMContentLoaded", () => {
         plugins: {
           legend: {
             display: true,
-            position: "bottom",
+            position: "right",
             labels: {
               color: "#b3b3b3",
               font: { size: 12 },
@@ -1256,7 +1256,7 @@ document.addEventListener("DOMContentLoaded", () => {
               backdropColor: "transparent",
             },
             grid: {
-              color: "#2b313d",
+              color: "#114751",
             },
             pointLabels: {
               color: "#b3b3b3",
