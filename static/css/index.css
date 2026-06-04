@@ -551,7 +551,7 @@
 }
 
 .genres-card {
-  height: 300px;
+  height: 250px;
   position: relative;
 }
 
@@ -563,5 +563,5 @@
 
 #genres-empty {
   padding: 4rem;
-  height: 300px;
+  height: 250px;
 }

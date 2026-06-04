@@ -1170,6 +1170,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 (function () {
   const genresCanvas = document.getElementById("genres-chart");
+  const genresCard = document.querySelector(".genres-card");
   const genresLoading = document.getElementById("genres-loading");
   const genresEmpty = document.getElementById("genres-empty");
 
@@ -1269,7 +1270,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadGenres() {
     if (genresLoading) genresLoading.hidden = false;
-    genresCanvas.style.display = "none";
+    if (genresCard) genresCard.hidden = true;
 
     try {
       const [genresResp, usersResp] = await Promise.all([
@@ -1290,12 +1291,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       renderGenresChart(genresData, userNameMap);
+      if (genresCard) genresCard.hidden = false;
     } catch (error) {
       globalThis.helpers.handleError("Failed to load genres", error);
       renderGenresChart([]);
     } finally {
       if (genresLoading) genresLoading.hidden = true;
-      genresCanvas.style.display = "";
     }
   }
 
