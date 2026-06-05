@@ -44,6 +44,15 @@
     } catch (error) {
       globalThis.helpers.handleError("Error refreshing dashboard data:", error);
     }
+
+    const genresCard = document.querySelector(".genres-card");
+    if (genresCard && !genresCard.hidden) {
+      if (typeof globalThis.refreshGenresChart === "function") {
+        globalThis.refreshGenresChart().catch((error) => {
+          globalThis.helpers.handleError("Failed to refresh genres chart:", error);
+        });
+      }
+    }
   }
 
   document.addEventListener("syncComplete", () => {
@@ -1321,4 +1330,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   loadGenres();
+  globalThis.refreshGenresChart = loadGenres;
 })();
