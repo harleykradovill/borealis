@@ -1193,27 +1193,41 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     const uniqueUsers = Array.from(userIds);
 
+    const userTotals = {};
+
+    genresData.forEach((g) => {
+      const breakdown = g.user_breakdown || {};
+      Object.entries(breakdown).forEach(([userId, count]) => {
+        userTotals[userId] = (userTotals[userId] || 0) + Number(count || 0);
+      });
+    });
+
     const palette = globalThis.helpers.getPalette(uniqueUsers.length, true);
 
     const datasets = uniqueUsers.map((userId, userIdx) => {
+      const total = userTotals[userId] || 1;
+
       const data = genresData.map((g) => {
         const breakdown = g.user_breakdown || {};
-        return Number(breakdown[userId] || 0);
+        const value = Number(breakdown[userId] || 0);
+
+        return (value / total) * 100;
       });
 
       const userName = userNameMap?.[userId] || userId;
+      const color = palette[userIdx % palette.length];
 
       return {
         label: userName,
         data,
-        borderColor: palette[userIdx % palette.length],
-        backgroundColor: palette[userIdx % palette.length] + "20",
+        borderColor: color,
+        backgroundColor: color + "20",
         borderWidth: 2,
         fill: true,
         tension: 0.4,
         pointRadius: 4,
         pointHoverRadius: 6,
-        pointBackgroundColor: palette[userIdx % palette.length],
+        pointBackgroundColor: color,
       };
     });
 
@@ -1233,6 +1247,7 @@ document.addEventListener("DOMContentLoaded", () => {
         responsive: true,
         maintainAspectRatio: false,
         animation: { duration: 200 },
+
         plugins: {
           legend: {
             display: true,
@@ -1245,15 +1260,19 @@ document.addEventListener("DOMContentLoaded", () => {
           },
           tooltip: {
             callbacks: {
-              label: (ctxArg) => `${ctxArg.dataset.label}: ${ctxArg.raw}`,
+              label: (ctxArg) => `${ctxArg.dataset.label}: ${ctxArg.raw.toFixed(1)}%`,
             },
           },
         },
+
         scales: {
           r: {
+            min: 0,
+            max: 100,
             ticks: {
               color: "#b3b3b3",
               backdropColor: "transparent",
+              callback: (v) => `${v}%`,
             },
             grid: {
               color: "#114751",
@@ -1291,6 +1310,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       renderGenresChart(genresData, userNameMap);
+
       if (genresCard) genresCard.hidden = false;
     } catch (error) {
       globalThis.helpers.handleError("Failed to load genres", error);

@@ -105,7 +105,7 @@ class DashboardStatsBuilder:
             SECTION_VIDEO_CODECS: DashboardStatsBuilder.video_codecs(session, limit=8),
             SECTION_AUDIO_CODECS: DashboardStatsBuilder.audio_codecs(session, limit=8),
             SECTION_MOST_POPULAR_GENRES: DashboardStatsBuilder.most_popular_genres(
-                session, limit=8
+                session, limit=5
             ),
         }
 
@@ -447,7 +447,7 @@ class DashboardStatsBuilder:
     @staticmethod
     def most_popular_genres(
         session: Session,
-        limit: int = 8,
+        limit: int = 5,
     ) -> List[Dict[str, Any]]:
         """
         Return top genres overall with per-user playback counts.
@@ -456,7 +456,7 @@ class DashboardStatsBuilder:
         :param limit: Max number of genres to return
         :returns: List of genre rows with total plays and non-archived user breakdown
         """
-        max_rows = max(1, int(limit or 8))
+        max_rows = max(1, int(limit or 5))
 
         user_ids = [
             row.jellyfin_id
