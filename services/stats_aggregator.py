@@ -62,11 +62,12 @@ def _calculate_watch_metrics(
             PlaybackActivity.playback_type,
             Item.runtime_seconds,
         )
-        .outerjoin(Item, PlaybackActivity.item_id == Item.jellyfin_id)
+        .join(Item, PlaybackActivity.item_id == Item.jellyfin_id)
         .filter(
             PlaybackActivity.user_id.isnot(None),
             PlaybackActivity.item_id.isnot(None),
             PlaybackActivity.activity_at.isnot(None),
+            Item.archived.is_(False),
         )
         .order_by(
             PlaybackActivity.user_id.asc(),
