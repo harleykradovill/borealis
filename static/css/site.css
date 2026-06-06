@@ -184,7 +184,7 @@ body {
   border: none;
   border-radius: var(--border-small);
   background: var(--text);
-  color: var(--bg);
+  color: var(--black);
   padding: 0.5rem 0.9rem;
   font: inherit;
   line-height: 1;
@@ -193,11 +193,12 @@ body {
 }
 
 .btn:hover {
-  background: var(--highlight);
+  background: var(--text-muted);
 }
 
 .btn:disabled {
   background: var(--text-muted);
+  color: var(--highlight);
 }
 
 .brand {
@@ -310,6 +311,10 @@ body {
   transition: var(--transition-all);
 }
 
+::placeholder {
+  color: var(--text-muted);
+}
+
 .form-field select {
   appearance: auto;
 }
@@ -318,14 +323,13 @@ body {
 .form-field select:hover,
 .form-field textarea:hover,
 input.form-control:hover {
-  background: var(--surface);
+  background: var(--highlight);
 }
 
 .form-field input:focus,
 .form-field select:focus,
 .form-field textarea:focus {
-  border-color: var(--border);
-  box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
+  background-color: var(--highlight);
 }
 
 /* Skeleton Loader */
