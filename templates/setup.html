@@ -17,11 +17,6 @@
   <body>
     <main id="content" class="content" tabindex="-1">
       <section class="setup">
-        <div class="setup-progress" id="progress-indicator">
-          <div class="progress-dot active" data-page="1"></div>
-          <div class="progress-dot" data-page="2"></div>
-          <div class="progress-dot" data-page="3"></div>
-        </div>
         <div class="setup-pages" id="pages-container">
           <div class="setup-page active" data-page="1">
             <div class="page-content">
@@ -57,7 +52,12 @@
             </div>
 
             <div class="page-navigation">
-              <div class="page-nav-spacer"></div>
+              <button class="btn placeholder" tabindex="-1">XXXX</button>
+              <div class="setup-progress" id="progress-indicator">
+                <div class="progress-dot active" data-page="1"></div>
+                <div class="progress-dot" data-page="2"></div>
+                <div class="progress-dot" data-page="3"></div>
+              </div>
               <button type="button" class="btn" id="page1-next">Next</button>
             </div>
           </div>
@@ -108,6 +108,11 @@
 
             <div class="page-navigation">
               <button type="button" class="btn btn-ghost" id="page2-prev">Back</button>
+              <div class="setup-progress" id="progress-indicator">
+                <div class="progress-dot active" data-page="1"></div>
+                <div class="progress-dot" data-page="2"></div>
+                <div class="progress-dot" data-page="3"></div>
+              </div>
               <button type="button" class="btn" id="page2-next" disabled>Next</button>
             </div>
           </div>
@@ -142,6 +147,11 @@
 
             <div class="page-navigation">
               <button type="button" class="btn btn-ghost" id="page3-prev">Back</button>
+              <div class="setup-progress" id="progress-indicator">
+                <div class="progress-dot active" data-page="1"></div>
+                <div class="progress-dot" data-page="2"></div>
+                <div class="progress-dot" data-page="3"></div>
+              </div>
               <button type="button" class="btn" id="page3-finish">Finish Setup</button>
             </div>
           </div>
