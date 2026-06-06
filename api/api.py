@@ -215,6 +215,23 @@ def create_api_blueprint(*, repo, sync, jf):
                 500,
             )
 
+    @bp.get("/analytics/activity-summary")
+    def api_analytics_activity_summary() -> Response:
+        """
+        Return the global start/stop playback counts.
+
+        :returns: JSON response with start and stop counts
+        """
+        try:
+            totals = repo.get_playback_type_totals()
+            return make_response(jsonify({"ok": True, "data": totals}), 200)
+        except Exception:
+            logger.exception("[ERROR] Failed to fetch activity summary")
+            return make_response(
+                jsonify({"ok": False, "message": "Failed to fetch activity summary"}),
+                500,
+            )
+
     @bp.get("/analytics/items/added-last-30-days")
     def api_analytics_items_added_last_30_days() -> Response:
         """

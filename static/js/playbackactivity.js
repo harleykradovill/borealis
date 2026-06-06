@@ -1,4 +1,7 @@
 (function () {
+  const glanceTotal = document.querySelector(".glance-card:nth-child(1) .glance-value");
+  const glanceStart = document.querySelector(".glance-card:nth-child(2) .glance-value");
+  const glanceStop = document.querySelector(".glance-card:nth-child(3) .glance-value");
   const searchInput = document.getElementById("activity-search");
 
   const container = document.getElementById("activitylog-section");
@@ -296,7 +299,24 @@
     pageNumEl.textContent = String(page);
     metaEl.textContent = `Page ${page} of ${totalPages}`;
 
+    glanceTotal.textContent = total.toLocaleString();
+    loadGlanceTotals();
     renderPaginationControls(page, totalPages);
+  }
+
+  async function loadGlanceTotals() {
+    try {
+      const resp = await fetch("/api/analytics/activity-summary");
+      if (!resp.ok) throw new Error("Network error");
+      const payload = await resp.json();
+      if (!payload.ok) throw new Error(payload.message || "API error");
+
+      const { start, stop } = payload.data;
+      if (glanceStart) glanceStart.textContent = start.toLocaleString();
+      if (glanceStop) glanceStop.textContent = stop.toLocaleString();
+    } catch (error) {
+      globalThis.helpers.handleError("Could not load start/stop totals:", error);
+    }
   }
 
   /**

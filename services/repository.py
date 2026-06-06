@@ -1082,6 +1082,25 @@ class Repository:
                 "total": int(total) if total is not None else None,
             }
 
+    def get_playback_type_totals(self) -> dict:
+        """
+        Return the total number of start‑playback and stop‑playback events across the whole database.
+
+        :returns: {"start": int, "stop": int}
+        """
+        with self._session() as session:
+            start_total = (
+                session.query(func.count())
+                .filter(PlaybackActivity.playback_type == "VideoPlayback")
+                .scalar()
+            )
+            stop_total = (
+                session.query(func.count())
+                .filter(PlaybackActivity.playback_type == "VideoPlaybackStopped")
+                .scalar()
+            )
+        return {"start": int(start_total or 0), "stop": int(stop_total or 0)}
+
     # -------------------------
     # Task Logging
     # -------------------------
