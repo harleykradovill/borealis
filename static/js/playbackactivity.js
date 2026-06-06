@@ -1,5 +1,7 @@
 (function () {
-  const container = document.getElementById("activitylog-container");
+  const searchInput = document.getElementById("activity-search");
+
+  const container = document.getElementById("activitylog-section");
   const empty = document.getElementById("activitylog-empty");
   const tbody = document.getElementById("activitylog-tbody");
 
@@ -335,6 +337,14 @@
     }
   }
 
+  function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+
   /**
    * Load a page of PlaybackActivity from the database.
    * @param {number | string} page Page number to load
@@ -354,6 +364,15 @@
       const params = new URLSearchParams();
       params.set("page", String(page));
       params.set("per_page", String(PER_PAGE));
+
+      const searchQuery = searchInput?.value || "";
+      if (searchQuery.trim()) {
+        params.set("search", searchQuery.trim());
+      }
+
+      if (selectedIds.length) {
+        params.set("user_ids", selectedIds.join(","));
+      }
 
       if (selectedIds.length) {
         params.set("user_ids", selectedIds.join(","));
@@ -415,4 +434,15 @@
     const currentPage = parseHashPage();
     loadPage(currentPage);
   });
+
+  searchInput?.addEventListener(
+    "input",
+    debounce(() => {
+      if (parseHashPage() === 1) {
+        loadPage(1);
+      } else {
+        gotoPage(1);
+      }
+    }, 300),
+  );
 })();

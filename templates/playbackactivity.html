@@ -25,7 +25,13 @@
           <p>No playback activity available.</p>
         </div>
 
-        <div id="activitylog-container" hidden>
+        <section class="header-section">
+          <div class="form-field">
+            <input id="activity-search" type="text" placeholder="Search..." />
+          </div>
+        </section>
+
+        <section id="activitylog-section" class="activitylog-section" hidden>
           <div>
             <table id="activitylog-table" class="table">
               <thead>
@@ -62,7 +68,7 @@
               class="activitylog-filter-options"
             ></div>
           </div>
-        </div>
+        </section>
 
         <nav id="activitylog-pagination" class="pagination">
           <button id="activitylog-first" class="btn btn-ghost" type="button" disabled>

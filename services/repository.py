@@ -985,6 +985,7 @@ class Repository:
         page: int = 1,
         per_page: int = 50,
         user_ids: Optional[List[str]] = None,
+        search: Optional[str] = None,
         include_users: bool = True,
         include_total: bool = True,
     ) -> Dict[str, Any]:
@@ -995,6 +996,7 @@ class Repository:
         :param page: Page number starting at 1 (default 1)
         :param per_page: Items per page, clamped 1-1000 (default 50)
         :param user_ids: Optional list of user IDs to filter by
+        :param search: Optional search string to filter by media name
         :param include_users: Whether to include user list in response (default True)
         :param include_total: Whether to include total count in response (default True)
         :returns: Dictionary with ok, items, users, selected_user_ids, page, per_page, total
@@ -1017,6 +1019,11 @@ class Repository:
             if selected_user_ids:
                 base_query = base_query.filter(
                     PlaybackActivity.user_id.in_(selected_user_ids)
+                )
+
+            if search:
+                base_query = base_query.filter(
+                    PlaybackActivity.event_name.ilike(f"%{search}%")
                 )
 
             total = None

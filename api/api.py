@@ -386,6 +386,8 @@ def create_api_blueprint(*, repo, sync, jf):
             per_page = request.args.get("per_page", 25, type=int) or 25
             user_ids_raw = request.args.get("user_ids", "", type=str) or ""
 
+            search = request.args.get("search", "", type=str) or ""
+
             include_users_raw = (
                 request.args.get("include_users", "true", type=str) or "true"
             )
@@ -410,6 +412,7 @@ def create_api_blueprint(*, repo, sync, jf):
                 page=page,
                 per_page=per_page,
                 user_ids=user_ids or None,
+                search=search or None,
                 include_users=include_users,
                 include_total=include_total,
             )
