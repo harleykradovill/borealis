@@ -886,6 +886,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const xMax = maxV + pad;
 
     const ctx = statsCanvas.getContext("2d");
+    const isWatchTime = stat.key === "top_users_by_watch_time";
+
+    const xTicks = {
+      color: "#b3b3b3",
+      precision: 0,
+      padding: 6,
+    };
+    if (isWatchTime) {
+      xTicks.callback = (value) => globalThis.helpers.humanTime(Number(value));
+    }
 
     const config = {
       type: "bar",
@@ -917,7 +927,7 @@ document.addEventListener("DOMContentLoaded", () => {
           x: {
             display: true,
             title: { display: false },
-            ticks: { color: "#b3b3b3", precision: 0, padding: 6 },
+            ticks: xTicks,
             grid: { display: false },
             min: 0,
             max: xMax,
