@@ -189,7 +189,6 @@
 
       availableLibraries.forEach((lib) => {
         const libName = lib.Name || lib.name || "Unknown";
-        const libType = lib.CollectionType || lib.type || "unknown";
 
         const item = document.createElement("div");
         item.className = "library-item";
@@ -200,12 +199,7 @@
         nameSpan.className = "library-name";
         nameSpan.textContent = libName;
 
-        const typeSpan = document.createElement("span");
-        typeSpan.className = "library-type";
-        typeSpan.textContent = libType;
-
         label.appendChild(nameSpan);
-        label.appendChild(typeSpan);
 
         item.appendChild(label);
         librariesList.appendChild(item);
