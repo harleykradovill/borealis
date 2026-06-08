@@ -35,11 +35,18 @@
 }
 
 .hero-section {
-  height: 235px;
+  display: flex;
+  flex-direction: column;
+  height: auto;
   border-radius: var(--border-element);
-  padding: 0.75rem 0.75rem;
+  padding: 0.75rem;
   flex-shrink: 0;
   background-color: var(--accent);
+}
+
+.glance-columns {
+  display: flex;
+  gap: 1rem;
 }
 
 .hero-container {
@@ -87,6 +94,12 @@
   font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: 0.2px;
+}
+
+.glance-section.right glance-label,
+.glance-section.right,
+glance-value {
+  text-align: right;
 }
 
 /* ================== */
