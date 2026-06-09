@@ -23,6 +23,8 @@ SECTION_RESOLUTIONS = "resolutions"
 SECTION_VIDEO_CODECS = "video_codecs"
 SECTION_AUDIO_CODECS = "audio_codecs"
 SECTION_MOST_POPULAR_GENRES = "most_popular_genres"
+SECTION_TOP_LIBRARIES_BY_USER = "top_libraries_by_user"
+SECTION_TOP_ITEMS_BY_USER = "top_items_by_user"
 
 
 def _weekday_name(monday_zero_index: int) -> str:
@@ -106,6 +108,12 @@ class DashboardStatsBuilder:
             SECTION_AUDIO_CODECS: DashboardStatsBuilder.audio_codecs(session, limit=8),
             SECTION_MOST_POPULAR_GENRES: DashboardStatsBuilder.most_popular_genres(
                 session, limit=5
+            ),
+            SECTION_TOP_LIBRARIES_BY_USER: (
+                DashboardStatsBuilder.top_libraries_by_user(session, limit=5)
+            ),
+            SECTION_TOP_ITEMS_BY_USER: (
+                DashboardStatsBuilder.top_items_by_user(session, limit=5)
             ),
         }
 
@@ -521,6 +529,128 @@ class DashboardStatsBuilder:
                     "user_breakdown": genre_user_breakdown.get(
                         genre, dict.fromkeys(user_ids, 0)
                     ),
+                }
+            )
+
+        return out
+
+    @staticmethod
+    def top_libraries_by_user(session: Session, limit: int) -> List[Dict[str, Any]]:
+        """
+        Return top libraries for each user by play count.
+
+        :param session: Active SQL session
+        :param limit: Max number of libraries per user
+        :returns: List of user dicts with their top libraries
+        """
+        users = (
+            session.query(User)
+            .filter(User.archived.is_(False))
+            .order_by(User.name.asc())
+            .all()
+        )
+
+        out: List[Dict[str, Any]] = []
+
+        for user in users:
+            libs = (
+                session.query(
+                    Library.jellyfin_id,
+                    Library.name,
+                    func.count(PlaybackActivity.id).label("play_count"),
+                )
+                .join(Item, PlaybackActivity.item_id == Item.jellyfin_id)
+                .join(Library, Item.library_id == Library.id)
+                .filter(
+                    PlaybackActivity.user_id == user.jellyfin_id,
+                    PlaybackActivity.playback_type == "VideoPlaybackStopped",
+                    Item.archived.is_(False),
+                    Library.archived.is_(False),
+                )
+                .group_by(Library.jellyfin_id, Library.name)
+                .order_by(func.count(PlaybackActivity.id).desc())
+                .limit(limit)
+                .all()
+            )
+
+            if not libs:
+                continue
+
+            out.append(
+                {
+                    "user_id": user.jellyfin_id,
+                    "name": user.name,
+                    "libraries": [
+                        {
+                            "library_id": lib_id,
+                            "name": lib_name,
+                            "plays": int(play_count or 0),
+                        }
+                        for lib_id, lib_name, play_count in libs
+                    ],
+                }
+            )
+
+        return out
+
+    @staticmethod
+    def top_items_by_user(session: Session, limit: int) -> List[Dict[str, Any]]:
+        """
+        Return top items for each user by play count.
+
+        :param session: Active SQL session
+        :param limit: Max number of items per user
+        :returns: List of user dicts with their top items
+        """
+        users = (
+            session.query(User)
+            .filter(User.archived.is_(False))
+            .order_by(User.name.asc())
+            .all()
+        )
+
+        out: List[Dict[str, Any]] = []
+
+        for user in users:
+            items = (
+                session.query(
+                    Item.jellyfin_id,
+                    Item.name,
+                    Item.type,
+                    Library.name.label("library_name"),
+                    func.count(PlaybackActivity.id).label("play_count"),
+                )
+                .join(PlaybackActivity, PlaybackActivity.item_id == Item.jellyfin_id)
+                .join(Library, Item.library_id == Library.id)
+                .filter(
+                    PlaybackActivity.user_id == user.jellyfin_id,
+                    PlaybackActivity.playback_type == "VideoPlaybackStopped",
+                    Item.archived.is_(False),
+                    Library.archived.is_(False),
+                )
+                .group_by(Item.jellyfin_id, Item.name, Item.type, Library.name)
+                .order_by(func.count(PlaybackActivity.id).desc())
+                .limit(limit)
+                .all()
+            )
+
+            if not items:
+                continue
+
+            out.append(
+                {
+                    "user_id": user.jellyfin_id,
+                    "name": user.name,
+                    "items": [
+                        {
+                            "item_id": item_id,
+                            "name": item_name,
+                            "type": item_type,
+                            "library_name": lib_name,
+                            "plays": int(play_count or 0),
+                        }
+                        for item_id, item_name, item_type, lib_name, play_count in items
+                    ],
                 }
             )
 
