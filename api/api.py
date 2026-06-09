@@ -140,7 +140,7 @@ def create_api_blueprint(*, repo, sync, jf):
                 "most_popular_genres",
             ]
 
-            rows_by_key = repo.get_dashboard_stats_map(section_keys=section_keys)
+            rows_by_key = repo.get_statistics_map(section_keys=section_keys)
 
             sections = {}
             latest_updated_at = 0

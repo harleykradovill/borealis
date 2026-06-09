@@ -642,7 +642,7 @@ class SyncService:
                 task_id,
                 {
                     "phase": "running",
-                    "message": "Refreshing dashboard stats",
+                    "message": "Refreshing statistics",
                     "step": "3/3",
                     "items_synced": int(
                         full_result.items_synced + activity_result.items_synced
@@ -652,9 +652,9 @@ class SyncService:
             )
 
             try:
-                self._refresh_dashboard_cache()
+                self._refresh_statistics_cache()
             except Exception:
-                errors.append("Failed to refresh dashboard stats")
+                errors.append("Failed to refresh statistics")
 
             result = self._build_result(
                 start_time,
@@ -771,7 +771,7 @@ class SyncService:
                 task_id,
                 {
                     "phase": "running",
-                    "message": "Refreshing dashboard stats",
+                    "message": "Refreshing statistics",
                     "step": 5,
                 },
             )
@@ -779,9 +779,9 @@ class SyncService:
             time.sleep(1.5)
 
             try:
-                self._refresh_dashboard_cache()
+                self._refresh_statistics_cache()
             except Exception:
-                errors.append("Failed to refresh dashboard stats")
+                errors.append("Failed to refresh statistics")
 
             result = self._build_result(
                 start_time,
@@ -837,11 +837,11 @@ class SyncService:
 
             return result
 
-    def _refresh_dashboard_cache(self) -> None:
+    def _refresh_statistics_cache(self) -> None:
         """
-        Refresh index dashboard stats cache from local DB data.
+        Refresh index statistics cache from local DB data.
 
         :returns: None
         :raises Exception: Any database errors during cache refresh
         """
-        self.repository.refresh_dashboard_stats(limit=5)
+        self.repository.refresh_statistics(limit=5)

@@ -1,5 +1,5 @@
 """
-Build dashboard statistic sections from persisten models and playback activity.
+Build statistics sections from persistent models and playback activity.
 Computes top users/items/libraries, watch-time leaders, most-active weekdays, recently watched items,
 and resolution breakdowns.
 """
@@ -64,9 +64,9 @@ def _sqlite_weekday_expr():
     return (w + 6) % 7
 
 
-class DashboardStatsBuilder:
+class StatisticsBuilder:
     """
-    Build dashboard statistic sections from database models.
+    Build statistic sections from database models.
     """
 
     @staticmethod
@@ -76,7 +76,7 @@ class DashboardStatsBuilder:
         name_resolver: Optional[Callable[[str], Optional[str]]] = None,
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Build all dashboard statistic sections in one call.
+        Build all statistic sections in one call.
 
         :param session: Active SQL session
         :param limit: Max records per section, clamped to at least 1
@@ -87,33 +87,31 @@ class DashboardStatsBuilder:
         """
         n = max(1, int(limit or 5))
         return {
-            SECTION_TOP_USERS: DashboardStatsBuilder.top_users_by_plays(session, n),
-            SECTION_TOP_ITEMS: DashboardStatsBuilder.top_items_by_plays(session, n),
+            SECTION_TOP_USERS: StatisticsBuilder.top_users_by_plays(session, n),
+            SECTION_TOP_ITEMS: StatisticsBuilder.top_items_by_plays(session, n),
             SECTION_TOP_LIBRARIES: (
-                DashboardStatsBuilder.top_libraries_by_plays(session, n)
+                StatisticsBuilder.top_libraries_by_plays(session, n)
             ),
             SECTION_WATCH_TIME_BY_USER: (
-                DashboardStatsBuilder.top_users_by_watch_time(session, n)
+                StatisticsBuilder.top_users_by_watch_time(session, n)
             ),
-            SECTION_MOST_ACTIVE_DAY: DashboardStatsBuilder.most_active_weekdays(
-                session, n
-            ),
-            SECTION_RECENTLY_WATCHED: DashboardStatsBuilder.recently_watched(
+            SECTION_MOST_ACTIVE_DAY: StatisticsBuilder.most_active_weekdays(session, n),
+            SECTION_RECENTLY_WATCHED: StatisticsBuilder.recently_watched(
                 session,
                 n,
                 name_resolver=name_resolver,
             ),
-            SECTION_RESOLUTIONS: DashboardStatsBuilder.resolutions(session, limit=8),
-            SECTION_VIDEO_CODECS: DashboardStatsBuilder.video_codecs(session, limit=8),
-            SECTION_AUDIO_CODECS: DashboardStatsBuilder.audio_codecs(session, limit=8),
-            SECTION_MOST_POPULAR_GENRES: DashboardStatsBuilder.most_popular_genres(
+            SECTION_RESOLUTIONS: StatisticsBuilder.resolutions(session, limit=8),
+            SECTION_VIDEO_CODECS: StatisticsBuilder.video_codecs(session, limit=8),
+            SECTION_AUDIO_CODECS: StatisticsBuilder.audio_codecs(session, limit=8),
+            SECTION_MOST_POPULAR_GENRES: StatisticsBuilder.most_popular_genres(
                 session, limit=5
             ),
             SECTION_TOP_LIBRARIES_BY_USER: (
-                DashboardStatsBuilder.top_libraries_by_user(session, limit=5)
+                StatisticsBuilder.top_libraries_by_user(session, limit=5)
             ),
             SECTION_TOP_ITEMS_BY_USER: (
-                DashboardStatsBuilder.top_items_by_user(session, limit=5)
+                StatisticsBuilder.top_items_by_user(session, limit=5)
             ),
         }
 

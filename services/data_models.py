@@ -1,6 +1,6 @@
 """
 SQLAlchemy ORM models for Borealis persisted entities. Defines User, Library,
-Item, PlaybackActivity, TaskLog, Settings, and cached DashboardStat with simple
+Item, PlaybackActivity, TaskLog, Settings, and cached Statistics with simple
 serialization helpers.
 """
 
@@ -326,12 +326,12 @@ class Settings(Base):
         }
 
 
-class DashboardStat(Base):
+class Statistics(Base):
     """
-    Persisted cached dashboard section payload and last update timestamp.
+    Persisted cached statistics section payload and last update timestamp.
     """
 
-    __tablename__ = "dashboard_stats"
+    __tablename__ = "statistics"
 
     id = Column(Integer, primary_key=True)
     section_key = Column(String(64), nullable=False, unique=True)
@@ -339,13 +339,13 @@ class DashboardStat(Base):
     updated_at = Column(BigInteger, nullable=False)
 
     __table_args__ = (
-        Index("idx_dashboard_stats_section_key", "section_key"),
-        Index("idx_dashboard_stats_updated_at", "updated_at"),
+        Index("idx_statistics_section_key", "section_key"),
+        Index("idx_statistics_updated_at", "updated_at"),
     )
 
     def to_dict(self) -> Dict[str, Any]:
         """
-        Serialize a dashboard statistics section for API responses.
+        Serialize a statistics section for API responses.
 
         :returns: Dictionary containing section key, payload list, and last update timestamp
         """

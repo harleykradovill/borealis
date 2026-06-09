@@ -15,7 +15,7 @@ from dataclasses import dataclass
 
 from services.data_models import (
     Base,
-    DashboardStat,
+    Statistics,
     Item,
     Library,
     PlaybackActivity,
@@ -796,7 +796,7 @@ class Repository:
             )
 
     # -------------------------
-    # Dashboard
+    # Statistics
     # -------------------------
 
     def get_glance_totals(self) -> Dict[str, int]:
@@ -830,11 +830,11 @@ class Repository:
             "total_users": int(total_users or 0),
         }
 
-    def upsert_dashboard_stat(self, section_key: str, payload: Any) -> Dict[str, Any]:
+    def upsert_statistics(self, section_key: str, payload: Any) -> Dict[str, Any]:
         """
-        Insert or update one dashboard stats section payload.
+        Insert or update one statistics section payload.
 
-        :param section_key: Key identifying the dashboard section
+        :param section_key: Key identifying the statistics section
         :param payload: Data payload to store as JSON
         :returns: Dictionary with section_key, payload_json, and updated_at timestamp
         :raises ValueError: Raised if section_key is empty or falsy
@@ -846,8 +846,8 @@ class Repository:
 
         with self._session() as session:
             row = (
-                session.query(DashboardStat)
-                .filter(DashboardStat.section_key == section_key)
+                session.query(Statistics)
+                .filter(Statistics.section_key == section_key)
                 .first()
             )
 
@@ -856,7 +856,7 @@ class Repository:
                 row.payload_json = payload_json
                 row.updated_at = now
             else:
-                row = DashboardStat(
+                row = Statistics(
                     section_key=section_key,
                     payload_json=payload_json,
                     updated_at=now,
@@ -866,48 +866,48 @@ class Repository:
 
             return row.to_dict()
 
-    def get_dashboard_stats(
+    def get_statistics(
         self, section_keys: Optional[List[str]] = None
     ) -> List[Dict[str, Any]]:
         """
-        Retrieve dashboard stats rows, optionally filtered by section.
+        Retrieve statistics rows, optionally filtered by section.
 
         :param section_keys: Optional list of section keys to filter by
-        :returns: List of dashboard stat dicts ordered by section_key
+        :returns: List of statistics dicts ordered by section_key
         """
         with self._session() as session:
-            query = session.query(DashboardStat)
+            query = session.query(Statistics)
 
             if section_keys:
-                query = query.filter(DashboardStat.section_key.in_(section_keys))
+                query = query.filter(Statistics.section_key.in_(section_keys))
 
-            rows = query.order_by(DashboardStat.section_key.asc()).all()
+            rows = query.order_by(Statistics.section_key.asc()).all()
             return [row.to_dict() for row in rows]
 
-    def get_dashboard_stats_map(
+    def get_statistics_map(
         self, section_keys: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
-        Retrieve dashboard stats keyed by section_key.
+        Retrieve statistics keyed by section_key.
 
         :param section_keys: Optional list of section keys to filter by
         :returns: Dictionary mapping section_key to complete stat record
         """
-        rows = self.get_dashboard_stats(section_keys=section_keys)
+        rows = self.get_statistics(section_keys=section_keys)
         return {row["section_key"]: row for row in rows}
 
-    def refresh_dashboard_stats(self, limit: int = 5) -> Dict[str, int]:
+    def refresh_statistics(self, limit: int = 5) -> Dict[str, int]:
         """
-        Rebuild and persist all dashboard stat sections.
+        Rebuild and persist all statistics sections.
 
         :param limit: Maximum items to include per section (default 5)
         :returns: Dictionary with count of sections updated
         """
-        from services.dashboard_stats import DashboardStatsBuilder
+        from services.statistics import StatisticsBuilder
 
         try:
             with self._session() as session:
-                sections = DashboardStatsBuilder.build_all(
+                sections = StatisticsBuilder.build_all(
                     session=session,
                     limit=limit,
                     name_resolver=lambda item_id: (
@@ -916,11 +916,11 @@ class Repository:
                 )
 
             for section_key, payload in sections.items():
-                self.upsert_dashboard_stat(section_key, payload)
+                self.upsert_statistics(section_key, payload)
 
             return {"sections_updated": len(sections)}
         except Exception as error:
-            logger.exception(f"[ERROR] Failed to refresh dashboard stats: {error}")
+            logger.exception(f"[ERROR] Failed to refresh statistics: {error}")
             raise
 
     # -------------------------
