@@ -612,9 +612,10 @@ class SyncService:
         self._update_task_progress(
             task_id,
             {
-                "phase": "starting",
+                "phase": "running",
                 "message": "Starting initial sync",
-                "step": "1/3",
+                "step": 1,
+                "step_total": 5,
                 "items_synced": 0,
                 "total_events": 0,
             },
@@ -629,8 +630,8 @@ class SyncService:
                 task_id,
                 {
                     "phase": "running",
-                    "message": "Metadata sync complete, syncing activity log",
-                    "step": "2/3",
+                    "message": "Syncing activity log",
+                    "step": 3,
                 },
             )
 
@@ -642,12 +643,8 @@ class SyncService:
                 task_id,
                 {
                     "phase": "running",
-                    "message": "Refreshing statistics",
-                    "step": "3/3",
-                    "items_synced": int(
-                        full_result.items_synced + activity_result.items_synced
-                    ),
-                    "total_events": int(activity_result.items_synced),
+                    "message": "Refreshing play statistics",
+                    "step": 3,
                 },
             )
 
@@ -727,7 +724,7 @@ class SyncService:
                 "phase": "running",
                 "message": "Starting periodic sync",
                 "step": 1,
-                "step_total": 6,
+                "step_total": 5,
                 "items_synced": 0,
                 "total_events": 0,
             },
