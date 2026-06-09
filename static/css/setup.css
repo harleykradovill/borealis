@@ -85,10 +85,6 @@
 /* Page 3 - Server Info */
 /* ==================== */
 .server-info-display {
-  border: 1px solid var(--border);
-  border-radius: var(--border-element);
-  padding: 1rem;
-  background: var(--surface);
   margin-bottom: 1rem;
 }
 .server-info-display .info-row {
@@ -107,31 +103,27 @@
   word-break: break-all;
 }
 
-.libraries-tracking {
-  border: 1px solid var(--border);
-  border-radius: var(--border-element);
-  padding: 1rem;
-  background: var(--surface);
-}
-.libraries-tracking h3 {
-  margin: 0 0 1rem 0;
-  font-size: 1rem;
+.libraries-tracking h2 {
+  margin: 0 0 0.75rem 0;
   color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
 }
+
 .library-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
 }
+
 .library-item:last-child {
   border-bottom: none;
 }
+
 .library-name {
   color: var(--text);
   font-weight: 500;
+  font-size: 0.8rem;
 }
 
 .libraries-placeholder {
