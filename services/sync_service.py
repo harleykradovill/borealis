@@ -558,7 +558,7 @@ class SyncService:
                 {
                     "phase": "running",
                     "message": "Syncing metadata",
-                    "step": 3,
+                    "step": 2,
                 },
             )
 
