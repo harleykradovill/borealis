@@ -98,6 +98,171 @@ function populateRecentActivity() {
     });
 }
 
+(function () {
+  const statisticsSection = document.querySelector(".statistics-section");
+  if (!statisticsSection) return;
+
+  const statsCanvas = document.getElementById("watch-statistics-chart");
+  const statsLoading = document.getElementById("watch-statistics-loading");
+  if (!statsCanvas) return;
+
+  const navItems = statisticsSection.querySelectorAll(".statistics-nav li");
+  const palette = globalThis.helpers.getPalette(null, true);
+
+  const statTypes = [
+    {
+      key: "libraries",
+      labelField: "name",
+      valueKey: "plays",
+      format: (v) => String(Number(v)),
+    },
+    {
+      key: "items",
+      labelField: "name",
+      valueKey: "plays",
+      format: (v) => String(Number(v)),
+    },
+  ];
+
+  let cachedData = null;
+
+  async function fetchStatsData() {
+    const userIdMatch = /\/user\/([^/]+)$/.exec(globalThis.location.pathname);
+    if (!userIdMatch) return null;
+
+    const userId = userIdMatch[1];
+
+    try {
+      const libResp = await fetch(
+        `/api/analytics/user/${encodeURIComponent(userId)}/stats/libraries`,
+      );
+      if (!libResp.ok) return null;
+
+      const libPayload = await libResp.json();
+      if (!libPayload?.ok) return null;
+
+      const itemResp = await fetch(
+        `/api/analytics/user/${encodeURIComponent(userId)}/stats/items`,
+      );
+      if (!itemResp.ok) return null;
+
+      const itemPayload = await itemResp.json();
+      if (!itemPayload?.ok) return null;
+
+      return {
+        libraries: libPayload.data?.libraries || [],
+        items: itemPayload.data?.items || [],
+      };
+    } catch (error) {
+      globalThis.helpers.handleError("Failed to fetch statistics data:", error);
+      return null;
+    }
+  }
+
+  function renderChart(data, typeIndex) {
+    if (!data) return;
+
+    const stat = statTypes[typeIndex];
+    const rows = (Array.isArray(data[stat.key]) ? data[stat.key] : []).slice(0, 5);
+
+    const labels = rows.map((r) => r?.[stat.labelField] ?? "");
+    const values = rows.map((r) => Number(r?.[stat.valueKey] || 0));
+
+    const maxV = values.length ? Math.max(...values) : 0;
+    if (!maxV) {
+      statsCanvas.style.display = "none";
+      return;
+    }
+
+    const span = Math.max(1, maxV);
+    const pad = Math.max(1, Math.round(span * 0.05));
+    const xMax = maxV + pad;
+
+    const ctx = statsCanvas.getContext("2d");
+
+    const xTicks = {
+      color: "#b3b3b3",
+      precision: 0,
+      padding: 6,
+    };
+
+    const config = {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            data: values,
+            backgroundColor: values.map(
+              (_, idx) => palette[Math.min(idx, palette.length - 1)],
+            ),
+            borderRadius: 100,
+            barThickness: 22,
+          },
+        ],
+      },
+      options: {
+        indexAxis: "y",
+        animation: { duration: 200 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctxArg) => stat.format(rows[ctxArg.dataIndex]?.[stat.valueKey]),
+            },
+          },
+        },
+        scales: {
+          x: {
+            display: true,
+            title: { display: false },
+            ticks: xTicks,
+            grid: { display: false },
+            min: 0,
+            max: xMax,
+          },
+          y: {
+            display: true,
+            title: { display: false },
+            ticks: { color: "#b3b3b3" },
+            grid: { display: false },
+          },
+        },
+        maintainAspectRatio: false,
+        responsive: true,
+      },
+    };
+
+    if (globalThis.__userStatsChart) {
+      globalThis.__userStatsChart.destroy();
+      globalThis.__userStatsChart = null;
+    }
+    globalThis.__userStatsChart = new Chart(ctx, config);
+    statsCanvas.style.display = "";
+  }
+
+  async function switchStatistic(index) {
+    navItems.forEach((item, i) => {
+      item.classList.toggle("active", i === index);
+    });
+
+    if (!cachedData) {
+      if (statsLoading) statsLoading.hidden = false;
+      statsCanvas.style.display = "none";
+      cachedData = await fetchStatsData();
+      if (statsLoading) statsLoading.hidden = true;
+    }
+
+    renderChart(cachedData, index);
+  }
+
+  navItems.forEach((item, index) => {
+    item.addEventListener("click", () => switchStatistic(index));
+  });
+
+  switchStatistic(0);
+})();
+
 document.addEventListener("DOMContentLoaded", () => {
   populateGlanceSection();
   populateRecentActivity();
