@@ -704,4 +704,76 @@ def create_api_blueprint(*, repo, sync, jf):
                 500,
             )
 
+    @bp.get("/analytics/user/<user_id>/stats/libraries")
+    def api_user_stats_libraries(user_id: str) -> Response:
+        """
+        Retrieve top libraries for a specific user by play count.
+
+        :returns: JSON response with user's top libraries and HTTP 200, or error details with HTTP 500
+        """
+        try:
+            from services.statistics import StatisticsBuilder
+            from services.data_models import User
+
+            with repo._session() as session:
+                user = session.query(User).filter(User.jellyfin_id == user_id).first()
+                if not user:
+                    return make_response(
+                        jsonify({"ok": False, "message": "User not found"}), 404
+                    )
+
+                result = StatisticsBuilder.top_libraries_by_user(session, limit=5)
+                user_data = next(
+                    (u for u in result if u.get("user_id") == user_id), None
+                )
+
+                if not user_data:
+                    return make_response(
+                        jsonify({"ok": True, "data": {"libraries": []}}), 200
+                    )
+
+                return make_response(jsonify({"ok": True, "data": user_data}), 200)
+        except Exception:
+            logger.exception("[ERROR] Failed to fetch user library stats")
+            return make_response(
+                jsonify({"ok": False, "message": "Failed to fetch user library stats"}),
+                500,
+            )
+
+    @bp.get("/analytics/user/<user_id>/stats/items")
+    def api_user_stats_items(user_id: str) -> Response:
+        """
+        Retrieve top items for a specific user by play count.
+
+        :returns: JSON response with user's top items and HTTP 200, or error details with HTTP 500
+        """
+        try:
+            from services.statistics import StatisticsBuilder
+            from services.data_models import User
+
+            with repo._session() as session:
+                user = session.query(User).filter(User.jellyfin_id == user_id).first()
+                if not user:
+                    return make_response(
+                        jsonify({"ok": False, "message": "User not found"}), 404
+                    )
+
+                result = StatisticsBuilder.top_items_by_user(session, limit=5)
+                user_data = next(
+                    (u for u in result if u.get("user_id") == user_id), None
+                )
+
+                if not user_data:
+                    return make_response(
+                        jsonify({"ok": True, "data": {"items": []}}), 200
+                    )
+
+                return make_response(jsonify({"ok": True, "data": user_data}), 200)
+        except Exception:
+            logger.exception("[ERROR] Failed to fetch user item stats")
+            return make_response(
+                jsonify({"ok": False, "message": "Failed to fetch user item stats"}),
+                500,
+            )
+
     return bp
