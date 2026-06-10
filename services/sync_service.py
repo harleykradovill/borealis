@@ -222,7 +222,7 @@ class SyncService:
 
         return {"libraries": libraries_count, "items": items_count}
 
-    def sync_metadata(self, task_id: Optional[int] = None) -> SyncResult:
+    def sync_metadata(self) -> SyncResult:
         """
         Perform a full metadata sync: users → libraries → items.
 
@@ -236,33 +236,9 @@ class SyncService:
         users_count = 0
         libraries_count = 0
         items_count = 0
-        own_task = task_id is None
-        step_total = 5 if not own_task else 3
-
-        if own_task:
-            task_id = self.repository.create_task_log(
-                name="Metadata Sync", task_type="sync", execution_type="full"
-            )
-
-        self._update_task_progress(
-            task_id,
-            {
-                "phase": "running",
-                "step": 1,
-                "step_total": step_total,
-                "message": "Syncing users",
-            },
-        )
 
         try:
             users_count = self._sync_users(errors)
-
-            time.sleep(2.5)
-
-            self._update_task_progress(
-                task_id,
-                {"step": 2, "message": "Syncing libraries and items"},
-            )
 
             counts = self._sync_libraries_and_items(errors)
             libraries_count = counts["libraries"]
@@ -275,13 +251,6 @@ class SyncService:
                 libraries_synced=libraries_count,
                 items_synced=items_count,
             )
-
-            if own_task and task_id is not None:
-                self.repository.complete_task_log(
-                    task_id=task_id,
-                    result="SUCCESS" if result.success else "FAILED",
-                    log_data=result.to_dict(),
-                )
 
             logging.info("[INFO] Metadata Sync Complete")
             return result
@@ -297,13 +266,6 @@ class SyncService:
                 items_synced=items_count,
             )
 
-            if own_task and task_id is not None:
-                self.repository.complete_task_log(
-                    task_id=task_id,
-                    result="FAILED",
-                    log_data=result.to_dict(),
-                )
-
             return result
 
     def sync_activity_log_full(self) -> SyncResult:
@@ -318,18 +280,6 @@ class SyncService:
         errors: List[str] = []
         events_count = 0
         total_events = 0
-
-        task_id = self.repository.create_task_log(
-            name="Activity Log Sync (Full)", task_type="sync", execution_type="full"
-        )
-        self._update_task_progress(
-            task_id,
-            {
-                "phase": "starting",
-                "items_synced": 0,
-                "total_events": 0,
-            },
-        )
 
         try:
             user_lookup = self._build_user_lookup()
@@ -395,15 +345,6 @@ class SyncService:
                 total_fetched += len(items)
                 start_index += page_size
 
-                self._update_task_progress(
-                    task_id,
-                    {
-                        "phase": "running",
-                        "items_synced": int(events_count),
-                        "total_events": int(total_events),
-                    },
-                )
-
                 if total_fetched > 500000:
                     error_msg = (
                         "Activity log exceeded 500,000 entries, "
@@ -430,12 +371,6 @@ class SyncService:
             log_data["phase"] = "complete" if result.success else "failed"
             log_data["total_events"] = int(total_events)
 
-            self.repository.complete_task_log(
-                task_id=task_id,
-                result="SUCCESS" if result.success else "FAILED",
-                log_data=log_data,
-            )
-
             logging.info("[INFO] Full Activity Log Sync Complete")
             return result
 
@@ -451,12 +386,6 @@ class SyncService:
             log_data = result.to_dict()
             log_data["phase"] = "failed"
             log_data["total_events"] = int(total_events)
-
-            self.repository.complete_task_log(
-                task_id=task_id,
-                result="FAILED",
-                log_data=log_data,
-            )
 
             return result
 
@@ -615,16 +544,27 @@ class SyncService:
                 "phase": "running",
                 "message": "Starting initial sync",
                 "step": 1,
-                "step_total": 5,
+                "step_total": 4,
                 "items_synced": 0,
                 "total_events": 0,
             },
         )
 
+        time.sleep(1)
+
         try:
-            full_result = self.sync_metadata()
-            if not full_result.success and full_result.errors:
-                errors.extend(full_result.errors)
+            self._update_task_progress(
+                task_id,
+                {
+                    "phase": "running",
+                    "message": "Syncing metadata",
+                    "step": 3,
+                },
+            )
+
+            metadata_result = self.sync_metadata()
+            if not metadata_result.success and metadata_result.errors:
+                errors.extend(metadata_result.errors)
 
             self._update_task_progress(
                 task_id,
@@ -639,15 +579,16 @@ class SyncService:
             if not activity_result.success and activity_result.errors:
                 errors.extend(activity_result.errors)
 
+            time.sleep(1)
+
             self._update_task_progress(
                 task_id,
                 {
                     "phase": "running",
-                    "message": "Refreshing play statistics",
-                    "step": 3,
+                    "message": "Refreshing statistics",
+                    "step": 4,
                 },
             )
-
             try:
                 self._refresh_statistics_cache()
             except Exception:
@@ -656,10 +597,12 @@ class SyncService:
             result = self._build_result(
                 start_time,
                 errors,
-                users_synced=full_result.users_synced,
-                libraries_synced=full_result.libraries_synced,
-                items_synced=(full_result.items_synced + activity_result.items_synced),
-                success=(full_result.success and activity_result.success),
+                users_synced=metadata_result.users_synced,
+                libraries_synced=metadata_result.libraries_synced,
+                items_synced=(
+                    metadata_result.items_synced + activity_result.items_synced
+                ),
+                success=(metadata_result.success and activity_result.success),
             )
 
             log_data = result.to_dict()
@@ -667,13 +610,15 @@ class SyncService:
             log_data["message"] = (
                 "Initial sync complete" if result.success else "Initial sync failed"
             )
-            log_data["step"] = "3/3"
+            log_data["step"] = 5
 
             self.repository.complete_task_log(
                 task_id=task_id,
                 result="SUCCESS" if result.success else "FAILED",
                 log_data=log_data,
             )
+
+            time.sleep(1)
 
             logging.info("[INFO] Initial Sync Complete")
             return result
@@ -724,14 +669,25 @@ class SyncService:
                 "phase": "running",
                 "message": "Starting periodic sync",
                 "step": 1,
-                "step_total": 5,
+                "step_total": 4,
                 "items_synced": 0,
                 "total_events": 0,
             },
         )
 
+        time.sleep(1)
+
         try:
-            metadata_result = self.sync_metadata(task_id=task_id)
+            self._update_task_progress(
+                task_id,
+                {
+                    "phase": "running",
+                    "message": "Syncing metadata",
+                    "step": 2,
+                },
+            )
+
+            metadata_result = self.sync_metadata()
             if not metadata_result.success and metadata_result.errors:
                 errors.extend(metadata_result.errors)
 
@@ -744,41 +700,29 @@ class SyncService:
                 },
             )
 
+            time.sleep(1)
+
             activity_result = self.sync_activity_log_incremental()
             if not activity_result.success and activity_result.errors:
                 errors.extend(activity_result.errors)
 
-            self._update_task_progress(
-                task_id,
-                {
-                    "phase": "running",
-                    "message": "Refreshing play stats",
-                    "step": 4,
-                },
-            )
-
-            time.sleep(2)
-
-            try:
-                self.repository.refresh_play_stats()
-            except Exception:
-                errors.append("Failed to refresh play stats")
+            time.sleep(1)
 
             self._update_task_progress(
                 task_id,
                 {
                     "phase": "running",
                     "message": "Refreshing statistics",
-                    "step": 5,
+                    "step": 4,
                 },
             )
-
-            time.sleep(1.5)
 
             try:
                 self._refresh_statistics_cache()
             except Exception:
                 errors.append("Failed to refresh statistics")
+
+            time.sleep(1)
 
             result = self._build_result(
                 start_time,
@@ -796,7 +740,7 @@ class SyncService:
             log_data["message"] = (
                 "Periodic sync complete" if result.success else "Periodic sync failed"
             )
-            log_data["step"] = 6
+            log_data["step"] = 5
 
             self.repository.complete_task_log(
                 task_id=task_id,
@@ -804,7 +748,7 @@ class SyncService:
                 log_data=log_data,
             )
 
-            time.sleep(1.5)
+            time.sleep(1)
 
             logging.info("[INFO] Periodic Sync Complete")
             return result

@@ -22,7 +22,7 @@ from services.data_models import (
     TaskLog,
     User,
 )
-from services.stats_aggregator import StatsAggregator
+from services.sync_aggregator import StatsAggregator
 
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import Session, sessionmaker

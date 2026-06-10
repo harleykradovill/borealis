@@ -78,7 +78,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             if "ENCRYPTION_KEY_PATH" not in test_config:
                 app.config["ENCRYPTION_KEY_PATH"] = ":memory:"
 
-    from services.settings_store import SettingsService
+    from services.settings import SettingsService
 
     svc = SettingsService(
         database_url=app.config["DATABASE_URL"],

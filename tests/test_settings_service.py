@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from cryptography.fernet import Fernet
 
-from services.settings_store import SettingsService
+from services.settings import SettingsService
 
 
 @pytest.fixture()

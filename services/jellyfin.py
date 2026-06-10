@@ -10,7 +10,7 @@ import json
 import re
 import time
 
-from services.settings_store import SettingsService
+from services.settings import SettingsService
 
 from typing import Any, Dict, List, Optional, Tuple
 
