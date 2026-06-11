@@ -298,7 +298,7 @@ class StatisticsBuilder:
                     "user_name": (
                         user.name
                         if user and user.name
-                        else (activity.username_denorm or "Unknown")
+                        else (activity.username or "Unknown")
                     ),
                     "last_watched_at": int(activity.activity_at or 0),
                 }

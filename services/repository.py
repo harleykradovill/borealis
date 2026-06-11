@@ -685,7 +685,7 @@ class Repository:
         """
         Insert playback activity records.
 
-        :param event_dicts: List of event dicts with activity_log_id, user_id, item_id, event_name, activity_at, username_denorm
+        :param event_dicts: List of event dicts with activity_log_id, user_id, item_id, event_name, activity_at, username
         :returns: Count of playback events processed
         """
         if not event_dicts:
@@ -716,7 +716,7 @@ class Repository:
                     pa.playback_type = d.get("playback_type", pa.playback_type)
                     pa.event_name = d.get("event_name", pa.event_name)
                     pa.activity_at = d.get("activity_at", pa.activity_at)
-                    pa.username_denorm = d.get("username_denorm", pa.username_denorm)
+                    pa.username = d.get("username", pa.username)
                 else:
                     session.add(
                         PlaybackActivity(
@@ -726,7 +726,7 @@ class Repository:
                             playback_type=d.get("playback_type"),
                             event_name=d.get("event_name"),
                             activity_at=d.get("activity_at") or _now(),
-                            username_denorm=d.get("username_denorm"),
+                            username=d.get("username"),
                         )
                     )
 
@@ -802,14 +802,14 @@ class Repository:
                 user_rows = (
                     session.query(
                         PlaybackActivity.user_id,
-                        PlaybackActivity.username_denorm,
+                        PlaybackActivity.username,
                     )
                     .filter(PlaybackActivity.user_id.isnot(None))
                     .distinct()
                     .order_by(
                         func.lower(
                             func.coalesce(
-                                PlaybackActivity.username_denorm,
+                                PlaybackActivity.username,
                                 PlaybackActivity.user_id,
                             )
                         ).asc()
@@ -820,9 +820,9 @@ class Repository:
                 users = [
                     {
                         "user_id": user_id,
-                        "username_denorm": username_denorm,
+                        "username": username,
                     }
-                    for user_id, username_denorm in user_rows
+                    for user_id, username in user_rows
                     if user_id
                 ]
 

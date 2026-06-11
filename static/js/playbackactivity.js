@@ -123,7 +123,7 @@
       });
 
       const nameSpan = document.createElement("span");
-      nameSpan.textContent = user.username_denorm || user.user_id || "(unknown)";
+      nameSpan.textContent = user.username || user.user_id || "(unknown)";
 
       label.appendChild(input);
       label.appendChild(nameSpan);
@@ -157,25 +157,25 @@
       const userId = String(raw?.user_id || "").trim();
       if (!userId) continue;
 
-      const username = String(raw?.username_denorm || "").trim();
+      const username = String(raw?.username || "").trim();
       const existing = byUserId.get(userId);
 
       if (!existing) {
         byUserId.set(userId, {
           user_id: userId,
-          username_denorm: username,
+          username: username,
         });
         continue;
       }
 
-      if (!existing.username_denorm && username) {
-        existing.username_denorm = username;
+      if (!existing.username && username) {
+        existing.username = username;
       }
     }
 
     allUsers = Array.from(byUserId.values()).sort((a, b) => {
-      const left = (a.username_denorm || a.user_id).toLowerCase();
-      const right = (b.username_denorm || b.user_id).toLowerCase();
+      const left = (a.username || a.user_id).toLowerCase();
+      const right = (b.username || b.user_id).toLowerCase();
       return left.localeCompare(right);
     });
 
@@ -250,7 +250,7 @@
     tbody.innerHTML = "";
 
     const currentNameById = new Map(
-      allUsers.map((u) => [u.user_id, u.username_denorm || u.user_id]),
+      allUsers.map((u) => [u.user_id, u.username || u.user_id]),
     );
 
     for (const it of items) {
@@ -259,7 +259,7 @@
       const userTd = document.createElement("td");
       userTd.style.padding = "0.5rem";
       userTd.textContent =
-        currentNameById.get(it.user_id) || it.username_denorm || "Deleted User";
+        currentNameById.get(it.user_id) || it.username || "Deleted User";
       tr.appendChild(userTd);
 
       const typeTd = document.createElement("td");

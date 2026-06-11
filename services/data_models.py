@@ -201,7 +201,7 @@ class PlaybackActivity(Base):
     playback_type = Column(String(64), nullable=True)
     event_name = Column(String(512), nullable=True)
     activity_at = Column(BigInteger, nullable=False)
-    username_denorm = Column(String(128), nullable=True)
+    username = Column(String(128), nullable=True)
 
     __table_args__ = (
         Index("idx_playback_activity_log_id", "activity_log_id"),
@@ -225,7 +225,7 @@ class PlaybackActivity(Base):
             "playback_type": self.playback_type,
             "event_name": self.event_name,
             "activity_at": self.activity_at,
-            "username_denorm": self.username_denorm,
+            "username": self.username,
         }
 
 

@@ -278,7 +278,7 @@ def map_playback_event(
         "playback_type": _clean_str(jf_event.get("Type")),
         "event_name": _clean_str(jf_event.get("Name")),
         "activity_at": activity_at,
-        "username_denorm": username,
+        "username": username,
     }
 
 
