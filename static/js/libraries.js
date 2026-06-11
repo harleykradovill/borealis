@@ -53,12 +53,15 @@
     libs.forEach((lib) => {
       const tr = document.createElement("tr");
 
-      const typeText =
-        lib.type === "movies"
-          ? "Movies"
-          : lib.type === "tvshows"
-            ? "TV Shows"
-            : lib.type || "";
+      let typeText = "";
+
+      if (lib.type === "movies") {
+        typeText = "Movies";
+      } else if (lib.type === "tvshows") {
+        typeText = "TV Shows";
+      } else {
+        typeText = lib.type || "";
+      }
 
       const attrs = [
         { label: "Name", value: lib.name || "(unnamed)", isName: true },

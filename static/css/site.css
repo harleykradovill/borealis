@@ -222,11 +222,6 @@ body {
   background: #a81c1c;
 }
 
-.btn-danger:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.35);
-}
-
 /* Toasts */
 .toast-container {
   position: fixed;
