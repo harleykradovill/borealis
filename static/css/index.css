@@ -15,7 +15,7 @@
 .genres-section h2 {
   margin: 0 0 0.75rem 0;
   color: var(--text);
-  font-size: 1rem;
+  font-size: var(--font-size-lg);
   font-weight: 600;
 }
 
@@ -40,13 +40,13 @@
 
 .glance-label {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: var(--font-size-sm);
   font-weight: 600;
 }
 
 .glance-value {
   color: var(--text);
-  font-size: 1.2rem;
+  font-size: var(--font-size-lg);
   font-weight: 700;
   letter-spacing: 0.2px;
 }
@@ -124,14 +124,14 @@
 
 .session-card-attr-label {
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   flex-shrink: 0;
 }
 
 .session-card-attr-value {
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   text-align: right;
   flex: 1;
   word-break: normal;
@@ -151,7 +151,7 @@
 }
 
 .session-card-progress-title {
-  font-size: 1rem;
+  font-size: var(--font-size-lg);
   font-weight: 600;
   color: var(--text);
   text-align: left;
@@ -182,7 +182,7 @@
 }
 
 .session-card-progress-label {
-  font-size: 0.8rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
@@ -226,7 +226,7 @@
   justify-content: flex-start;
   gap: 0.5rem;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
 }
 
 .session-card-user-name {
@@ -268,13 +268,13 @@
 }
 
 .plays-trend-card-value {
-  font-size: 2.2rem;
+  font-size: var(--font-size-xxl);
   font-weight: 800;
   color: var(--black);
 }
 
 .plays-trend-card-label {
-  font-size: 1rem;
+  font-size: var(--font-size-lg);
   font-weight: 600;
   color: var(--black);
 }
@@ -339,7 +339,7 @@
   list-style: none;
   margin: 0;
   padding: 0.35rem 0.75rem;
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
@@ -404,7 +404,7 @@
 
 .matrix-month-label {
   flex: 1 1 auto;
-  font-size: 0.75rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   font-weight: 500;
   height: 1.2rem;
@@ -428,7 +428,7 @@
 }
 
 .matrix-day-label {
-  font-size: 0.75rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
   font-weight: 500;
   text-align: right;
@@ -505,7 +505,7 @@
   list-style: none;
   margin: 0;
   padding: 0.35rem 0.75rem;
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;

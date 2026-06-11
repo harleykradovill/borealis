@@ -34,13 +34,13 @@
 .settings-placeholder {
   margin: 0;
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: var(--font-size-base);
 }
 
 .settings-group h2 {
   margin: 0 0 0.75rem 0;
   color: var(--text);
-  font-size: 1rem;
+  font-size: var(--font-size-lg);
   font-weight: 600;
 }
 
@@ -61,7 +61,7 @@
 .settings-group-title {
   margin: 0 0 0.75rem 0;
   color: var(--text);
-  font-size: 1rem;
+  font-size: var(--font-size-lg);
 }
 
 .settings-form .form-field {
@@ -101,7 +101,7 @@
 
 .sync-stat-label {
   color: var(--text-muted);
-  font-size: 0.78rem;
+  font-size: var(--font-size-sm);
   margin-bottom: 0.25rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -109,14 +109,14 @@
 
 .sync-stat-value {
   color: var(--text);
-  font-size: 1rem;
+  font-size: var(--font-size-lg);
   font-weight: 600;
   line-height: 1.2;
 }
 
 .sync-stat-sub {
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: var(--font-size-sm);
   margin-top: 0.2rem;
 }
 
@@ -146,7 +146,7 @@
 
 .db-stat-label {
   color: var(--text-muted);
-  font-size: 0.78rem;
+  font-size: var(--font-size-sm);
   margin-bottom: 0.25rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -154,7 +154,7 @@
 
 .db-stat-value {
   color: var(--text);
-  font-size: 1rem;
+  font-size: var(--font-size-lg);
   font-weight: 600;
   line-height: 1.2;
   word-break: break-all;
@@ -172,14 +172,14 @@
 }
 
 .jf-server-host {
-  font-size: 1.2rem;
+  font-size: var(--font-size-lg);
   color: var(--text);
   font-weight: 500;
   word-break: break-all;
 }
 
 .jf-server-key {
-  font-size: 0.8rem;
+  font-size: var(--font-size-sm);
   color: var(--text-muted);
 }
 
@@ -219,7 +219,7 @@
   flex-direction: column;
   gap: 0.1rem;
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: var(--font-size-base);
 }
 
 .about-list a {
@@ -236,6 +236,6 @@
 
 .about-list a::after {
   content: "↗";
-  font-size: 0.9em;
+  font-size: var(--font-size-base);
   opacity: 0.7;
 }

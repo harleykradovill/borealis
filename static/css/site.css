@@ -104,6 +104,7 @@ body {
   text-decoration: none;
   border-radius: var(--border-element);
   transition: var(--transition-all);
+  font-size: var(--font-size-lg);
 }
 
 .sidebar-links a:hover,
@@ -167,7 +168,7 @@ body {
   color: var(--text-muted);
   text-decoration: none;
   border-radius: var(--border-element);
-  font-size: 0.95em;
+  font-size: var(--font-size-lg);
   transition: var(--transition-all);
 }
 
