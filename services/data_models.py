@@ -136,7 +136,7 @@ class Item(Base):
     parent_id = Column(String(128), nullable=True)
     name = Column(String(512), nullable=False)
     type = Column(String(64), nullable=True)
-    play_count = Column(Integer, default=0)
+    total_plays = Column(Integer, default=0)
     archived = Column(Boolean, default=False)
     runtime_seconds = Column(Integer, default=0)
     size_bytes = Column(BigInteger, default=0)
@@ -152,7 +152,7 @@ class Item(Base):
         Index("idx_item_jellyfin_id", "jellyfin_id"),
         Index("idx_item_library_id", "library_id"),
         Index("idx_item_archived", "archived"),
-        Index("idx_item_play_count", "play_count"),
+        Index("idx_item_total_plays", "total_plays"),
         Index("idx_item_runtime_seconds", "runtime_seconds"),
         Index("idx_item_size_bytes", "size_bytes"),
         Index("idx_date_created", "date_created"),
@@ -175,7 +175,7 @@ class Item(Base):
             "parent_id": self.parent_id,
             "name": self.name,
             "type": self.type,
-            "play_count": self.play_count,
+            "total_plays": self.total_plays,
             "runtime_seconds": self.runtime_seconds,
             "size_bytes": self.size_bytes,
             "archived": self.archived,

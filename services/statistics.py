@@ -153,7 +153,7 @@ class StatisticsBuilder:
             session.query(Item, Library)
             .join(Library, Item.library_id == Library.id)
             .filter(Item.archived.is_(False), Library.archived.is_(False))
-            .order_by(Item.play_count.desc(), Item.name.asc())
+            .order_by(Item.total_plays.desc(), Item.name.asc())
             .limit(limit)
             .all()
         )
@@ -163,7 +163,7 @@ class StatisticsBuilder:
                 "name": item.name,
                 "type": item.type,
                 "library_name": library.name,
-                "plays": int(item.play_count or 0),
+                "plays": int(item.total_plays or 0),
             }
             for item, library in rows
         ]
@@ -555,7 +555,7 @@ class StatisticsBuilder:
                 session.query(
                     Library.jellyfin_id,
                     Library.name,
-                    func.count(PlaybackActivity.id).label("play_count"),
+                    func.count(PlaybackActivity.id).label("total_plays"),
                 )
                 .join(Item, PlaybackActivity.item_id == Item.jellyfin_id)
                 .join(Library, Item.library_id == Library.id)
@@ -582,9 +582,9 @@ class StatisticsBuilder:
                         {
                             "library_id": lib_id,
                             "name": lib_name,
-                            "plays": int(play_count or 0),
+                            "plays": int(total_plays or 0),
                         }
-                        for lib_id, lib_name, play_count in libs
+                        for lib_id, lib_name, total_plays in libs
                     ],
                 }
             )
@@ -616,7 +616,7 @@ class StatisticsBuilder:
                     Item.name,
                     Item.type,
                     Library.name.label("library_name"),
-                    func.count(PlaybackActivity.id).label("play_count"),
+                    func.count(PlaybackActivity.id).label("total_plays"),
                 )
                 .join(PlaybackActivity, PlaybackActivity.item_id == Item.jellyfin_id)
                 .join(Library, Item.library_id == Library.id)
@@ -645,9 +645,9 @@ class StatisticsBuilder:
                             "name": item_name,
                             "type": item_type,
                             "library_name": lib_name,
-                            "plays": int(play_count or 0),
+                            "plays": int(total_plays or 0),
                         }
-                        for item_id, item_name, item_type, lib_name, play_count in items
+                        for item_id, item_name, item_type, lib_name, total_plays in items
                     ],
                 }
             )

@@ -200,8 +200,8 @@ class StatsAggregator:
         items = session.query(Item).filter(Item.archived.is_(False)).all()
         for item in items:
             new_count = int(qualified_plays_by_item.get(item.jellyfin_id, 0))
-            if item.play_count != new_count:
-                item.play_count = new_count
+            if item.total_plays != new_count:
+                item.total_plays = new_count
             items_processed += 1
 
         # ---- User play counts ----
@@ -286,7 +286,7 @@ class StatsAggregator:
                 func.count(Item.id),
                 func.coalesce(func.sum(Item.runtime_seconds), 0),
                 func.coalesce(func.sum(Item.size_bytes), 0),
-                func.coalesce(func.sum(Item.play_count), 0),
+                func.coalesce(func.sum(Item.total_plays), 0),
             )
             .filter(Item.archived.is_(False))
             .group_by(Item.library_id)
