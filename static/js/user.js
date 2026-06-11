@@ -122,6 +122,12 @@ function populateRecentActivity() {
       valueKey: "plays",
       format: (v) => String(Number(v)),
     },
+    {
+      key: "genres",
+      labelField: "genre",
+      valueKey: "plays",
+      format: (v) => String(Number(v)),
+    },
   ];
 
   let cachedData = null;
@@ -149,9 +155,24 @@ function populateRecentActivity() {
       const itemPayload = await itemResp.json();
       if (!itemPayload?.ok) return null;
 
+      const genreResp = await fetch(`/api/analytics/stats/dashboard`);
+      if (!genreResp.ok) return null;
+
+      const genrePayload = await genreResp.json();
+      if (!genrePayload.ok) return null;
+
+      const rawGenres = genrePayload.data?.sections?.most_popular_genres || [];
+      const genres = rawGenres
+        .map((g) => ({
+          genre: g.genre,
+          plays: g.user_breakdown?.[userId] ?? 0,
+        }))
+        .sort((a, b) => b.plays - a.plays);
+
       return {
         libraries: libPayload.data?.libraries || [],
         items: itemPayload.data?.items || [],
+        genres: genres,
       };
     } catch (error) {
       globalThis.helpers.handleError("Failed to fetch statistics data:", error);
