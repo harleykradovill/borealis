@@ -19,6 +19,13 @@
 
   /* Transitions */
   --transition-all: all 150ms ease;
+
+  /* Font Size Scale */
+  --font-size-sm: 0.8rem;
+  --font-size-base: 0.9rem; /* Body */
+  --font-size-lg: 1rem; /* H2 Headings */
+  --font-size-xl: 1.5rem; /* Larger Headings */
+  --font-size-xxl: 2.2rem; /* Large Numbers */
 }
 
 * {
