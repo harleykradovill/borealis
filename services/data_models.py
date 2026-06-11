@@ -36,14 +36,14 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     jellyfin_id = Column(String(128), unique=True, nullable=False)
-    name = Column(String(255), nullable=False)
+    name = Column(String(128), nullable=False)
     is_admin = Column(Boolean, default=False)
-    last_device = Column(String(255), nullable=True)
+    last_device = Column(String(128), nullable=True)
     total_plays = Column(Integer, default=0)
     total_watch_time_seconds = Column(Integer, default=0)
     last_seen_at = Column(BigInteger, nullable=True)
     archived = Column(Boolean, default=False)
-    image_url = Column(String(1024), nullable=True)
+    image_url = Column(String(512), nullable=True)
 
     __table_args__ = (
         Index("idx_user_jellyfin_id", "jellyfin_id"),
@@ -78,16 +78,16 @@ class Library(Base):
 
     id = Column(Integer, primary_key=True)
     jellyfin_id = Column(String(128), nullable=False, unique=True)
-    name = Column(String(255), nullable=False)
+    name = Column(String(128), nullable=False)
     type = Column(String(64), nullable=True)
-    image_url = Column(String(1024), nullable=True)
+    image_url = Column(String(512), nullable=True)
     total_plays = Column(Integer, default=0)
     archived = Column(Boolean, default=False)
     total_time_seconds = Column(BigInteger, default=0)
     total_files = Column(Integer, default=0)
     size_bytes = Column(BigInteger, default=0)
     total_playback_seconds = Column(BigInteger, default=0)
-    last_played_item_name = Column(String(512), nullable=True)
+    last_played_item_name = Column(String(128), nullable=True)
 
     items = relationship("Item", back_populates="library")
 
@@ -134,7 +134,7 @@ class Item(Base):
         Integer, ForeignKey("libraries.id", ondelete="CASCADE"), nullable=False
     )
     parent_id = Column(String(128), nullable=True)
-    name = Column(String(512), nullable=False)
+    name = Column(String(128), nullable=False)
     type = Column(String(64), nullable=True)
     total_plays = Column(Integer, default=0)
     archived = Column(Boolean, default=False)
@@ -143,8 +143,8 @@ class Item(Base):
     date_created = Column(BigInteger, nullable=True)
     video_codec = Column(String(64), nullable=True)
     audio_codec = Column(String(64), nullable=True)
-    resolution = Column(String(32), nullable=True)
-    genres = Column(String(64), nullable=True)
+    resolution = Column(String(64), nullable=True)
+    genres = Column(Text, nullable=True)
 
     library = relationship("Library", back_populates="items")
 
@@ -201,7 +201,7 @@ class PlaybackActivity(Base):
     playback_type = Column(String(64), nullable=True)
     event_name = Column(String(512), nullable=True)
     activity_at = Column(BigInteger, nullable=False)
-    username_denorm = Column(String(255), nullable=True)
+    username_denorm = Column(String(128), nullable=True)
 
     __table_args__ = (
         Index("idx_playback_activity_log_id", "activity_log_id"),
@@ -237,7 +237,7 @@ class TaskLog(Base):
     __tablename__ = "task_logging"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
+    name = Column(String(256), nullable=False)
     type = Column(String(64), nullable=False)
     execution_type = Column(String(32), nullable=False)
     duration_ms = Column(Integer, default=0)
@@ -287,11 +287,11 @@ class Settings(Base):
     id = Column(Integer, primary_key=True)
     hour_format = Column(String(4), default="12")
     language = Column(String(8), default="en")
-    jf_host = Column(String(255), default="127.0.0.1")
+    jf_host = Column(String(128), default="127.0.0.1")
     jf_port = Column(String(8), default="8096")
-    jf_api_key_encrypted = Column(String(4096), nullable=True)
-    jf_server_name = Column(String(4096), nullable=True)
-    jf_server_version = Column(String(4096), nullable=True)
+    jf_api_key_encrypted = Column(String(1024), nullable=True)
+    jf_server_name = Column(String(64), nullable=True)
+    jf_server_version = Column(String(64), nullable=True)
     last_activity_log_sync = Column(Integer, nullable=True)
     sync_interval = Column(Integer, default=1800)
 
