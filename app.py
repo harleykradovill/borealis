@@ -29,6 +29,20 @@ except ImportError as exc:
     ) from exc
 
 
+def _has_server_config(settings: Dict) -> bool:
+    """
+    Check whether required Jellyfin server settings exist.
+
+    :param settings: Settings dictionary
+    :returns: True when host, port, and API key are present
+    """
+    return bool(
+        settings.get("jf_host")
+        and settings.get("jf_port")
+        and settings.get("jf_api_key")
+    )
+
+
 def create_app(test_config: Optional[Dict] = None) -> "Flask":
     """
     Create and configure the Borealis Flask application.
@@ -38,7 +52,11 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     """
     root_logger = logging.getLogger()
     if not root_logger.handlers:
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(
+            level=logging.INFO,
+            format="\033[32m%(asctime)s\033[0m %(message)s",
+            datefmt="%H:%M:%S",
+        )
     logger.setLevel(logging.INFO)
     logging.getLogger("werkzeug").setLevel(
         logging.CRITICAL
@@ -66,9 +84,9 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     app.config.setdefault("ENCRYPTION_KEY_PATH", "secret.key")
     app.config["TEMPLATES_AUTO_RELOAD"] = True  # NOTE: TURN OFF IN PROD
 
-    logging.info("-=-=-=-=-=-=-=-=-=-=-=-=-")
-    logging.info("         Borealis        ")
-    logging.info("-=-=-=-=-=-=-=-=-=-=-=-=-")
+    logging.info("\033[93m-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\033[0m")
+    logging.info("\033[93mBorealis - Monitor your Jellyfin Server\033[0m")
+    logging.info("\033[93m-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\033[0m")
 
     if test_config:
         app.config.update(test_config)
@@ -99,23 +117,16 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     from services.sync_scheduler import SyncScheduler
 
-    def _has_server_config(settings: Dict) -> bool:
-        """
-        Check whether required Jellyfin server settings exist.
-
-        :param settings: Settings dictionary
-        :returns: True when host, port, and API key are present
-        """
-        return bool(
-            settings.get("jf_host")
-            and settings.get("jf_port")
-            and settings.get("jf_api_key")
-        )
-
     current_settings = svc.get()
     initial_interval = int(current_settings.get("sync_interval") or 1800)
 
     sync_scheduler = SyncScheduler(sync_service=sync, interval_seconds=initial_interval)
+
+    logging.info(
+        "\033[93mSync loop set at %s seconds\033[0m",
+        sync_scheduler.interval_seconds,
+    )
+    logging.info("\033[93m-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\033[0m")
 
     app.sync_scheduler = sync_scheduler
 
@@ -303,8 +314,8 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             headers={"Cache-Control": "public, max-age=300"},
         )
 
-    logging.info("\033[92mStartup Complete. Running sync tasks")
-    logging.info("Access Borealis at http://localhost:2929/\033[0m")
+    logging.info("\033[92mStartup Complete. Running sync tasks\033[0m")
+    logging.info("\033[92mAccess Borealis at http://localhost:2929/\033[0m")
 
     return app
 

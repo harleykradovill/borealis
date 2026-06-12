@@ -74,11 +74,6 @@ class SyncScheduler:
 
         :returns: None
         """
-        logging.info(
-            "[INFO] SyncScheduler loop starting (interval=%s seconds)",
-            self.interval_seconds,
-        )
-
         run_immediately = True
 
         while not self._stop_event.is_set():
