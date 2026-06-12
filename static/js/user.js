@@ -40,7 +40,7 @@ function populateRecentActivity() {
   const empty = document.getElementById("recent-activity-empty");
   const tbody = document.getElementById("recent-activity-tbody");
 
-  fetch(`/api/analytics/user/${encodeURIComponent(userId)}/recent-activity?limit=12`)
+  fetch(`/api/analytics/user/${encodeURIComponent(userId)}/recent-activity?limit=18`)
     .then((res) => {
       if (!res.ok) throw new Error("Failed to fetch recent activity");
       return res.json();

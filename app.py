@@ -123,10 +123,9 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     sync_scheduler = SyncScheduler(sync_service=sync, interval_seconds=initial_interval)
 
     logging.info(
-        "\033[93mSync loop set at %s seconds\033[0m",
+        "\033[93m- Sync loop set at %s seconds\033[0m",
         sync_scheduler.interval_seconds,
     )
-    logging.info("\033[93m-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\033[0m")
 
     app.sync_scheduler = sync_scheduler
 
@@ -146,6 +145,13 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     has_server = _has_server_config(current_settings)
     app.config["HAS_SERVER_CONFIGURED"] = has_server
+
+    if has_server:
+        logging.info("\033[93m- Server Configured\033[0m")
+    else:
+        logging.info("\033[93m- No Server Configured\033[0m")
+
+    logging.info("\033[93m-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\033[0m")
 
     if not app.config.get("DEBUG") and has_server:
         sync_scheduler.start()
