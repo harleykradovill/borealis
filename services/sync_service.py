@@ -229,8 +229,6 @@ class SyncService:
         :param task_id: Optional task log id for progress reporting
         :returns: SyncResult with success status, duration, and sync counts
         """
-        logging.info("[INFO] Starting Metadata Sync")
-
         start_time = time.time()
         errors: List[str] = []
         users_count = 0
@@ -717,10 +715,11 @@ class SyncService:
                 },
             )
 
-            try:
-                self._refresh_statistics_cache()
-            except Exception:
-                errors.append("Failed to refresh statistics")
+            if activity_result.items_synced > 0:
+                try:
+                    self._refresh_statistics_cache()
+                except Exception:
+                    errors.append("Failed to refresh statistics")
 
             time.sleep(1)
 
