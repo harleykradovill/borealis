@@ -13,18 +13,19 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0rem;
+  border-radius: var(--border-element);
   text-decoration: none;
   font-size: var(--font-size-base);
+  font-weight: 500;
   color: var(--text-muted);
   transition: var(--transition-all);
-  border-bottom: 1px solid var(--text-muted);
 }
 
 .settings-tab.active,
 .settings-tab:hover {
-  border-bottom: 1px solid var(--accent);
-  color: var(--accent);
+  color: var(--black);
+  background-color: var(--accent);
 }
 
 .settings-placeholder {
