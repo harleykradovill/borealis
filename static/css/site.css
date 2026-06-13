@@ -58,6 +58,9 @@ body {
   align-items: stretch;
 }
 
+/* ======= */
+/* Sidebar */
+/* ======= */
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -187,6 +190,10 @@ body {
   margin: 2rem auto;
 }
 
+/* ======= */
+/* Buttons */
+/* ======= */
+
 .btn {
   appearance: none;
   border: none;
@@ -230,7 +237,9 @@ body {
   background: #a81c1c;
 }
 
+/* ====== */
 /* Toasts */
+/* ====== */
 .toast-container {
   position: fixed;
   right: 1rem;
@@ -299,7 +308,9 @@ body {
   }
 }
 
+/* ====== */
 /* Inputs */
+/* ====== */
 .form-field input,
 .form-field select,
 .form-field textarea {
@@ -335,7 +346,9 @@ input.form-control:hover {
   background-color: var(--highlight);
 }
 
-/* Skeleton Loader */
+/* ======== */
+/* Skeleton */
+/* ======== */
 .skeleton {
   display: contents;
 

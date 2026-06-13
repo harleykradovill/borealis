@@ -14,21 +14,17 @@
   justify-content: center;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border-radius: var(--border-element);
-  border: 1px solid var(--border);
   text-decoration: none;
-  color: var(--text);
-  background: var(--surface);
+  font-size: var(--font-size-base);
+  color: var(--text-muted);
   transition: var(--transition-all);
+  border-bottom: 1px solid var(--text-muted);
 }
 
+.settings-tab.active,
 .settings-tab:hover {
-  background: var(--highlight);
-}
-
-.settings-tab.active {
-  background: var(--accent);
-  color: var(--black);
+  border-bottom: 1px solid var(--accent);
+  color: var(--accent);
 }
 
 .settings-placeholder {
@@ -38,7 +34,7 @@
 }
 
 .settings-group h2 {
-  margin: 0 0 0.75rem 0;
+  margin: 0;
   color: var(--text);
   font-size: var(--font-size-lg);
   font-weight: 600;
@@ -102,16 +98,14 @@
 .sync-stat-label {
   color: var(--text-muted);
   font-size: var(--font-size-sm);
-  margin-bottom: 0.25rem;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  font-weight: 600;
 }
 
 .sync-stat-value {
   color: var(--text);
   font-size: var(--font-size-lg);
-  font-weight: 600;
-  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .sync-stat-sub {
