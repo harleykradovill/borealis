@@ -224,7 +224,7 @@ function populateRecentActivity() {
       },
       options: {
         indexAxis: "y",
-        animation: { duration: 200 },
+        animation: { duration: 0 },
         plugins: {
           legend: { display: false },
           tooltip: {
