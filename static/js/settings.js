@@ -12,6 +12,8 @@
     sync_next_at: document.getElementById("sync-next-at"),
     sync_next_eta: document.getElementById("sync-next-eta"),
     discord_url: document.getElementById("discord-url"),
+    discord_username: document.getElementById("discord-username"),
+    discord_avatar: document.getElementById("discord-avatar"),
     discord_playback_start: document.getElementById("discord-playback-start"),
     discord_playback_stop: document.getElementById("discord-playback-stop"),
     discord_sync_complete: document.getElementById("discord-sync-complete"),
@@ -23,6 +25,8 @@
     language: null,
     sync_interval: null,
     discord_url: null,
+    discord_username: null,
+    discord_avatar: null,
     discord_triggers: null,
   };
 
@@ -112,6 +116,10 @@
       if (fields.sync_interval)
         fields.sync_interval.value = String(data.sync_interval || "1800");
       if (fields.discord_url) fields.discord_url.value = data.discord_url || "";
+      if (fields.discord_username)
+        fields.discord_username.value = data.discord_username || "";
+      if (fields.discord_avatar)
+        fields.discord_avatar.value = data.discord_avatar || "";
 
       const triggers = data.discord_triggers || {};
       if (fields.discord_playback_start)
@@ -129,6 +137,12 @@
         ? fields.sync_interval.value
         : null;
       lastKnown.discord_url = fields.discord_url ? fields.discord_url.value : null;
+      lastKnown.discord_username = fields.discord_username
+        ? fields.discord_username.value
+        : null;
+      lastKnown.discord_avatar = fields.discord_avatar
+        ? fields.discord_avatar.value
+        : null;
       lastKnown.discord_triggers = collectDiscordTriggers();
     } catch (error) {
       globalThis.helpers.handleError("Failed to load settings", error);
@@ -177,6 +191,16 @@
         lastKnown.discord_url = fields.discord_url.value;
       }
 
+      if (fields.discord_username && "discord_username" in updated) {
+        fields.discord_username.value = String(updated.discord_username || "");
+        lastKnown.discord_username = fields.discord_username.value;
+      }
+
+      if (fields.discord_avatar && "discord_avatar" in updated) {
+        fields.discord_avatar.value = String(updated.discord_avatar || "");
+        lastKnown.discord_avatar = fields.discord_avatar.value;
+      }
+
       globalThis.Toast.showToast("Settings saved");
     } catch (error) {
       globalThis.helpers.handleError("Failed to save settings", error);
@@ -222,6 +246,26 @@
       fields.discord_url.addEventListener("change", () => {
         const v = String(fields.discord_url.value);
         if (v !== lastKnown.discord_url) scheduleSave({ discord_url: v });
+      });
+    }
+    if (fields.discord_username) {
+      fields.discord_username.addEventListener("blur", () => {
+        const v = String(fields.discord_username.value);
+        if (v !== lastKnown.discord_username) scheduleSave({ discord_username: v });
+      });
+      fields.discord_username.addEventListener("change", () => {
+        const v = String(fields.discord_username.value);
+        if (v !== lastKnown.discord_username) scheduleSave({ discord_username: v });
+      });
+    }
+    if (fields.discord_avatar) {
+      fields.discord_avatar.addEventListener("blur", () => {
+        const v = String(fields.discord_avatar.value);
+        if (v !== lastKnown.discord_avatar) scheduleSave({ discord_avatar: v });
+      });
+      fields.discord_avatar.addEventListener("change", () => {
+        const v = String(fields.discord_avatar.value);
+        if (v !== lastKnown.discord_avatar) scheduleSave({ discord_avatar: v });
       });
     }
 

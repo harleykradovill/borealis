@@ -142,6 +142,10 @@ class SettingsService:
                 settings.discord_url = values["discord_url"]
             if "discord_triggers" in values:
                 settings.discord_triggers = json.dumps(values["discord_triggers"])
+            if "discord_username" in values:
+                settings.discord_username = values["discord_username"]
+            if "discord_avatar" in values:
+                settings.discord_avatar = values["discord_avatar"]
 
             return settings.to_dict(self.fernet)
 

@@ -296,6 +296,8 @@ class Settings(Base):
     sync_interval = Column(Integer, default=1800)
     discord_url = Column(String(512), nullable=True)
     discord_triggers = Column(Text, nullable=True)
+    discord_username = Column(String(64), nullable=True)
+    discord_avatar = Column(String(512), nullable=True)
 
     def to_dict(self, fernet: Optional[Fernet] = None) -> Dict[str, Any]:
         """
@@ -327,6 +329,8 @@ class Settings(Base):
             "discord_triggers": (
                 json.loads(self.discord_triggers) if self.discord_triggers else {}
             ),
+            "discord_username": self.discord_username,
+            "discord_avatar": self.discord_avatar,
         }
 
 
