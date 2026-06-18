@@ -52,7 +52,7 @@
             role="tab"
             tabindex="-1"
           >
-            Discord
+            Discord Notifications
           </a>
           <a id="about-tab" href="#about" class="settings-tab" role="tab" tabindex="-1">
             About
@@ -184,6 +184,69 @@
               </a>
             </p>
           </div>
+        </section>
+
+        <section id="discord" class="settings-content" role="tabpanel" hidden>
+          <form class="settings-form">
+            <section class="settings-group">
+              <h2>Configuration</h2>
+
+              <div class="form-field">
+                <label for="discord-url">Webhook URL</label>
+                <input id="discord-url" name="discord-url" />
+              </div>
+
+              <div class="form-field">
+                <label for="discord-url">Username</label>
+                <input id="discord-username" name="discord-username" />
+              </div>
+
+              <div class="form-field">
+                <label for="discord-avatar">Avatar URL</label>
+                <input id="discord-avatar" name="discord-avatar" />
+              </div>
+            </section>
+
+            <section class="settings-group">
+              <h2>Triggers</h2>
+
+              <div class="form-field">
+                <label for="discord-playback-start">Playback Start</label>
+                <input
+                  type="checkbox"
+                  id="discord-playback-start"
+                  name="discord-playback-start"
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="discord-playback-stop">Playback Stop</label>
+                <input
+                  type="checkbox"
+                  id="discord-playback-stop"
+                  name="discord-playback-stop"
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="discord-sync-complete">Sync Complete</label>
+                <input
+                  type="checkbox"
+                  id="discord-sync-complete"
+                  name="discord-sync-complete"
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="discord-sync-error">Sync Error</label>
+                <input
+                  type="checkbox"
+                  id="discord-sync-error"
+                  name="discord-sync-error"
+                />
+              </div>
+            </section>
+          </form>
         </section>
       </main>
     </div>

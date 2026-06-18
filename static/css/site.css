@@ -311,7 +311,7 @@ body {
 /* ====== */
 /* Inputs */
 /* ====== */
-.form-field input,
+.form-field input:not([type="checkbox"]):not([type="radio"]),
 .form-field select,
 .form-field textarea {
   appearance: none;
@@ -333,17 +333,24 @@ body {
   appearance: auto;
 }
 
-.form-field input:hover,
+.form-field input:not([type="checkbox"]):not([type="radio"]):hover,
 .form-field select:hover,
 .form-field textarea:hover,
 input.form-control:hover {
   background: var(--highlight);
 }
 
-.form-field input:focus,
+.form-field input:not([type="checkbox"]):not([type="radio"]):focus,
 .form-field select:focus,
 .form-field textarea:focus {
   background-color: var(--highlight);
+}
+
+.form-field input[type="checkbox"],
+.form-field input[type="radio"] {
+  appearance: auto;
+  width: 1rem;
+  height: 1rem;
 }
 
 /* ======== */
