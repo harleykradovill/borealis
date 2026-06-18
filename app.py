@@ -54,7 +54,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     if not root_logger.handlers:
         logging.basicConfig(
             level=logging.INFO,
-            format="\033[32m%(asctime)s\033[0m %(message)s",
+            format="\033[32m[%(asctime)s]\033[0m %(message)s",
             datefmt="%H:%M:%S",
         )
     logger.setLevel(logging.INFO)
