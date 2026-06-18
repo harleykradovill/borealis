@@ -136,6 +136,8 @@ class SettingsService:
                 settings.jf_server_version = values["jf_server_version"]
             if "sync_interval" in values:
                 settings.sync_interval = int(values["sync_interval"])
+            if "discord_url" in values:
+                settings.discord_url = values["discord_url"]
 
             return settings.to_dict(self.fernet)
 

@@ -234,7 +234,7 @@ def create_settings_blueprint(*, svc, repo, sync):
     @bp.put("/settings")
     def update_settings() -> Response:
         """
-        Update Jellyfin settings and application preferences with provided values.
+        Update application settings with provided values.
 
         :returns: JSON response containing updated settings
         """

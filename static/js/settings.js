@@ -11,12 +11,14 @@
     manual_periodic_sync_btn: document.getElementById("manual-periodic-sync-btn"),
     sync_next_at: document.getElementById("sync-next-at"),
     sync_next_eta: document.getElementById("sync-next-eta"),
+    discord_url: document.getElementById("discord-url"),
   };
 
   const lastKnown = {
     hour_format: null,
     language: null,
     sync_interval: null,
+    discord_url: null,
   };
 
   let syncStatusTimer = null;
@@ -95,12 +97,14 @@
       if (fields.language) fields.language.value = data.language || "en";
       if (fields.sync_interval)
         fields.sync_interval.value = String(data.sync_interval || "1800");
+      if (fields.discord_url) fields.discord_url.value = data.discord_url || "";
 
       lastKnown.hour_format = fields.hour_format ? fields.hour_format.value : null;
       lastKnown.language = fields.language ? fields.language.value : null;
       lastKnown.sync_interval = fields.sync_interval
         ? fields.sync_interval.value
         : null;
+      lastKnown.discord_url = fields.discord_url ? fields.discord_url.value : null;
     } catch (error) {
       globalThis.helpers.handleError("Failed to load settings", error);
     }
@@ -143,6 +147,11 @@
         lastKnown.sync_interval = fields.sync_interval.value;
       }
 
+      if (fields.discord_url && "discord_url" in updated) {
+        fields.discord_url.value = String(updated.discord_url || "");
+        lastKnown.discord_url = fields.discord_url.value;
+      }
+
       globalThis.Toast.showToast("Settings saved");
     } catch (error) {
       globalThis.helpers.handleError("Failed to save settings", error);
@@ -178,6 +187,16 @@
       fields.sync_interval.addEventListener("change", () => {
         const v = String(fields.sync_interval.value);
         if (v !== lastKnown.sync_interval) scheduleSave({ sync_interval: Number(v) });
+      });
+    }
+    if (fields.discord_url) {
+      fields.discord_url.addEventListener("blur", () => {
+        const v = String(fields.discord_url.value);
+        if (v !== lastKnown.discord_url) scheduleSave({ discord_url: Number(v) });
+      });
+      fields.discord_url.addEventListener("change", () => {
+        const v = String(fields.discord_url.value);
+        if (v !== lastKnown.discord_url) scheduleSave({ discord_url: Number(v) });
       });
     }
   }
