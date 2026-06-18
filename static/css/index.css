@@ -248,7 +248,7 @@
   flex: 3 1 0;
   min-width: 0;
   border: 1px solid var(--border);
-  background-color: var(--accent);
+  background-color: #078f63;
   border-radius: var(--border-element);
 }
 
