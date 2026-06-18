@@ -138,6 +138,8 @@ class SettingsService:
                 settings.jf_server_version = values["jf_server_version"]
             if "sync_interval" in values:
                 settings.sync_interval = int(values["sync_interval"])
+            if "discord_enabled" in values:
+                settings.discord_enabled = values["discord_enabled"]
             if "discord_url" in values:
                 settings.discord_url = values["discord_url"]
             if "discord_triggers" in values:

@@ -149,7 +149,6 @@ class SyncScheduler:
                 self._next_run_at = int(time.time()) + sec
 
         self._wake_event.set()
-        logging.info("[INFO] Sync interval updated to %s seconds", sec)
 
     def trigger_periodic_now(self) -> None:
         """

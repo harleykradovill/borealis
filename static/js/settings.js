@@ -11,6 +11,7 @@
     manual_periodic_sync_btn: document.getElementById("manual-periodic-sync-btn"),
     sync_next_at: document.getElementById("sync-next-at"),
     sync_next_eta: document.getElementById("sync-next-eta"),
+    discord_enabled: document.getElementById("discord-enabled"),
     discord_url: document.getElementById("discord-url"),
     discord_username: document.getElementById("discord-username"),
     discord_avatar: document.getElementById("discord-avatar"),
@@ -24,6 +25,7 @@
     hour_format: null,
     language: null,
     sync_interval: null,
+    discord_enabled: null,
     discord_url: null,
     discord_username: null,
     discord_avatar: null,
@@ -115,6 +117,8 @@
       if (fields.language) fields.language.value = data.language || "en";
       if (fields.sync_interval)
         fields.sync_interval.value = String(data.sync_interval || "1800");
+      if (fields.discord_enabled)
+        fields.discord_enabled.checked = data.discord_enabled || false;
       if (fields.discord_url) fields.discord_url.value = data.discord_url || "";
       if (fields.discord_username)
         fields.discord_username.value = data.discord_username || "";
@@ -135,6 +139,9 @@
       lastKnown.language = fields.language ? fields.language.value : null;
       lastKnown.sync_interval = fields.sync_interval
         ? fields.sync_interval.value
+        : null;
+      lastKnown.discord_enabled = fields.discord_enabled
+        ? fields.discord_enabled?.checked
         : null;
       lastKnown.discord_url = fields.discord_url ? fields.discord_url.value : null;
       lastKnown.discord_username = fields.discord_username
@@ -184,6 +191,11 @@
       if (fields.sync_interval && "sync_interval" in updated) {
         fields.sync_interval.value = String(updated.sync_interval || "");
         lastKnown.sync_interval = fields.sync_interval.value;
+      }
+
+      if (fields.discord_enabled && "discord_enabled" in updated) {
+        fields.discord_enabled.checked = Boolean(updated.discord_enabled || false);
+        lastKnown.discord_enabled = fields.discord_enabled?.checked;
       }
 
       if (fields.discord_url && "discord_url" in updated) {
@@ -236,6 +248,16 @@
       fields.sync_interval.addEventListener("change", () => {
         const v = String(fields.sync_interval.value);
         if (v !== lastKnown.sync_interval) scheduleSave({ sync_interval: Number(v) });
+      });
+    }
+    if (fields.discord_enabled) {
+      fields.discord_enabled.addEventListener("blur", () => {
+        const v = Boolean(fields.discord_enabled?.checked);
+        if (v !== lastKnown.discord_enabled) scheduleSave({ discord_enabled: v });
+      });
+      fields.discord_enabled.addEventListener("change", () => {
+        const v = Boolean(fields.discord_enabled?.checked);
+        if (v !== lastKnown.discord_enabled) scheduleSave({ discord_enabled: v });
       });
     }
     if (fields.discord_url) {
