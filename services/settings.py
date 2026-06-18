@@ -17,6 +17,8 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from typing import Any, Dict, Iterator, Optional
 
+import json
+
 
 @dataclass
 class SettingsService:
@@ -138,6 +140,8 @@ class SettingsService:
                 settings.sync_interval = int(values["sync_interval"])
             if "discord_url" in values:
                 settings.discord_url = values["discord_url"]
+            if "discord_triggers" in values:
+                settings.discord_triggers = json.dumps(values["discord_triggers"])
 
             return settings.to_dict(self.fernet)
 

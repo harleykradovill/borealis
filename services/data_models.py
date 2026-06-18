@@ -295,6 +295,7 @@ class Settings(Base):
     last_activity_log_sync = Column(Integer, nullable=True)
     sync_interval = Column(Integer, default=1800)
     discord_url = Column(String(512), nullable=True)
+    discord_triggers = Column(Text, nullable=True)
 
     def to_dict(self, fernet: Optional[Fernet] = None) -> Dict[str, Any]:
         """
@@ -323,6 +324,9 @@ class Settings(Base):
             "jf_server_version": self.jf_server_version,
             "sync_interval": self.sync_interval,
             "discord_url": self.discord_url,
+            "discord_triggers": (
+                json.loads(self.discord_triggers) if self.discord_triggers else {}
+            ),
         }
 
 

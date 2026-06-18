@@ -12,6 +12,10 @@
     sync_next_at: document.getElementById("sync-next-at"),
     sync_next_eta: document.getElementById("sync-next-eta"),
     discord_url: document.getElementById("discord-url"),
+    discord_playback_start: document.getElementById("discord-playback-start"),
+    discord_playback_stop: document.getElementById("discord-playback-stop"),
+    discord_sync_complete: document.getElementById("discord-sync-complete"),
+    discord_sync_error: document.getElementById("discord-sync-error"),
   };
 
   const lastKnown = {
@@ -19,7 +23,17 @@
     language: null,
     sync_interval: null,
     discord_url: null,
+    discord_triggers: null,
   };
+
+  function collectDiscordTriggers() {
+    return {
+      playback_start: !!fields.discord_playback_start?.checked,
+      playback_stop: !!fields.discord_playback_stop?.checked,
+      sync_complete: !!fields.discord_sync_complete?.checked,
+      sync_error: !!fields.discord_sync_error?.checked,
+    };
+  }
 
   let syncStatusTimer = null;
 
@@ -99,12 +113,23 @@
         fields.sync_interval.value = String(data.sync_interval || "1800");
       if (fields.discord_url) fields.discord_url.value = data.discord_url || "";
 
+      const triggers = data.discord_triggers || {};
+      if (fields.discord_playback_start)
+        fields.discord_playback_start.checked = !!triggers.playback_start;
+      if (fields.discord_playback_stop)
+        fields.discord_playback_stop.checked = !!triggers.playback_stop;
+      if (fields.discord_sync_complete)
+        fields.discord_sync_complete.checked = !!triggers.sync_complete;
+      if (fields.discord_sync_error)
+        fields.discord_sync_error.checked = !!triggers.sync_error;
+
       lastKnown.hour_format = fields.hour_format ? fields.hour_format.value : null;
       lastKnown.language = fields.language ? fields.language.value : null;
       lastKnown.sync_interval = fields.sync_interval
         ? fields.sync_interval.value
         : null;
       lastKnown.discord_url = fields.discord_url ? fields.discord_url.value : null;
+      lastKnown.discord_triggers = collectDiscordTriggers();
     } catch (error) {
       globalThis.helpers.handleError("Failed to load settings", error);
     }
@@ -192,13 +217,28 @@
     if (fields.discord_url) {
       fields.discord_url.addEventListener("blur", () => {
         const v = String(fields.discord_url.value);
-        if (v !== lastKnown.discord_url) scheduleSave({ discord_url: Number(v) });
+        if (v !== lastKnown.discord_url) scheduleSave({ discord_url: v });
       });
       fields.discord_url.addEventListener("change", () => {
         const v = String(fields.discord_url.value);
-        if (v !== lastKnown.discord_url) scheduleSave({ discord_url: Number(v) });
+        if (v !== lastKnown.discord_url) scheduleSave({ discord_url: v });
       });
     }
+
+    const triggerFields = [
+      "discord_playback_start",
+      "discord_playback_stop",
+      "discord_sync_complete",
+      "discord_sync_error",
+    ];
+    triggerFields.forEach((key) => {
+      const el = fields[key];
+      if (el) {
+        el.addEventListener("change", () => {
+          scheduleSave({ discord_triggers: collectDiscordTriggers() });
+        });
+      }
+    });
   }
 
   let manualSyncPollTimer = null;
