@@ -4,33 +4,37 @@
     document.querySelectorAll('.settings-content[role="tabpanel"]'),
   );
 
-  const fields = {
-    hour_format: document.getElementById("hour-format"),
-    language: document.getElementById("language"),
-    sync_interval: document.getElementById("sync-interval"),
-    manual_periodic_sync_btn: document.getElementById("manual-periodic-sync-btn"),
-    sync_next_at: document.getElementById("sync-next-at"),
-    sync_next_eta: document.getElementById("sync-next-eta"),
-    discord_enabled: document.getElementById("discord-enabled"),
-    discord_url: document.getElementById("discord-url"),
-    discord_username: document.getElementById("discord-username"),
-    discord_avatar: document.getElementById("discord-avatar"),
-    discord_playback_start: document.getElementById("discord-playback-start"),
-    discord_playback_stop: document.getElementById("discord-playback-stop"),
-    discord_sync_complete: document.getElementById("discord-sync-complete"),
-    discord_sync_error: document.getElementById("discord-sync-error"),
+  const fieldConfig = {
+    hour_format: { element: "hour-format", type: "value", default: "12" },
+    language: { element: "language", type: "value", default: "en" },
+    sync_interval: { element: "sync-interval", type: "value", default: "1800" },
+    discord_enabled: { element: "discord-enabled", type: "checked", default: false },
+    discord_url: { element: "discord-url", type: "value", default: "" },
+    discord_username: { element: "discord-username", type: "value", default: "" },
+    discord_avatar: { element: "discord-avatar", type: "value", default: "" },
   };
 
-  const lastKnown = {
-    hour_format: null,
-    language: null,
-    sync_interval: null,
-    discord_enabled: null,
-    discord_url: null,
-    discord_username: null,
-    discord_avatar: null,
-    discord_triggers: null,
-  };
+  const fields = {};
+  const lastKnown = {};
+
+  Object.entries(fieldConfig).forEach(([key, config]) => {
+    fields[key] = document.getElementById(config.element);
+    lastKnown[key] = null;
+  });
+
+  fields.sync_next_at = document.getElementById("sync-next-at");
+  fields.manual_periodic_sync_btn = document.getElementById("manual-periodic-sync-btn");
+  fields.discord_playback_start = document.getElementById("discord-playback-start");
+  fields.discord_playback_stop = document.getElementById("discord-playback-stop");
+  fields.discord_sync_complete = document.getElementById("discord-sync-complete");
+  fields.discord_sync_error = document.getElementById("discord-sync-error");
+
+  const discordTriggerKeys = [
+    "discord_playback_start",
+    "discord_playback_stop",
+    "discord_sync_complete",
+    "discord_sync_error",
+  ];
 
   function collectDiscordTriggers() {
     return {
@@ -71,40 +75,35 @@
       unit = value === 1 ? "day" : "days";
     }
 
-    if (diff >= 0) {
-      return "in " + value + " " + unit;
-    }
-    return value + " " + unit + " ago";
+    return diff >= 0 ? "in " + value + " " + unit : value + " " + unit + " ago";
   }
 
   function renderSyncStatus(payload) {
-    if (!payload) return;
+    if (!payload || !fields.sync_next_at) return;
 
-    let nextAt = payload.next_scheduled_sync_at;
-    if (fields.sync_next_at) {
-      fields.sync_next_at.textContent = nextAt
-        ? formatRelativeTime(nextAt, "Not scheduled")
-        : "Not scheduled";
-    }
-
-    if (fields.sync_next_eta) {
-      fields.sync_next_eta.textContent = "";
-    }
+    const nextAt = payload.next_scheduled_sync_at;
+    fields.sync_next_at.textContent = nextAt
+      ? formatRelativeTime(nextAt, "Not scheduled")
+      : "Not scheduled";
   }
 
   async function refreshSyncStatus() {
-    let result = await globalThis.helpers.fetchJson("/api/settings/sync-status");
-    if (!result?.ok) return;
-    let payload = result.data && typeof result.data === "object" ? result.data : result;
-    renderSyncStatus(payload);
+    try {
+      const result = await globalThis.helpers.fetchJson("/api/settings/sync-status");
+      if (result?.ok) {
+        const payload =
+          result.data && typeof result.data === "object" ? result.data : result;
+        renderSyncStatus(payload);
+      }
+    } catch (error) {
+      console.warn("Failed to refresh sync status:", error);
+    }
   }
 
   function startSyncStatusPolling() {
-    refreshSyncStatus().catch(function () {});
+    refreshSyncStatus();
     if (syncStatusTimer) clearInterval(syncStatusTimer);
-    syncStatusTimer = setInterval(function () {
-      refreshSyncStatus().catch(function () {});
-    }, 60000);
+    syncStatusTimer = setInterval(refreshSyncStatus, 60000);
   }
 
   async function loadSettings() {
@@ -113,43 +112,27 @@
       if (!resp.ok) throw new Error(`GET failed: ${resp.status}`);
       const data = await resp.json();
 
-      if (fields.hour_format) fields.hour_format.value = data.hour_format || "12";
-      if (fields.language) fields.language.value = data.language || "en";
-      if (fields.sync_interval)
-        fields.sync_interval.value = String(data.sync_interval || "1800");
-      if (fields.discord_enabled)
-        fields.discord_enabled.checked = data.discord_enabled || false;
-      if (fields.discord_url) fields.discord_url.value = data.discord_url || "";
-      if (fields.discord_username)
-        fields.discord_username.value = data.discord_username || "";
-      if (fields.discord_avatar)
-        fields.discord_avatar.value = data.discord_avatar || "";
+      Object.entries(fieldConfig).forEach(([key, config]) => {
+        if (!fields[key]) return;
+
+        const value = data[key] ?? config.default;
+        if (config.type === "checked") {
+          fields[key].checked = Boolean(value);
+          lastKnown[key] = fields[key].checked;
+        } else {
+          fields[key].value =
+            config.type === "value" && key === "sync_interval" ? String(value) : value;
+          lastKnown[key] = fields[key].value;
+        }
+      });
 
       const triggers = data.discord_triggers || {};
-      if (fields.discord_playback_start)
-        fields.discord_playback_start.checked = !!triggers.playback_start;
-      if (fields.discord_playback_stop)
-        fields.discord_playback_stop.checked = !!triggers.playback_stop;
-      if (fields.discord_sync_complete)
-        fields.discord_sync_complete.checked = !!triggers.sync_complete;
-      if (fields.discord_sync_error)
-        fields.discord_sync_error.checked = !!triggers.sync_error;
-
-      lastKnown.hour_format = fields.hour_format ? fields.hour_format.value : null;
-      lastKnown.language = fields.language ? fields.language.value : null;
-      lastKnown.sync_interval = fields.sync_interval
-        ? fields.sync_interval.value
-        : null;
-      lastKnown.discord_enabled = fields.discord_enabled
-        ? fields.discord_enabled?.checked
-        : null;
-      lastKnown.discord_url = fields.discord_url ? fields.discord_url.value : null;
-      lastKnown.discord_username = fields.discord_username
-        ? fields.discord_username.value
-        : null;
-      lastKnown.discord_avatar = fields.discord_avatar
-        ? fields.discord_avatar.value
-        : null;
+      discordTriggerKeys.forEach((key) => {
+        if (fields[key]) {
+          const triggerKey = key.replace("discord_", "");
+          fields[key].checked = !!triggers[triggerKey];
+        }
+      });
       lastKnown.discord_triggers = collectDiscordTriggers();
     } catch (error) {
       globalThis.helpers.handleError("Failed to load settings", error);
@@ -180,38 +163,19 @@
 
       const updated = typeof result?.data === "object" ? result.data : result;
 
-      if (fields.hour_format && "hour_format" in updated) {
-        fields.hour_format.value = updated.hour_format;
-        lastKnown.hour_format = updated.hour_format;
-      }
-      if (fields.language && "language" in updated) {
-        fields.language.value = updated.language;
-        lastKnown.language = updated.language;
-      }
-      if (fields.sync_interval && "sync_interval" in updated) {
-        fields.sync_interval.value = String(updated.sync_interval || "");
-        lastKnown.sync_interval = fields.sync_interval.value;
-      }
+      Object.entries(fieldConfig).forEach(([key, config]) => {
+        if (!fields[key] || !(key in updated)) return;
 
-      if (fields.discord_enabled && "discord_enabled" in updated) {
-        fields.discord_enabled.checked = Boolean(updated.discord_enabled || false);
-        lastKnown.discord_enabled = fields.discord_enabled?.checked;
-      }
-
-      if (fields.discord_url && "discord_url" in updated) {
-        fields.discord_url.value = String(updated.discord_url || "");
-        lastKnown.discord_url = fields.discord_url.value;
-      }
-
-      if (fields.discord_username && "discord_username" in updated) {
-        fields.discord_username.value = String(updated.discord_username || "");
-        lastKnown.discord_username = fields.discord_username.value;
-      }
-
-      if (fields.discord_avatar && "discord_avatar" in updated) {
-        fields.discord_avatar.value = String(updated.discord_avatar || "");
-        lastKnown.discord_avatar = fields.discord_avatar.value;
-      }
+        if (config.type === "checked") {
+          fields[key].checked = Boolean(updated[key] ?? config.default);
+          lastKnown[key] = fields[key].checked;
+        } else {
+          const value =
+            key === "sync_interval" ? String(updated[key] || "") : updated[key];
+          fields[key].value = value;
+          lastKnown[key] = value;
+        }
+      });
 
       globalThis.Toast.showToast("Settings saved");
     } catch (error) {
@@ -220,87 +184,22 @@
   }
 
   function bindAutosave() {
-    if (fields.hour_format) {
-      fields.hour_format.addEventListener("blur", () => {
-        const v = fields.hour_format.value;
-        if (v !== lastKnown.hour_format) scheduleSave({ hour_format: v });
-      });
-      fields.hour_format.addEventListener("change", () => {
-        const v = fields.hour_format.value;
-        if (v !== lastKnown.hour_format) scheduleSave({ hour_format: v });
-      });
-    }
-    if (fields.language) {
-      fields.language.addEventListener("blur", () => {
-        const v = fields.language.value;
-        if (v !== lastKnown.language) scheduleSave({ language: v });
-      });
-      fields.language.addEventListener("change", () => {
-        const v = fields.language.value;
-        if (v !== lastKnown.language) scheduleSave({ language: v });
-      });
-    }
-    if (fields.sync_interval) {
-      fields.sync_interval.addEventListener("blur", () => {
-        const v = String(fields.sync_interval.value);
-        if (v !== lastKnown.sync_interval) scheduleSave({ sync_interval: Number(v) });
-      });
-      fields.sync_interval.addEventListener("change", () => {
-        const v = String(fields.sync_interval.value);
-        if (v !== lastKnown.sync_interval) scheduleSave({ sync_interval: Number(v) });
-      });
-    }
-    if (fields.discord_enabled) {
-      fields.discord_enabled.addEventListener("blur", () => {
-        const v = Boolean(fields.discord_enabled?.checked);
-        if (v !== lastKnown.discord_enabled) scheduleSave({ discord_enabled: v });
-      });
-      fields.discord_enabled.addEventListener("change", () => {
-        const v = Boolean(fields.discord_enabled?.checked);
-        if (v !== lastKnown.discord_enabled) scheduleSave({ discord_enabled: v });
-      });
-    }
-    if (fields.discord_url) {
-      fields.discord_url.addEventListener("blur", () => {
-        const v = String(fields.discord_url.value);
-        if (v !== lastKnown.discord_url) scheduleSave({ discord_url: v });
-      });
-      fields.discord_url.addEventListener("change", () => {
-        const v = String(fields.discord_url.value);
-        if (v !== lastKnown.discord_url) scheduleSave({ discord_url: v });
-      });
-    }
-    if (fields.discord_username) {
-      fields.discord_username.addEventListener("blur", () => {
-        const v = String(fields.discord_username.value);
-        if (v !== lastKnown.discord_username) scheduleSave({ discord_username: v });
-      });
-      fields.discord_username.addEventListener("change", () => {
-        const v = String(fields.discord_username.value);
-        if (v !== lastKnown.discord_username) scheduleSave({ discord_username: v });
-      });
-    }
-    if (fields.discord_avatar) {
-      fields.discord_avatar.addEventListener("blur", () => {
-        const v = String(fields.discord_avatar.value);
-        if (v !== lastKnown.discord_avatar) scheduleSave({ discord_avatar: v });
-      });
-      fields.discord_avatar.addEventListener("change", () => {
-        const v = String(fields.discord_avatar.value);
-        if (v !== lastKnown.discord_avatar) scheduleSave({ discord_avatar: v });
-      });
-    }
+    Object.entries(fieldConfig).forEach(([key, config]) => {
+      if (!fields[key]) return;
 
-    const triggerFields = [
-      "discord_playback_start",
-      "discord_playback_stop",
-      "discord_sync_complete",
-      "discord_sync_error",
-    ];
-    triggerFields.forEach((key) => {
-      const el = fields[key];
-      if (el) {
-        el.addEventListener("change", () => {
+      fields[key].addEventListener("change", () => {
+        const value =
+          config.type === "checked" ? fields[key].checked : fields[key].value;
+        if (value !== lastKnown[key]) {
+          const saveValue = key === "sync_interval" ? Number(value) : value;
+          scheduleSave({ [key]: saveValue });
+        }
+      });
+    });
+
+    discordTriggerKeys.forEach((key) => {
+      if (fields[key]) {
+        fields[key].addEventListener("change", () => {
           scheduleSave({ discord_triggers: collectDiscordTriggers() });
         });
       }
@@ -313,39 +212,34 @@
     const btn = fields.manual_periodic_sync_btn;
     if (!btn) return;
 
-    if (syncing) {
-      btn.disabled = true;
-      btn.textContent = "Sync Running...";
-      return;
-    }
-
-    btn.disabled = false;
-    btn.textContent = "Sync Now";
+    btn.disabled = syncing;
+    btn.textContent = syncing ? "Sync Running..." : "Sync Now";
   }
 
   async function refreshManualSyncButtonState() {
-    const result = await globalThis.helpers.fetchJson(
-      "/api/analytics/server/sync-progress",
-    );
-    if (!result?.ok) return;
-
-    const syncing = result.syncing === true || result.data?.syncing === true;
-
-    setManualSyncButtonState(!!syncing);
+    try {
+      const result = await globalThis.helpers.fetchJson(
+        "/api/analytics/server/sync-progress",
+      );
+      if (result?.ok) {
+        const syncing = result.syncing === true || result.data?.syncing === true;
+        setManualSyncButtonState(!!syncing);
+      }
+    } catch (error) {
+      console.warn("Failed to refresh manual sync button state:", error);
+    }
   }
 
   function startManualSyncButtonPolling() {
     if (manualSyncPollTimer) return;
-    manualSyncPollTimer = setInterval(() => {
-      refreshManualSyncButtonState().catch(() => {});
-    }, 10000);
+    manualSyncPollTimer = setInterval(refreshManualSyncButtonState, 10000);
   }
 
   function bindManualPeriodicSync() {
     const btn = fields.manual_periodic_sync_btn;
     if (!btn) return;
 
-    refreshManualSyncButtonState().catch(() => {});
+    refreshManualSyncButtonState();
     startManualSyncButtonPolling();
 
     btn.addEventListener("click", async () => {
@@ -365,20 +259,16 @@
             "Failed to start manual sync",
             result?.message,
           );
-          await refreshManualSyncButtonState();
-          return;
         }
       } catch (error) {
         globalThis.helpers.handleError("Failed to start manual sync", error);
       } finally {
-        setTimeout(handleSyncComplete, 300);
-        refreshSyncStatus().catch(function () {});
+        setTimeout(() => {
+          refreshManualSyncButtonState();
+          refreshSyncStatus();
+        }, 300);
       }
     });
-  }
-
-  function handleSyncComplete() {
-    refreshManualSyncButtonState().catch(() => {});
   }
 
   function activate(id) {
@@ -417,62 +307,63 @@
 })();
 
 (function () {
-  const removeServerBtn = document.getElementById("jf-remove-server-btn");
-  const serverHostDisplay = document.getElementById("jf-server-host-display");
-  const serverKeyDisplay = document.getElementById("jf-server-key-display");
-  const serverNameDisplay = document.getElementById("jf-server-name-display");
+  const displayElements = {
+    btn: document.getElementById("jf-remove-server-btn"),
+    name: document.getElementById("jf-server-name-display"),
+    host: document.getElementById("jf-server-host-display"),
+    key: document.getElementById("jf-server-key-display"),
+  };
 
-  function displayServer(name, host, port, apiKey) {
-    if (serverNameDisplay) {
-      serverNameDisplay.textContent = name || "Unknown Name";
-    }
-    if (serverHostDisplay) {
-      serverHostDisplay.textContent = `${host}:${port}`;
-    }
-    if (serverKeyDisplay) {
-      const masked = globalThis.helpers.maskKey(apiKey);
-      serverKeyDisplay.textContent = `API Key: ${masked}`;
+  const emptyServerConfig = {
+    jf_host: "",
+    jf_port: "",
+    jf_api_key: "",
+    jf_server_name: "",
+    jf_server_version: "",
+  };
+
+  function displayServer(data) {
+    if (displayElements.name)
+      displayElements.name.textContent = data.jf_server_name || "Unknown Name";
+    if (displayElements.host)
+      displayElements.host.textContent = `${data.jf_host}:${data.jf_port}`;
+    if (displayElements.key) {
+      const masked = globalThis.helpers.maskKey(data.jf_api_key);
+      displayElements.key.textContent = `API Key: ${masked}`;
     }
   }
 
   async function checkServerState() {
     try {
       const resp = await fetch("/api/settings");
-      if (!resp.ok) return;
+      if (!resp.ok) {
+        console.warn(`Failed to check server state: ${resp.status}`);
+        return;
+      }
       const data = await resp.json();
 
-      const hasServer = !!(data.jf_host && data.jf_port && data.jf_api_key);
-
-      if (hasServer) {
-        displayServer(data.jf_server_name, data.jf_host, data.jf_port, data.jf_api_key);
+      if (data.jf_host && data.jf_port && data.jf_api_key) {
+        displayServer(data);
       }
     } catch (error) {
       globalThis.helpers.handleError("Failed to check server state", error);
     }
   }
 
-  if (removeServerBtn) {
-    removeServerBtn.addEventListener("click", async () => {
+  if (displayElements.btn) {
+    displayElements.btn.addEventListener("click", async () => {
       if (!confirm("Remove Jellyfin server configuration?")) return;
 
       try {
-        const resp = await fetch("/api/settings", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jf_host: "",
-            jf_port: "",
-            jf_api_key: "",
-            jf_server_name: "",
-            jf_server_version: "",
-          }),
-        });
-
-        if (!resp.ok) {
-          globalThis.helpers.handleError("Failed to remove server", resp?.message);
+        const result = await globalThis.helpers.postJson(
+          "/api/settings",
+          emptyServerConfig,
+          "PUT",
+        );
+        if (!result?.ok) {
+          globalThis.helpers.handleError("Failed to remove server", result?.message);
           return;
         }
-
         globalThis.Toast.showToast("Server removed");
       } catch (error) {
         globalThis.helpers.handleError("Failed to remove server", error);
@@ -484,119 +375,127 @@
 })();
 
 (function () {
-  const panel = document.getElementById("tasklog");
-  const list = document.getElementById("tasklog-list");
-  const empty = document.getElementById("tasklog-empty");
-  const tab = document.getElementById("task-log-tab");
+  const elements = {
+    panel: document.getElementById("tasklog"),
+    list: document.getElementById("tasklog-list"),
+    empty: document.getElementById("tasklog-empty"),
+    tab: document.getElementById("task-log-tab"),
+  };
+
+  function setVisibility(showList) {
+    if (elements.list) elements.list.hidden = !showList;
+    if (elements.empty) elements.empty.hidden = showList;
+  }
+
+  function createTaskLogItem(log) {
+    const li = document.createElement("li");
+    li.classList.add("task-log-item");
+
+    const res = (log.result || "").toString().toUpperCase();
+    if (res === "SUCCESS") li.classList.add("success");
+    else if (res === "FAILED" || res === "ERROR") li.classList.add("failed");
+
+    const started = log.started_at ? new Date(Number(log.started_at) * 1000) : null;
+    const icon =
+      res === "SUCCESS"
+        ? "/assets/icons/tasklog-success.svg"
+        : "/assets/icons/tasklog-failed.svg";
+
+    li.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
+        <div>
+          <div style="font-weight:600;color:var(--text);">${globalThis.helpers.escapeHtml(
+            log.name || "(unnamed)",
+          )}</div>
+          <div style="font-size:0.9rem;color:var(--text-muted);">
+            ${started ? started.toLocaleString() : ""}
+            ${log.type ? " • " + globalThis.helpers.escapeHtml(log.type) : ""}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <img src="${icon}" alt="${res}" style="width:25px;height:25px;flex-shrink:0;">
+          <div style="font-weight:600;color:var(--text);">${globalThis.helpers.humanDuration(
+            Number(log.duration_ms || 0),
+          )}</div>
+        </div>
+      </div>
+    `;
+    return li;
+  }
 
   async function loadTaskLogs() {
     try {
       const result = await globalThis.helpers.fetchJson("/api/analytics/task-logs");
-      if (!result.ok) {
-        globalThis.helpers.handleError("Failed to load task logs", result.message);
-        if (empty) empty.hidden = false;
-        if (list) list.hidden = true;
+      if (!result?.ok) {
+        globalThis.helpers.handleError("Failed to load task logs", result?.message);
+        setVisibility(false);
         return;
       }
 
       const logs = Array.isArray(result.data) ? result.data : [];
       if (!logs.length) {
-        if (empty) empty.hidden = false;
-        if (list) list.hidden = true;
+        setVisibility(false);
         return;
       }
 
-      if (empty) empty.hidden = true;
-      if (list) list.hidden = false;
-      list.innerHTML = "";
-
-      logs.forEach((l) => {
-        const li = document.createElement("li");
-
-        li.classList.add("task-log-item");
-        const res = (l.result || "").toString().toUpperCase();
-        if (res === "SUCCESS") li.classList.add("success");
-        else if (res === "FAILED" || res === "ERROR") li.classList.add("failed");
-
-        const started = l.started_at ? new Date(Number(l.started_at) * 1000) : null;
-        const iconSrc =
-          res === "SUCCESS"
-            ? "/assets/icons/tasklog-success.svg"
-            : "/assets/icons/tasklog-failed.svg";
-
-        li.innerHTML = `
-          <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
-            <div>
-              <div style="font-weight:600;color:var(--text);">${globalThis.helpers.escapeHtml(
-                l.name || "(unnamed)",
-              )}</div>
-              <div style="font-size:0.9rem;color:var(--text-muted);">
-                ${started ? started.toLocaleString() : ""}
-                ${l.type ? " • " + globalThis.helpers.escapeHtml(l.type) : ""}
-              </div>
-            </div>
-            <div style="text-align:right;">
-              <img src="${iconSrc}" alt="${res}" style="width:25px;height:25px;flex-shrink:0;">
-              <div style="font-weight:600;color:var(--text);">${globalThis.helpers.humanDuration(
-                Number(l.duration_ms || 0),
-              )}</div>
-            </div>
-          </div>
-        `;
-        list.appendChild(li);
-      });
+      if (elements.list) {
+        elements.list.innerHTML = "";
+        logs.forEach((log) => elements.list.appendChild(createTaskLogItem(log)));
+      }
+      setVisibility(true);
     } catch (error) {
       globalThis.helpers.handleError("Failed to load task logs", error);
-      if (empty) empty.hidden = false;
-      if (list) list.hidden = true;
+      setVisibility(false);
     }
   }
 
   function loadIfVisible() {
-    if (panel && !panel.hidden) loadTaskLogs();
+    if (elements.panel && !elements.panel.hidden) loadTaskLogs();
   }
 
   if (location.hash === "#tasklog") setTimeout(loadIfVisible, 0);
-  if (tab) tab.addEventListener("click", () => setTimeout(loadIfVisible, 0));
+  if (elements.tab)
+    elements.tab.addEventListener("click", () => setTimeout(loadIfVisible, 0));
 })();
 
 (function () {
-  const dbInfoGrid = document.getElementById("db-info-grid");
+  const elements = {
+    grid: document.getElementById("db-info-grid"),
+    version: document.getElementById("db-version"),
+    size: document.getElementById("db-size"),
+    created: document.getElementById("db-created"),
+    modified: document.getElementById("db-modified"),
+  };
+
+  const fieldMap = {
+    alembic_version: elements.version,
+    size: elements.size,
+    created_at: elements.created,
+    modified_at: elements.modified,
+  };
 
   async function loadDatabaseInfo() {
     try {
       const result = await globalThis.helpers.fetchJson("/api/database/info");
       if (!result?.ok) {
-        globalThis.helpers.handleError(
-          "Failed to load database info:",
-          result?.message,
-        );
+        globalThis.helpers.handleError("Failed to load database info", result?.message);
         return;
       }
 
       const data =
         result.data && typeof result.data === "object" ? result.data : result;
 
-      if (dbInfoGrid) {
-        if (data.alembic_version && document.getElementById("db-version")) {
-          document.getElementById("db-version").textContent = data.alembic_version;
+      Object.entries(fieldMap).forEach(([dataKey, el]) => {
+        if (el && data[dataKey]) {
+          el.textContent = data[dataKey];
         }
-        if (data.size && document.getElementById("db-size")) {
-          document.getElementById("db-size").textContent = data.size;
-        }
-        if (data.created_at && document.getElementById("db-created")) {
-          document.getElementById("db-created").textContent = data.created_at;
-        }
-        if (data.modified_at && document.getElementById("db-modified")) {
-          document.getElementById("db-modified").textContent = data.modified_at;
-        }
-      }
+      });
     } catch (error) {
       globalThis.helpers.handleError("Failed to load database info", error);
     }
   }
 
-  if (dbInfoGrid) {
+  if (elements.grid) {
     loadDatabaseInfo();
   }
 })();
