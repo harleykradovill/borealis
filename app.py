@@ -278,48 +278,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
         context = get_sidebar_context(request.path)
         return make_response(render_template("setup.html", **context), 200)
 
-    @app.get("/api/jellyfin/items/<item_id>/images/primary")
-    def api_jellyfin_item_primary_image(item_id: str) -> Response:
-        """
-        Proxy Jellyfin primary item image to the frontend.
-
-        :param item_id: ID of the Jellyfin item
-        :returns: Flask response containing the primary image or an error response
-        """
-        tag = (request.args.get("tag") or "").strip() or None
-        result = jf.item_primary_image(item_id=item_id, tag=tag)
-
-        if not result.get("ok"):
-            return Response(status=result.get("status", 500))
-
-        return Response(
-            result.get("body", b""),
-            status=result.get("status", 200),
-            mimetype=result.get("content_type", "image/jpeg"),
-            headers={"Cache-Control": "public, max-age=300"},
-        )
-
-    @app.get("/api/jellyfin/users/<user_id>/images/primary")
-    def api_jellyfin_user_primary_image(user_id: str) -> Response:
-        """
-        Proxy Jellyfin primary user image to the frontend.
-
-        :param user_id: ID of the Jellyfin user
-        :returns: Flask response containing the primary image or an error response
-        """
-        tag = (request.args.get("tag") or "").strip() or None
-        result = jf.user_primary_image(user_id=user_id, tag=tag)
-
-        if not result.get("ok"):
-            return Response(status=result.get("status", 500))
-
-        return Response(
-            result.get("body", b""),
-            status=result.get("status", 200),
-            mimetype=result.get("content_type", "image/jpeg"),
-            headers={"Cache-Control": "public, max-age=300"},
-        )
-
     logging.info("\033[92mStartup Complete. Running sync tasks\033[0m")
     logging.info("\033[92mAccess Borealis at http://localhost:2929/\033[0m")
 
