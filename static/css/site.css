@@ -13,8 +13,8 @@
   --black: #000000;
 
   /* Border Radius */
-  --border-element: 12px;
-  --border-small: 6px;
+  --border-element: 8px;
+  --border-small: 4px;
   --border-circle: 100px;
 
   /* Transitions */
@@ -319,10 +319,11 @@ body {
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: var(--border-small);
-  padding: 0.6rem 0.75rem;
+  padding: 0.75rem;
   line-height: 1.25rem;
   outline: none;
   transition: var(--transition-all);
+  font-size: var(--font-size-base);
 }
 
 ::placeholder {
