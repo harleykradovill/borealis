@@ -311,47 +311,56 @@ body {
 /* ====== */
 /* Inputs */
 /* ====== */
-.form-field input:not([type="checkbox"]):not([type="radio"]),
-.form-field select,
-.form-field textarea {
-  appearance: none;
+.form-field :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: var(--border-small);
   padding: 0.75rem;
   line-height: 1.25rem;
-  outline: none;
-  transition: var(--transition-all);
   font-size: var(--font-size-base);
+  transition: var(--transition-all);
 }
 
-::placeholder {
-  color: var(--text-muted);
-}
-
-.form-field select {
+.form-field select,
+.form-field input[type="checkbox"],
+.form-field input[type="radio"] {
   appearance: auto;
 }
 
-.form-field input:not([type="checkbox"]):not([type="radio"]):hover,
-.form-field select:hover,
-.form-field textarea:hover,
-input.form-control:hover {
+.form-field input:not([type="checkbox"]):not([type="radio"]),
+.form-field textarea {
+  appearance: none;
+}
+
+.form-field
+  :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea):is(
+    :hover,
+    :focus
+  ) {
   background: var(--highlight);
 }
 
-.form-field input:not([type="checkbox"]):not([type="radio"]):focus,
-.form-field select:focus,
-.form-field textarea:focus {
-  background-color: var(--highlight);
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: var(--text-muted);
 }
 
 .form-field input[type="checkbox"],
 .form-field input[type="radio"] {
-  appearance: auto;
   width: 1rem;
   height: 1rem;
+}
+
+.form-field:has(input[type="checkbox"]) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-field:has(input[type="checkbox"]) input[type="checkbox"] {
+  order: -1;
 }
 
 /* ======== */

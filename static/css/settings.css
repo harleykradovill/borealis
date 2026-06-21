@@ -177,9 +177,9 @@
   color: var(--text-muted);
 }
 
-/* =========== */
+/* ============ */
 /* Task Log Tab */
-/* =========== */
+/* ============ */
 
 .tasklog-list {
   display: flex;
@@ -204,9 +204,9 @@
   background-color: var(--surface);
 }
 
-/* =========== */
+/* ========= */
 /* About Tab */
-/* =========== */
+/* ========= */
 
 .about-list {
   display: flex;
