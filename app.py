@@ -146,6 +146,22 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     has_server = _has_server_config(current_settings)
     app.config["HAS_SERVER_CONFIGURED"] = has_server
 
+    from services.discord_notifications import DiscordNotificationService
+
+    discord_svc = DiscordNotificationService(
+        svc=svc,
+        jellyfin_client=jf,
+        sync=sync,
+        scheduler=sync_scheduler,
+        poll_interval=5,
+    )
+    app.discord_service = discord_svc
+
+    sync.register_sync_callback(lambda result: None)
+
+    if has_server and current_settings.get("discord_enabled"):
+        discord_svc.start()
+
     if has_server:
         logging.info("\033[93m- Server Configured\033[0m")
     else:
@@ -186,6 +202,16 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             logger.exception(
                 "[ERROR] Failed to dispose repository engine during cleanup"
             )
+
+        discord = getattr(app, "discord_service", None)
+
+        if discord:
+            try:
+                discord.stop()
+            except Exception:
+                logger.exception(
+                    "[ERROR] Failed to stop Discord service during cleanup"
+                )
 
     atexit.register(cleanup)
 

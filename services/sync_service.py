@@ -10,7 +10,7 @@ import logging
 import time
 import traceback
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -58,6 +58,28 @@ class SyncService:
     jellyfin_client: JellyfinClient
     repository: Repository
     settings_service: Any
+    _sync_callbacks: List[callable] = field(default_factory=list)
+
+    def register_sync_callback(self, callback: callable) -> None:
+        """
+        Register a callback to be invoked when sync completes.
+
+        :param callback: Callable(result: SyncResult) -> None
+        """
+        if callback and callable(callback):
+            self._sync_callbacks.append(callback)
+
+    def _invoke_sync_callbacks(self, result: SyncResult) -> None:
+        """
+        Invoke all registered sync callbacks.
+
+        :param result: SyncResult from the completed sync
+        """
+        for callback in self._sync_callbacks:
+            try:
+                callback(result)
+            except Exception as error:
+                logging.exception(f"[ERROR] Sync callback failed: {error}")
 
     def _build_result(
         self,
@@ -250,7 +272,6 @@ class SyncService:
                 items_synced=items_count,
             )
 
-            logging.info("[INFO] Metadata Sync Complete")
             return result
 
         except Exception:
@@ -408,8 +429,6 @@ class SyncService:
         :param page_limit: Number of events per API request
         :returns: SyncResult with event counts and any sync errors
         """
-        logging.info("[INFO] Starting Incremental Activity Log Sync")
-
         start_time = time.time()
 
         processed = 0
@@ -509,7 +528,6 @@ class SyncService:
                 items_synced=processed,
             )
 
-            logging.info("[INFO] Incremental Activity Log Sync Complete")
             return result
 
         except Exception:
@@ -617,6 +635,8 @@ class SyncService:
             )
 
             time.sleep(1)
+
+            self._invoke_sync_callbacks(result)
 
             logging.info("[INFO] Initial Sync Complete")
             return result
@@ -748,6 +768,8 @@ class SyncService:
             )
 
             time.sleep(1)
+
+            self._invoke_sync_callbacks(result)
 
             logging.info("[INFO] Periodic Sync Complete")
             return result
