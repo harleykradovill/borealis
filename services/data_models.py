@@ -45,11 +45,6 @@ class User(Base):
     archived = Column(Boolean, default=False)
     image_url = Column(String(512), nullable=True)
 
-    __table_args__ = (
-        Index("idx_user_jellyfin_id", "jellyfin_id"),
-        Index("idx_user_archived", "archived"),
-    )
-
     def to_dict(self) -> Dict[str, Any]:
         """
         Serialize the user record for API responses.
@@ -90,14 +85,6 @@ class Library(Base):
     last_played_item_name = Column(String(128), nullable=True)
 
     items = relationship("Item", back_populates="library")
-
-    __table_args__ = (
-        Index("idx_library_jellyfin_id", "jellyfin_id"),
-        Index("idx_library_archived", "archived"),
-        Index("idx_library_total_plays", "total_plays"),
-        Index("idx_library_total_time_seconds", "total_time_seconds"),
-        Index("idx_library_size_bytes", "size_bytes"),
-    )
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -148,20 +135,6 @@ class Item(Base):
 
     library = relationship("Library", back_populates="items")
 
-    __table_args__ = (
-        Index("idx_item_jellyfin_id", "jellyfin_id"),
-        Index("idx_item_library_id", "library_id"),
-        Index("idx_item_archived", "archived"),
-        Index("idx_item_total_plays", "total_plays"),
-        Index("idx_item_runtime_seconds", "runtime_seconds"),
-        Index("idx_item_size_bytes", "size_bytes"),
-        Index("idx_date_created", "date_created"),
-        Index("idx_video_codec", "video_codec"),
-        Index("idx_audio_codec", "audio_codec"),
-        Index("idx_resolution", "resolution"),
-        Index("idx_genres", "genres"),
-    )
-
     def to_dict(self) -> Dict[str, Any]:
         """
         Serialize the media item record for API responses.
@@ -203,14 +176,6 @@ class PlaybackActivity(Base):
     activity_at = Column(BigInteger, nullable=False)
     username = Column(String(128), nullable=True)
 
-    __table_args__ = (
-        Index("idx_playback_activity_log_id", "activity_log_id"),
-        Index("idx_playback_user_id", "user_id"),
-        Index("idx_playback_item_id", "item_id"),
-        Index("idx_playback_activity_at", "activity_at"),
-        Index("idx_playback_type", "playback_type"),
-    )
-
     def to_dict(self) -> Dict[str, Any]:
         """
         Serialize a playback activity event for API responses.
@@ -245,11 +210,6 @@ class TaskLog(Base):
     finished_at = Column(BigInteger, nullable=True)
     result = Column(String(32), nullable=False)
     log_json = Column(Text, nullable=True)
-
-    __table_args__ = (
-        Index("idx_task_started_at", "started_at"),
-        Index("idx_task_result", "result"),
-    )
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -347,11 +307,6 @@ class Statistics(Base):
     section_key = Column(String(64), nullable=False, unique=True)
     payload_json = Column(Text, nullable=False)
     updated_at = Column(BigInteger, nullable=False)
-
-    __table_args__ = (
-        Index("idx_statistics_section_key", "section_key"),
-        Index("idx_statistics_updated_at", "updated_at"),
-    )
 
     def to_dict(self) -> Dict[str, Any]:
         """
