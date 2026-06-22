@@ -10,6 +10,7 @@ from threading import Event, Thread
 from typing import Any, Dict, Optional
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
@@ -134,10 +135,10 @@ class DiscordNotificationService:
         """
         try:
             status = self._scheduler.get_status()
-            if status.get("_is_running"):
+            if status.get("is_running"):
                 return
 
-            last_finished = status.get("_last_finished_at")
+            last_finished = status.get("last_finished_at")
             if not last_finished or last_finished <= self._last_sync_check_time:
                 return
 
@@ -145,10 +146,13 @@ class DiscordNotificationService:
 
             repo = self._sync_svc.repository
             try:
-                recent_task = repo.engine.execute(
-                    "SELECT log_json FROM task_logging WHERE type='sync' "
-                    "ORDER BY finished_at DESC LIMIT 1"
-                ).fetchone()
+                with repo._session() as session:
+                    recent_task = session.execute(
+                        text(
+                            "SELECT log_json FROM task_logging WHERE type='sync' "
+                            "ORDER BY finished_at DESC LIMIT 1"
+                        )
+                    ).fetchone()
                 if recent_task and recent_task[0]:
                     result_data = json.loads(recent_task[0])
                     if self._should_notify(
