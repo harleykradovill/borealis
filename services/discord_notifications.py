@@ -3,7 +3,12 @@ Service that communicates with Discord webhooks to send notifications
 about Jellyfin and Borealis itself.
 """
 
+import json
+import logging
+from threading import Event, Thread
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 def _is_playback_trigger_enabled(trigger_name: str) -> bool:
@@ -13,7 +18,8 @@ def _is_playback_trigger_enabled(trigger_name: str) -> bool:
     :param trigger_name: Name of the trigger to check
     :returns: True if trigger is enabled, False otherwise
     """
-    pass
+    config = _extract_trigger_config()
+    return config.get(trigger_name, False)
 
 
 def _extract_trigger_config() -> Dict[str, bool]:
@@ -22,7 +28,7 @@ def _extract_trigger_config() -> Dict[str, bool]:
 
     :returns: Mapping of trigger names to bool indicating whether each is enabled.
     """
-    pass
+    from services.settings import SettingsService
 
 
 def _get_discord_config() -> Dict[str, Any]:
@@ -55,7 +61,14 @@ class DiscordNotificationService:
         :param sync: SyncService instance
         :param poll_interval: How often to poll Jellyfin in seconds
         """
-        pass
+        self._settings_svc = svc
+        self._jellyfin_client = jellyfin_client
+        self._sync_svc = sync
+        self._poll_interval = poll_interval
+        self._thread: Optional[Thread] = None
+        self._last_sessions: List[Dict[str, Any]] = []
+        self._last_sync_check_time = 0
+        self._last_sync_result: Optional[Any] = None
 
     def start(self) -> None:
         """
@@ -63,7 +76,13 @@ class DiscordNotificationService:
 
         :returns: None
         """
-        pass
+        if self._thread and self._thread.is_alive():
+            return
+
+        self._stop_event.clear()
+        self._thread = Thread(target=self._poll_loop, daemon=True)
+        self._thread.start()
+        logger.info("[INFO] Discord Notifications service started")
 
     def stop(self) -> None:
         """
@@ -71,7 +90,11 @@ class DiscordNotificationService:
 
         :returns: None
         """
-        pass
+        self._stop_event.set()
+
+        if self._thread:
+            self._thread.join(timeout=2)
+        logger.info("[INFO] Discord Notifications service stopped")
 
     def _poll_loop(self) -> None:
         """
@@ -79,7 +102,15 @@ class DiscordNotificationService:
 
         :returns: None
         """
-        pass
+        while not self._stop_event.is_set():
+            try:
+                if self._is_discord_enabled():
+                    self._check_playback_changes()
+                    self._check_sync_completion()
+            except Exception as error:
+                logger.exception(f"[ERROR] Discord Notification poll error: {error}")
+
+            self._stop_event.wait(self._poll_interval)
 
     def _check_playback_changes(self) -> None:
         """
