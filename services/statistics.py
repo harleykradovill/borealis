@@ -13,6 +13,10 @@ from sqlalchemy.orm import Session
 
 from typing import Any, Callable, Dict, List, Optional
 
+import calendar
+from collections import Counter, defaultdict
+import json
+
 SECTION_TOP_USERS = "top_users_by_plays"
 SECTION_TOP_ITEMS = "top_items_by_plays"
 SECTION_TOP_LIBRARIES = "top_libraries_by_plays"
@@ -25,27 +29,6 @@ SECTION_AUDIO_CODECS = "audio_codecs"
 SECTION_MOST_POPULAR_GENRES = "most_popular_genres"
 SECTION_TOP_LIBRARIES_BY_USER = "top_libraries_by_user"
 SECTION_TOP_ITEMS_BY_USER = "top_items_by_user"
-
-
-def _weekday_name(monday_zero_index: int) -> str:
-    """
-    Convert a Monday-based weekday index to a weekday name.
-
-    :param monday_zero_index: Weekday index where Monday = 0 and Sunday = 6
-    :returns: Weekday name when index is valid, otherwise "Unknown"
-    """
-    names = [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-    ]
-    if 0 <= monday_zero_index < len(names):
-        return names[monday_zero_index]
-    return "Unknown"
 
 
 def _sqlite_weekday_expr():
@@ -246,7 +229,7 @@ class StatisticsBuilder:
             out.append(
                 {
                     "weekday_index": idx,
-                    "weekday": _weekday_name(idx),
+                    "weekday": calendar.day_name[idx],
                     "plays": int(plays or 0),
                 }
             )
@@ -310,151 +293,77 @@ class StatisticsBuilder:
         return out
 
     @staticmethod
-    def resolutions(session: Session, limit: int) -> List[Dict[str, Any]]:
+    def _codec_stats(session: Session, column: Any, limit: int) -> List[Dict[str, Any]]:
         """
-        Return resolution counts for Episode/Movie items with an "Others" bucket.
+        Compute statistics for a given codec or resolution column.
 
-        :param session: Active SQL session
-        :param limit: Max number of rows to return including Others
-        :returns: List of resolution rows with name and count
+        :param session: Active SQLAlchemy session
+        :param column: SQLAlchemy column to aggregate
+        :param limit: Maximum number of rows to return
+        :returns: List of dicts with the column value and its count
+        :raises ValueError: If limit cannot be converted to an integer
         """
-        max_rows = max(2, int(limit or 8))  # Reserve a row for Others
-        primary_limit = max_rows - 1  # Keep top N-1 before Others
+        max_rows = max(2, int(limit or 8))
+        primary_limit = max_rows - 1
 
         rows = (
-            session.query(
-                Item.resolution,
-                func.count(Item.id).label("total"),
-            )
+            session.query(column, func.count(Item.id).label("total"))
             .filter(
                 Item.archived.is_(False),
                 func.lower(Item.type).in_(["episode", "movie"]),
-                Item.resolution.isnot(None),
-                func.trim(Item.resolution) != "",
+                column.isnot(None),
+                func.trim(column) != "",
             )
-            .group_by(Item.resolution)
-            .order_by(func.count(Item.id).desc(), Item.resolution.asc())
+            .group_by(column)
+            .order_by(func.count(Item.id).desc(), column.asc())
             .all()
         )
 
-        trimmed = rows[:primary_limit]
-        others_rows = rows[primary_limit:]
-        others_total = sum(int(r.total or 0) for r in others_rows)  # Aggregate rest
+        trimmed, others = rows[:primary_limit], rows[primary_limit:]
+        others_total = sum(int(r.total or 0) for r in others)
 
-        out = [
-            {"resolution": str(resolution), "count": int(total or 0)}
-            for resolution, total in trimmed
-            if resolution
-        ]
+        out = [{column.key: str(val), "count": int(cnt)} for val, cnt in trimmed if val]
+        if others_total:
+            out.append({column.key: "Others", "count": others_total})
 
-        if others_total > 0:
-            out.append({"resolution": "Others", "count": others_total})
-
-        out.sort(
-            key=lambda row: (-int(row.get("count") or 0), row.get("resolution") or "")
-        )
-
+        out.sort(key=lambda r: (-r["count"], r[column.key]))
         return out
 
     @staticmethod
     def audio_codecs(session: Session, limit: int) -> List[Dict[str, Any]]:
         """
-        Return top audio codec counts for Episode/Movie items with an "Others" bucket.
+        Return audio codec statistics
 
-        :param session: Active SQL session
-        :param limit: Max number of rows to return including Others
-        :returns: List of audio codec rows with name and count
+        :param session: Active SQLAlchemy session
+        :param limit: Maximum number of rows to return
+        :returns: List of dictionaries with audio-codec name and count
         """
-        max_rows = max(2, int(limit or 8))  # Reserve a row for Others
-        primary_limit = max_rows - 1  # Keep top N-1 before Others
-
-        rows = (
-            session.query(
-                Item.audio_codec,
-                func.count(Item.id).label("total"),
-            )
-            .filter(
-                Item.archived.is_(False),
-                func.lower(Item.type).in_(["episode", "movie"]),
-                Item.audio_codec.isnot(None),
-                func.trim(Item.audio_codec) != "",
-            )
-            .group_by(Item.audio_codec)
-            .order_by(func.count(Item.id).desc(), Item.audio_codec.asc())
-            .all()
-        )
-
-        trimmed = rows[:primary_limit]
-        others_rows = rows[primary_limit:]
-        others_total = sum(int(r.total or 0) for r in others_rows)  # Aggregate rest
-
-        out = [
-            {"audio_codec": str(codec), "count": int(total or 0)}
-            for codec, total in trimmed
-            if codec
-        ]
-
-        if others_total > 0:
-            out.append({"audio_codec": "Others", "count": others_total})
-
-        out.sort(
-            key=lambda row: (-int(row.get("count") or 0), row.get("audio_codec") or "")
-        )
-
-        return out
+        return StatisticsBuilder._codec_stats(session, Item.audio_codec, limit)
 
     @staticmethod
     def video_codecs(session: Session, limit: int) -> List[Dict[str, Any]]:
         """
-        Return top video codec counts for Episode/Movie items with an "Others" bucket.
+        Return video codec statistics
 
-        :param session: Active SQL session
-        :param limit: Max number of rows to return including Others
-        :returns: List of video codec rows with name and count
+        :param session: Active SQLAlchemy session
+        :param limit: Maximum number of rows to return
+        :returns: List of dictionaries with video-codec name and count
         """
-        max_rows = max(2, int(limit or 8))  # Reserve a row for Others
-        primary_limit = max_rows - 1  # Keep top N-1 before Others
-
-        rows = (
-            session.query(
-                Item.video_codec,
-                func.count(Item.id).label("total"),
-            )
-            .filter(
-                Item.archived.is_(False),
-                func.lower(Item.type).in_(["episode", "movie"]),
-                Item.video_codec.isnot(None),
-                func.trim(Item.video_codec) != "",
-            )
-            .group_by(Item.video_codec)
-            .order_by(func.count(Item.id).desc(), Item.video_codec.asc())
-            .all()
-        )
-
-        trimmed = rows[:primary_limit]
-        others_rows = rows[primary_limit:]
-        others_total = sum(int(r.total or 0) for r in others_rows)  # Aggregate rest
-
-        out = [
-            {"video_codec": str(codec), "count": int(total or 0)}
-            for codec, total in trimmed
-            if codec
-        ]
-
-        if others_total > 0:
-            out.append({"video_codec": "Others", "count": others_total})
-
-        out.sort(
-            key=lambda row: (-int(row.get("count") or 0), row.get("video_codec") or "")
-        )
-
-        return out
+        return StatisticsBuilder._codec_stats(session, Item.video_codec, limit)
 
     @staticmethod
-    def most_popular_genres(
-        session: Session,
-        limit: int = 5,
-    ) -> List[Dict[str, Any]]:
+    def resolutions(session: Session, limit: int) -> List[Dict[str, Any]]:
+        """
+        Return resolution statistics
+
+        :param session: Active SQLAlchemy session
+        :param limit: Maximum number of rows to return
+        :returns: List of dictionaries with resolution value and count
+        """
+        return StatisticsBuilder._codec_stats(session, Item.resolution, limit)
+
+    @staticmethod
+    def most_popular_genres(session: Session, limit: int = 5) -> List[Dict[str, Any]]:
         """
         Return top genres overall with per-user playback counts.
 
@@ -462,17 +371,6 @@ class StatisticsBuilder:
         :param limit: Max number of genres to return
         :returns: List of genre rows with total plays and non-archived user breakdown
         """
-        max_rows = max(1, int(limit or 5))
-
-        user_ids = [
-            row.jellyfin_id
-            for row in session.query(User.jellyfin_id)
-            .filter(User.archived.is_(False))
-            .order_by(User.name.asc())
-            .all()
-            if row and row.jellyfin_id
-        ]
-
         rows = (
             session.query(PlaybackActivity.user_id, Item.genres)
             .join(Item, PlaybackActivity.item_id == Item.jellyfin_id)
@@ -486,50 +384,36 @@ class StatisticsBuilder:
             .all()
         )
 
-        genre_plays: Dict[str, int] = {}
-        genre_user_breakdown: Dict[str, Dict[str, int]] = {}
-
-        import json
+        genre_counter = Counter()
+        user_genre_counts = defaultdict(lambda: Counter())
 
         for user_id, genres_str in rows:
-            if not user_id:
-                continue
-
             try:
-                genres_list = (
-                    json.loads(genres_str) if isinstance(genres_str, str) else []
-                )
+                genres = json.loads(genres_str) if isinstance(genres_str, str) else []
             except (json.JSONDecodeError, TypeError):
                 continue
-
-            for genre in genres_list:
-                genre_name = str(genre).strip()
-                if not genre_name:
+            for g in genres:
+                name = str(g).strip()
+                if not name:
                     continue
-
-                genre_plays[genre_name] = genre_plays.get(genre_name, 0) + 1
-
-                if genre_name not in genre_user_breakdown:
-                    genre_user_breakdown[genre_name] = dict.fromkeys(user_ids, 0)
-
-                genre_user_breakdown[genre_name][user_id] = (
-                    genre_user_breakdown[genre_name].get(user_id, 0) + 1
-                )
+                genre_counter[name] += 1
+                user_genre_counts[name][user_id] += 1
 
         out = []
-        for genre, total in sorted(
-            genre_plays.items(), key=lambda item: (-item[1], item[0])
-        )[:max_rows]:
+        for genre, total in genre_counter.most_common(limit):
+            breakdown = {
+                uid: user_genre_counts[genre].get(uid, 0)
+                for uid in [
+                    u.jellyfin_id
+                    for u in session.query(User.jellyfin_id)
+                    .filter(User.archived.is_(False))
+                    .order_by(User.name)
+                    .all()
+                ]
+            }
             out.append(
-                {
-                    "genre": genre,
-                    "total_plays": int(total),
-                    "user_breakdown": genre_user_breakdown.get(
-                        genre, dict.fromkeys(user_ids, 0)
-                    ),
-                }
+                {"genre": genre, "total_plays": total, "user_breakdown": breakdown}
             )
-
         return out
 
     @staticmethod
