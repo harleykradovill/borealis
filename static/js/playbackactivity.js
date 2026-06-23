@@ -257,8 +257,26 @@
       const tr = document.createElement("tr");
 
       const userTd = document.createElement("td");
-      userTd.textContent =
-        currentNameById.get(it.user_id) || it.username || "Deleted User";
+
+      const userLink = document.createElement("a");
+      userLink.href = `/user/${it.user_id}`;
+      userLink.className = "playback-user-link";
+
+      const userImg = document.createElement("img");
+      userImg.className = "playback-user-icon";
+      userImg.src = `/api/jellyfin/users/${it.user_id}/images/primary`;
+      userImg.onerror = () => {
+        userImg.src = "/assets/icons/profile_small.png";
+      };
+
+      userLink.appendChild(userImg);
+      userLink.appendChild(
+        document.createTextNode(
+          " " + (currentNameById.get(it.user_id) || it.username || "Deleted User"),
+        ),
+      );
+
+      userTd.appendChild(userLink);
       tr.appendChild(userTd);
 
       const typeTd = document.createElement("td");

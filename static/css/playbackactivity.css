@@ -75,6 +75,27 @@
   color: var(--negative);
 }
 
+.playback-user-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: var(--transition-all);
+}
+
+.playback-user-link:hover {
+  color: var(--accent);
+}
+
+.playback-user-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--border-circle);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 .table thead th {
   text-align: left;
   padding: 0.5rem;
