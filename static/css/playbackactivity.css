@@ -18,7 +18,6 @@
 .glance-card {
   border-radius: var(--border-element);
   border: 1px solid var(--border);
-  height: auto;
   width: 150px;
   padding: 0.4rem 1rem;
 }
@@ -62,7 +61,6 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  display: block;
 }
 
 .playback-chip.playback-start {
@@ -129,10 +127,6 @@
 
 .table tr:nth-child(even) {
   background-color: var(--bg-lighter);
-}
-
-.table tbody tr:hover td {
-  background: var(--highlight);
 }
 
 .activitylog-meta {
@@ -244,7 +238,6 @@
 
 .pagination .btn.active,
 .pagination .btn[aria-current="page"] {
-  background: var(--white);
   color: var(--black);
   background-color: var(--accent);
   border-radius: var(--border-circle);

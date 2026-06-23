@@ -239,10 +239,6 @@ glance-value {
   background-color: var(--bg-lighter);
 }
 
-.recent-activity-table tbody tr:hover td {
-  background: var(--highlight);
-}
-
 .recent-activity-name {
   max-width: 300px;
   overflow: hidden;
