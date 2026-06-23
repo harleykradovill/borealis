@@ -215,6 +215,7 @@ glance-value {
   font-weight: 600;
   color: var(--text);
   font-size: var(--font-size-base);
+  border-right: 1px solid var(--border);
 }
 
 .recent-activity-table tbody td {
@@ -226,6 +227,7 @@ glance-value {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: var(--font-size-base);
+  border-right: 1px solid var(--border);
 }
 
 .recent-activity-table thead th.align-right,

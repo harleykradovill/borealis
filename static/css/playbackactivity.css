@@ -103,6 +103,7 @@
   font-weight: 600;
   color: var(--text);
   font-size: var(--font-size-base);
+  border-right: 1px solid var(--border);
 }
 
 .table tbody td {
@@ -114,10 +115,16 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: var(--font-size-base);
+  border-right: 1px solid var(--border);
 }
 
 .table thead th.align-right {
   text-align: right;
+}
+
+.table thead th:last-child,
+.table tbody td:last-child {
+  border-right: none;
 }
 
 .table tr:nth-child(even) {
