@@ -257,25 +257,38 @@
       const tr = document.createElement("tr");
 
       const userTd = document.createElement("td");
-      userTd.style.padding = "0.5rem";
       userTd.textContent =
         currentNameById.get(it.user_id) || it.username || "Deleted User";
       tr.appendChild(userTd);
 
       const typeTd = document.createElement("td");
-      typeTd.style.padding = "0.5rem";
-      typeTd.textContent = formatPlaybackType(it.playback_type);
+      const typeSpan = document.createElement("span");
+      typeSpan.className = "playback-chip";
+
+      const iconImg = document.createElement("img");
+      iconImg.className = "playback-chip-icon";
+      if (it.playback_type === "VideoPlayback") {
+        iconImg.src = "/assets/icons/playbackactivity/play.svg";
+      } else if (it.playback_type === "VideoPlaybackStopped") {
+        iconImg.src = "/assets/icons/playbackactivity/stop.svg";
+      }
+      typeSpan.appendChild(iconImg);
+
+      const textNode = document.createTextNode(
+        " " + formatPlaybackType(it.playback_type),
+      );
+      typeSpan.appendChild(textNode);
 
       if (it.playback_type === "VideoPlayback") {
-        typeTd.style.color = "#10aa4d";
+        typeSpan.classList.add("playback-start");
       } else if (it.playback_type === "VideoPlaybackStopped") {
-        typeTd.style.color = "#e74c3c";
+        typeSpan.classList.add("playback-stop");
       }
 
+      typeTd.appendChild(typeSpan);
       tr.appendChild(typeTd);
 
       const eventTd = document.createElement("td");
-      eventTd.style.padding = "0.5rem";
       eventTd.textContent = globalThis.helpers.extractMediaItemName(
         it.event_name,
         it.playback_type,
@@ -283,7 +296,6 @@
       tr.appendChild(eventTd);
 
       const dateTd = document.createElement("td");
-      dateTd.style.padding = "0.5rem";
       dateTd.style.textAlign = "right";
       dateTd.textContent = it.activity_at
         ? new Date(Number(it.activity_at) * 1000).toLocaleString()

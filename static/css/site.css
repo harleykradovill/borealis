@@ -1,14 +1,15 @@
 :root {
   /* Colours */
   --bg: #0c1310;
+  --bg-lighter: #121b17;
   --surface: #16201e;
   --highlight: #294735;
   --accent: #10aa4d;
   --border: #1f2b22;
   --text: #e8ebe0;
   --text-muted: #b3b3b3;
-  --positive: #309914;
-  --negative: #8f1616;
+  --positive: #37a718;
+  --negative: #c71d1d;
   --white: #ffffff;
   --black: #000000;
 

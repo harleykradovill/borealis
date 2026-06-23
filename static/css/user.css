@@ -234,7 +234,7 @@ glance-value {
 }
 
 .recent-activity-table tr:nth-child(even) {
-  background-color: var(--surface);
+  background-color: var(--bg-lighter);
 }
 
 .recent-activity-table tbody tr:hover td {
