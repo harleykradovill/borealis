@@ -62,7 +62,7 @@
 
   function getSelectedUserIdsArray() {
     if (!(selectedUserIds instanceof Set)) return [];
-    return Array.from(selectedUserIds).filter(Boolean);
+    return Array.from(selectedUserIds);
   }
 
   function updateFilterButtonState() {
@@ -107,11 +107,7 @@
       input.addEventListener("change", () => {
         if (!(selectedUserIds instanceof Set)) selectedUserIds = new Set();
 
-        if (input.checked) {
-          selectedUserIds.add(userId);
-        } else {
-          selectedUserIds.delete(userId);
-        }
+        selectedUserIds[input.checked ? "add" : "delete"](userId);
 
         updateFilterButtonState();
 
@@ -179,14 +175,13 @@
       return left.localeCompare(right);
     });
 
-    if (selectedUserIds instanceof Set) {
-      const validUserIds = new Set(allUsers.map((u) => u.user_id));
-      selectedUserIds = new Set(
-        Array.from(selectedUserIds).filter((id) => validUserIds.has(id)),
-      );
-    } else {
-      selectedUserIds = new Set(allUsers.map((u) => u.user_id));
-    }
+    selectedUserIds = new Set(
+      selectedUserIds instanceof Set
+        ? Array.from(selectedUserIds).filter((id) =>
+            new Set(allUsers.map((u) => u.user_id)).has(id),
+          )
+        : allUsers.map((u) => u.user_id),
+    );
 
     renderFilterOptions();
   }
