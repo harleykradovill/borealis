@@ -44,6 +44,7 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .playback-chip {
@@ -123,6 +124,16 @@
 .table thead th:last-child,
 .table tbody td:last-child {
   border-right: none;
+}
+
+.table thead th:nth-child(1) {
+  width: 150px;
+}
+.table thead th:nth-child(2) {
+  width: 144px;
+}
+.table thead th:nth-child(4) {
+  width: 200px;
 }
 
 .table tr:nth-child(even) {

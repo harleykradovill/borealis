@@ -433,14 +433,14 @@ document.addEventListener("DOMContentLoaded", () => {
           datasets: [
             {
               data: values,
-              borderColor: "#0e4e3a",
+              borderColor: "#000000cc",
               backgroundColor: "#056d4ccc",
               fill: true,
               tension: 0.5,
               pointRadius: 3,
               pointHoverRadius: 4,
-              pointBackgroundColor: "#0e4e3a",
-              pointBorderColor: "#0e4e3a",
+              pointBackgroundColor: "#000000cc",
+              pointBorderColor: "#000000cc",
               borderWidth: 2,
             },
           ],
