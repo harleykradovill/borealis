@@ -182,8 +182,7 @@ glance-value {
   min-width: 0;
   border: 1px solid var(--border);
   border-radius: var(--border-element);
-  padding: 0.75rem;
-  height: 790px;
+  height: auto;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -193,7 +192,6 @@ glance-value {
   flex: 1;
   overflow-y: auto;
   min-width: 0;
-  border-radius: var(--border-small);
 }
 
 .recent-activity-placeholder {
@@ -209,8 +207,8 @@ glance-value {
 }
 
 .recent-activity-table thead th {
+  padding: 0.5rem 0.8rem;
   text-align: left;
-  padding: 0.2rem 0.5rem;
   border-bottom: 1px solid var(--border);
   font-weight: 600;
   color: var(--text);
@@ -219,7 +217,7 @@ glance-value {
 }
 
 .recent-activity-table tbody td {
-  padding: 0.5rem 0.5rem;
+  padding: 0.5rem 0.8rem;
   border-bottom: 1px solid var(--border);
   color: var(--text);
   vertical-align: middle;
@@ -233,6 +231,11 @@ glance-value {
 .recent-activity-table thead th.align-right,
 .recent-activity-table tbody td.align-right {
   text-align: right;
+}
+
+.recent-activity-table thead th:last-child,
+.recent-activity-table tbody td:last-child {
+  border-right: none;
 }
 
 .recent-activity-table tr:nth-child(even) {
