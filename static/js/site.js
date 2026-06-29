@@ -43,7 +43,7 @@
     }
 
     if (syncToastId) {
-      Toast.hideSyncToast(syncToastId);
+      Toast.removeToast(syncToastId);
       syncToastId = null;
       globalThis.Toast.showToast("Sync complete");
     }

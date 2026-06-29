@@ -66,15 +66,9 @@
     const entry = toasts.get(id);
     if (!entry) return false;
 
-    if (typeof message === "string") {
-      entry.el.textContent = message;
-    }
+    if (typeof message === "string") entry.el.textContent = message;
 
-    if (typeof type === "string" && type.length) {
-      entry.el.className = `toast ${type}`;
-    }
-
-    return true;
+    if (typeof type === "string" && type.length) entry.el.className = `toast ${type}`;
   }
 
   /**
@@ -86,40 +80,21 @@
     const entry = toasts.get(id);
     if (!entry) return false;
 
-    if (entry.timeoutId) {
-      clearTimeout(entry.timeoutId);
-    }
+    if (entry.timeoutId) clearTimeout(entry.timeoutId);
 
     entry.el.remove();
     toasts.delete(id);
-    return true;
   }
   /**
    * Show a sync toast with spinner.
    * @param {string} message Displayed next to the spinner
    * @returns {string} The generated toast ID
    */
-
   function showSyncToast(message = "Syncing") {
-    const container = getContainer();
-
-    const id = makeId();
-    const el = document.createElement("div");
-    el.className = "toast sync";
-    el.setAttribute("role", "status");
-    el.dataset.toastId = id;
-
-    const messageSpan = document.createElement("span");
-    messageSpan.textContent = String(message);
-
+    const id = showToast(message, "sync", 0);
     const spinner = document.createElement("div");
     spinner.className = "sync-spinner";
-
-    el.appendChild(messageSpan);
-    el.appendChild(spinner);
-    container.appendChild(el);
-
-    toasts.set(id, { el, timeoutId: null });
+    toasts.get(id).el.appendChild(spinner);
     return id;
   }
 
@@ -138,20 +113,11 @@
     }
   }
 
-  /**
-   * Hide a sync toast.
-   * @param {string} toastId Toast ID to hide
-   */
-  function hideSyncToast(toastId) {
-    removeToast(toastId);
-  }
-
   globalThis.Toast = {
     showToast,
     updateToast,
     removeToast,
     showSyncToast,
     updateSyncToast,
-    hideSyncToast,
   };
 })();
