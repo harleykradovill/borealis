@@ -154,12 +154,11 @@ globalThis.helpers = (function () {
   /**
    * Fetches JSON from the given path.
    * @param {string} path The URL to request
-   * @param {Object} opts Optional fetch options (method, headers, etc.)
    * @returns {Promise<Object>} Resolves with an object containing 'ok', 'status', and 'data' or error details.
    */
-  async function fetchJson(path, opts = {}) {
+  async function fetchJson(path) {
     try {
-      const resp = await fetch(path, opts.method ? opts : { method: "GET" });
+      const resp = await fetch(path, { method: "GET" });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
         return {
