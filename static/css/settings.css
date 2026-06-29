@@ -16,16 +16,19 @@
   padding: 0.4rem 0rem;
   border-radius: var(--border-element);
   text-decoration: none;
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-lg);
   font-weight: 500;
   color: var(--text-muted);
   transition: var(--transition-all);
 }
 
-.settings-tab.active,
+.settings-tab.active {
+  background-color: var(--surface);
+  color: var(--text);
+}
+
 .settings-tab:hover {
-  color: var(--black);
-  background-color: var(--accent);
+  background-color: var(--highlight);
 }
 
 .settings-placeholder {
