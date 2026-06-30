@@ -75,6 +75,29 @@ def test_update_persists_plain_fields(service: SettingsService) -> None:
     assert updated["sync_interval"] == 120
 
 
+def test_update_persists_discord_settings(service: SettingsService) -> None:
+    """
+    Verify Discord settings are persisted and retrieved correctly.
+
+    :returns: None
+    """
+    triggers = ["playback_started", "playback_stopped"]
+    updated = service.update(
+        {
+            "discord_enabled": True,
+            "discord_url": "https://discord.com/webhook/123",
+            "discord_triggers": triggers,
+            "discord_username": "Borealis Bot",
+            "discord_avatar": "https://example.com/avatar.png",
+        }
+    )
+    assert updated["discord_enabled"] is True
+    assert updated["discord_url"] == "https://discord.com/webhook/123"
+    assert updated["discord_triggers"] == triggers
+    assert updated["discord_username"] == "Borealis Bot"
+    assert updated["discord_avatar"] == "https://example.com/avatar.png"
+
+
 def test_update_encrypts_and_decrypts_api_key(
     service: SettingsService,
 ) -> None:
