@@ -75,10 +75,13 @@
   flex: 1;
   min-width: 0;
   margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
 }
 
 .glance-label {
-  color: var(--text);
+  color: var(--text-muted);
   font-size: var(--font-size-sm);
   font-weight: 600;
 }
@@ -90,9 +93,8 @@
   letter-spacing: 0.2px;
 }
 
-.glance-section.right glance-label,
-.glance-section.right,
-glance-value {
+.glance-card.right .glance-label,
+.glance-card.right .glance-value {
   text-align: right;
 }
 
@@ -183,7 +185,7 @@ glance-value {
 
 .plays-trend-card {
   position: relative;
-  height: 280px;
+  height: 320px;
   padding: 1rem;
 }
 
