@@ -284,6 +284,199 @@ function populateRecentActivity() {
   switchStatistic(0);
 })();
 
+(function () {
+  const trendLoading = document.getElementById("plays-trend-loading");
+  const trendCanvas = document.getElementById("plays-trend-chart");
+  if (!trendCanvas) return;
+
+  /**
+   * Load activity for a specific user over N days.
+   * @param {string} userId The Jellyfin user ID
+   * @param {number} days Number of days to look back
+   * @returns {Promise<Array>} Filtered stop events
+   */
+  async function loadUserActivity(userId, days = 14) {
+    try {
+      const perPage = 1000;
+      const maxPages = 20;
+      let page = 1;
+      const all = [];
+      const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+
+      while (page <= maxPages) {
+        const resp = await fetch(
+          `/api/analytics/activitylog?page=${page}&per_page=${perPage}&user_ids=${encodeURIComponent(userId)}`,
+        );
+        if (!resp.ok) break;
+        const payload = await resp.json();
+        if (!payload?.ok) break;
+
+        const pageItems = Array.isArray(payload.data?.items) ? payload.data.items : [];
+        if (!pageItems.length) break;
+
+        const stopOnlyItems = pageItems.filter(
+          (it) => it.playback_type === "VideoPlaybackStopped",
+        );
+        all.push(...stopOnlyItems);
+
+        const minTsSec = Math.min(
+          ...pageItems.map((it) => Number(it.activity_at || 0)),
+        );
+        if (Number.isFinite(minTsSec) && minTsSec * 1000 <= cutoff) break;
+
+        if (pageItems.length < perPage) break;
+        page += 1;
+      }
+
+      return all;
+    } catch (error) {
+      globalThis.helpers.handleError("Failed to load user activity", error);
+      return [];
+    }
+  }
+
+  async function renderUserTrend() {
+    const userIdMatch = /\/user\/([^/]+)$/.exec(globalThis.location.pathname);
+    if (!userIdMatch) return;
+
+    const userId = userIdMatch[1];
+    const totalCountEl = document.getElementById("plays-trend-total");
+    const numberFmt = new Intl.NumberFormat();
+
+    if (trendLoading) trendLoading.hidden = false;
+    trendCanvas.style.display = "none";
+
+    try {
+      const items = await loadUserActivity(userId, 14);
+
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const counts = {};
+      items.forEach((it) => {
+        const ts = Number(it.activity_at || 0) * 1000;
+        if (!ts) return;
+        const d = new Date(ts);
+        const iso = globalThis.helpers.toLocalISO(d);
+        counts[iso] = (counts[iso] || 0) + 1;
+      });
+
+      const labels = [];
+      const values = [];
+      const start = globalThis.helpers.addDays(now, -13);
+
+      const dateLabels = globalThis.helpers.generateDateLabels(start, 14);
+      dateLabels.forEach((iso) => {
+        const date = new Date(iso + "T00:00:00Z");
+        labels.push(globalThis.helpers.toLocalMD(date));
+        values.push(counts[iso] || 0);
+      });
+
+      const totalPlays = values.reduce((sum, v) => sum + Number(v || 0), 0);
+      if (totalCountEl) {
+        totalCountEl.textContent = numberFmt.format(totalPlays);
+      }
+
+      const minV = Math.min(...values);
+      const maxV = Math.max(...values);
+      const span = Math.max(1, maxV - minV);
+      const pad = Math.max(1, Math.round(span * 0.2));
+      const yMin = Math.max(0, minV - pad);
+      const yMax = maxV + pad;
+
+      const ctx = trendCanvas.getContext("2d");
+
+      const config = {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              data: values,
+              borderColor: "#000000cc",
+              backgroundColor: "#056d4ccc",
+              fill: true,
+              tension: 0.5,
+              pointRadius: 3,
+              pointHoverRadius: 4,
+              pointBackgroundColor: "#000000cc",
+              pointBorderColor: "#000000cc",
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          animation: { duration: 200 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctxArg) => `Plays: ${ctxArg.raw}`,
+              },
+            },
+          },
+          scales: {
+            x: {
+              display: true,
+              title: { display: false },
+              ticks: {
+                color: "#000000",
+                autoSkip: false,
+                maxRotation: 0,
+                minRotation: 0,
+                padding: 6,
+              },
+              grid: { display: false },
+            },
+            y: {
+              display: true,
+              title: { display: false },
+              ticks: {
+                color: "#000000",
+                precision: 0,
+              },
+              grid: { display: false },
+              min: yMin,
+              max: yMax,
+            },
+          },
+          maintainAspectRatio: false,
+          responsive: true,
+        },
+      };
+
+      if (globalThis.__userTrendChart) {
+        globalThis.__userTrendChart.destroy();
+      }
+      globalThis.__userTrendChart = new Chart(ctx, config);
+      trendCanvas.style.display = "";
+
+      const cardHeader = document.getElementById("plays-trend-card-header");
+      if (cardHeader) {
+        cardHeader.removeAttribute("hidden");
+      }
+    } finally {
+      if (trendLoading) trendLoading.hidden = true;
+    }
+  }
+
+  const run = () => {
+    renderUserTrend().catch((error) => {
+      globalThis.helpers.handleError("Failed to render user trend:", error);
+    });
+  };
+  if (typeof globalThis.requestIdleCallback === "function") {
+    globalThis.requestIdleCallback(run, { timeout: 100 });
+  } else {
+    globalThis.setTimeout(run, 0);
+  }
+
+  document.addEventListener("syncComplete", () => {
+    renderUserTrend().catch((error) => {
+      globalThis.helpers.handleError("Failed to refresh user trend:", error);
+    });
+  });
+})();
+
 document.addEventListener("DOMContentLoaded", () => {
   populateGlanceSection();
   populateRecentActivity();

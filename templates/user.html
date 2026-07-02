@@ -32,7 +32,7 @@
                 {% if user.is_admin %}
                 <img
                   class="hero-admin"
-                  src="../assets/icons/admin-dark.svg"
+                  src="../assets/icons/admin.svg"
                   alt="Administrator"
                   title="Administrator"
                 />
@@ -84,6 +84,26 @@
                 <canvas id="watch-statistics-chart"></canvas>
               </div>
             </section>
+
+            <section class="plays-trend-section">
+              <div class="plays-trend-card">
+                <div
+                  class="plays-trend-card-header"
+                  id="plays-trend-card-header"
+                  hidden
+                >
+                  <div id="plays-trend-total" class="plays-trend-card-value"></div>
+                  <div class="plays-trend-card-label">Plays in last 14 days</div>
+                </div>
+
+                <div id="plays-trend-loading" class="skeleton">
+                  <div class="wrapper">
+                    <div></div>
+                  </div>
+                </div>
+                <canvas id="plays-trend-chart"></canvas>
+              </div>
+            </section>
           </div>
 
           <section id="recent-section" class="recent-section">
@@ -118,7 +138,7 @@
       }
     </script>
     <script src="../static/js/site.js"></script>
-    <script src="../static/js/user.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../static/js/user.js"></script>
   </body>
 </html>

@@ -37,10 +37,7 @@
   display: flex;
   flex-direction: column;
   height: auto;
-  border-radius: var(--border-element);
-  padding: 0.75rem;
   flex-shrink: 0;
-  background-color: #078f63;
 }
 
 .glance-columns {
@@ -55,19 +52,17 @@
 }
 
 .hero-image {
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--border-circle);
   object-fit: cover;
   flex-shrink: 0;
-  box-shadow:
-    rgba(14, 30, 37, 0.12) 0px 2px 4px 0px,
-    rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .hero-name {
   margin: 0;
-  color: var(--black);
+  color: var(--text);
   font-size: var(--font-size-xl);
   font-weight: 600;
 }
@@ -83,13 +78,13 @@
 }
 
 .glance-label {
-  color: var(--black);
+  color: var(--text);
   font-size: var(--font-size-sm);
   font-weight: 600;
 }
 
 .glance-value {
-  color: var(--black);
+  color: var(--text);
   font-size: var(--font-size-lg);
   font-weight: 700;
   letter-spacing: 0.2px;
@@ -171,6 +166,55 @@ glance-value {
 
 #watch-statistics-loading .wrapper > div {
   height: 183px;
+  border-radius: var(--border-element);
+}
+
+/* ==================== */
+/* Plays Trend Section  */
+/* ==================== */
+
+.plays-trend-section {
+  flex: 3 1 0;
+  min-width: 0;
+  border: 1px solid var(--border);
+  background-color: #078f63;
+  border-radius: var(--border-element);
+}
+
+.plays-trend-card {
+  position: relative;
+  height: 280px;
+  padding: 1rem;
+}
+
+.plays-trend-card-header {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.plays-trend-card-value {
+  font-size: var(--font-size-xxl);
+  font-weight: 800;
+  color: var(--black);
+}
+
+.plays-trend-card-label {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--black);
+}
+
+.plays-trend-card canvas {
+  position: absolute;
+  top: 3.5rem;
+}
+
+#plays-trend-loading .wrapper > div {
+  height: 250px;
   border-radius: var(--border-element);
 }
 
