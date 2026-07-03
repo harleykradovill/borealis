@@ -26,7 +26,7 @@
 /* User Hero Section */
 /* ================= */
 .user-info-column {
-  flex: 3 1 0;
+  flex: 4 1 0;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -151,7 +151,7 @@
 
 .statistics-nav li.active {
   color: var(--accent);
-  background-color: var(--highlight);
+  background-color: #29473588;
   transition: var(--transition-all);
 }
 
@@ -224,7 +224,7 @@
 /* Recent Activity Section */
 /* ======================= */
 .recent-section {
-  flex: 7 1 0;
+  flex: 6 1 0;
   min-width: 0;
   border: 1px solid var(--border);
   border-radius: var(--border-element);

@@ -355,7 +355,7 @@
 
 .statistics-nav li.active {
   color: var(--accent);
-  background-color: var(--highlight);
+  background-color: #29473588;
   transition: var(--transition-all);
 }
 
@@ -521,7 +521,7 @@
 
 .codecs-nav li.active {
   color: var(--accent);
-  background-color: var(--highlight);
+  background-color: #29473588;
   transition: var(--transition-all);
 }
 
