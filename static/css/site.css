@@ -59,6 +59,13 @@ body {
   align-items: stretch;
 }
 
+.content {
+  flex: 1;
+  max-width: 1500px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
 /* ======= */
 /* Sidebar */
 /* ======= */
@@ -394,5 +401,46 @@ body {
   }
   100% {
     background-position-x: 0%;
+  }
+}
+
+/* ================= */
+/* Responsive        */
+/* ================= */
+
+@media (max-width: 768px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-width: unset;
+    height: auto;
+    position: static;
+    padding: 0.75rem;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .sidebar-links li:last-child {
+    margin-top: 0;
+  }
+
+  .content {
+    margin: 1rem auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    margin: 0.5rem auto;
+    padding: 0 0.5rem;
   }
 }

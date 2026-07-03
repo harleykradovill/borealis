@@ -2,6 +2,7 @@
   margin-bottom: 1rem;
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 /* Section Headers */
@@ -26,7 +27,7 @@
 /* User Hero Section */
 /* ================= */
 .user-info-column {
-  flex: 4 1 0;
+  flex: 4 1 420px;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -76,6 +77,7 @@
   min-width: 0;
   margin-top: 1rem;
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   justify-content: space-between;
 }
@@ -98,6 +100,11 @@
   text-align: right;
 }
 
+.glance-section .glance-card {
+  min-width: 140px;
+  flex: 1 1 0;
+}
+
 /* ================== */
 /* Statistics Section */
 /* ================== */
@@ -111,7 +118,7 @@
   border: 1px solid var(--border);
   padding: 0.75rem 0.75rem;
   flex-shrink: 0;
-  height: 250px;
+  min-height: 250px;
 }
 
 .statistics-section > nav {
@@ -158,6 +165,7 @@
 .watch-statistics-card {
   grid-column: 1 / -1;
   grid-row: 2;
+  height: 200px;
 }
 
 .watch-statistics-card canvas {
@@ -167,7 +175,7 @@
 }
 
 #watch-statistics-loading .wrapper > div {
-  height: 183px;
+  height: 200px;
   border-radius: var(--border-element);
 }
 
@@ -185,7 +193,7 @@
 
 .plays-trend-card {
   position: relative;
-  height: 320px;
+  height: 300px;
   padding: 1rem;
 }
 
@@ -216,7 +224,7 @@
 }
 
 #plays-trend-loading .wrapper > div {
-  height: 250px;
+  height: 270px;
   border-radius: var(--border-element);
 }
 
@@ -224,7 +232,7 @@
 /* Recent Activity Section */
 /* ======================= */
 .recent-section {
-  flex: 6 1 0;
+  flex: 6 1 340px;
   min-width: 0;
   border: 1px solid var(--border);
   border-radius: var(--border-element);
@@ -293,4 +301,39 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .glance-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .glance-section {
+    flex-direction: column;
+  }
+
+  .glance-section .glance-card {
+    min-width: unset;
+  }
+
+  .statistics-section {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .statistics-section > nav {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+  }
+
+  .watch-statistics-card {
+    grid-row: 3;
+  }
+
+  #recent-activity-container {
+    overflow-x: auto;
+  }
 }
