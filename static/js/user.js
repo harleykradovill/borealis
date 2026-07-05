@@ -65,7 +65,7 @@ function populateRecentActivity() {
 
         const dateTd = document.createElement("td");
         const date = new Date((activity.activity_at || 0) * 1000);
-        dateTd.textContent = date.toLocaleDateString();
+        dateTd.textContent = globalThis.helpers.formatDateTime(date);
         tr.appendChild(dateTd);
 
         const displayName = globalThis.helpers.extractMediaItemName(

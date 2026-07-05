@@ -408,7 +408,7 @@
             log.name || "(unnamed)",
           )}</div>
           <div style="font-size:0.9rem;color:var(--text-muted);">
-            ${started ? started.toLocaleString() : ""}
+            ${started ? globalThis.helpers.formatDateTime(started) : ""}
             ${log.type ? " • " + globalThis.helpers.escapeHtml(log.type) : ""}
           </div>
         </div>
