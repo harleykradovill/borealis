@@ -242,23 +242,6 @@ globalThis.helpers = (function () {
   }
 
   /**
-   * Converts a duration in ms to a human-readable string.
-   * @param {number} ms Duration in milliseconds
-   * @returns {string} Human-readable representation (e.g., "1h 5m")
-   */
-  function humanDuration(ms) {
-    if (!ms || ms <= 0) return "0s";
-    let s = Math.floor(ms / 1000);
-    const h = Math.floor(s / 3600);
-    s = s % 3600;
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    if (h) return `${h}h ${m}m`;
-    if (m) return `${m}m ${sec}s`;
-    return `${sec}s`;
-  }
-
-  /**
    * Converts a byte count into a readable unit string.
    * @param {number} bytes Number of bytes
    * @returns {string} Human-readable representation (e.g., "12.34 MB")
@@ -271,21 +254,6 @@ globalThis.helpers = (function () {
   }
 
   /**
-   * Converts seconds into a human-readable string.
-   * @param {number} seconds Time in seconds
-   * @returns {string} Human-readable representation (e.g., "2h 30m")
-   */
-  function humanTime(seconds) {
-    if (!seconds || seconds === 0) return "0s";
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    if (h) return `${h}h ${m}m`;
-    if (m) return `${m}m ${s}s`;
-    return `${s}s`;
-  }
-
-  /**
    * Masks a key, showing only the first four characters and replacing the rest with dots.
    * @param {string} key The key to mask
    * @returns {string} Masked key string
@@ -294,30 +262,6 @@ globalThis.helpers = (function () {
     if (!key) return "";
     if (key.length <= 4) return "•".repeat(key.length);
     return `${key.slice(0, 4)}${"•".repeat(Math.max(8, key.length - 4))}`;
-  }
-
-  /**
-   * Converts a Date object into an ISO-8601 date string (YYYY-MM-DD)
-   * @param {Date} date The date to format
-   * @returns {string} ISO date string
-   */
-  function toLocalISO(date) {
-    const yr = date.getFullYear();
-    const mo = String(date.getMonth() + 1).padStart(2, "0");
-    const da = String(date.getDate()).padStart(2, "0");
-    return `${yr}-${mo}-${da}`;
-  }
-
-  /**
-   * Adds a specified number of days to a Date object and returns the new date.
-   * @param {Date} date Original date
-   * @param {number} days Number of days to add
-   * @returns {Date} New date with added days
-   */
-  function addDays(date, days) {
-    const d = new Date(date);
-    d.setDate(d.getDate() + days);
-    return d;
   }
 
   /**
@@ -365,21 +309,6 @@ globalThis.helpers = (function () {
   }
 
   /**
-   * Generates an array of ISO date strings for a date range.
-   * @param {Date} startDate Starting date
-   * @param {number} days Number of days to include
-   * @returns {Array<string>} Array of ISO date strings (YYYY-MM-DD)
-   */
-  function generateDateLabels(startDate, days = 14) {
-    const dates = [];
-    for (let i = 0; i < days; i++) {
-      const d = addDays(startDate, i);
-      dates.push(toLocalISO(d));
-    }
-    return dates;
-  }
-
-  /**
    * Extract media item title from a playback event string
    * @param {string} eventName Full event text
    * @param {string} playbackType Playback event type (e.g, "VideoPlayback", "VideoPlaybackStopped")
@@ -399,6 +328,81 @@ globalThis.helpers = (function () {
   }
 
   /**
+   * Date/time-related helpers
+   */
+
+  /**
+   * Converts a duration in ms to a human-readable string.
+   * @param {number} ms Duration in milliseconds
+   * @returns {string} Human-readable representation (e.g., "1h 5m")
+   */
+  function humanDuration(ms) {
+    if (!ms || ms <= 0) return "0s";
+    let s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600);
+    s = s % 3600;
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    if (h) return `${h}h ${m}m`;
+    if (m) return `${m}m ${sec}s`;
+    return `${sec}s`;
+  }
+
+  /**
+   * Converts seconds into a human-readable string.
+   * @param {number} seconds Time in seconds
+   * @returns {string} Human-readable representation (e.g., "2h 30m")
+   */
+  function humanTime(seconds) {
+    if (!seconds || seconds === 0) return "0s";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h) return `${h}h ${m}m`;
+    if (m) return `${m}m ${s}s`;
+    return `${s}s`;
+  }
+
+  /**
+   * Converts a Date object into an ISO-8601 date string (YYYY-MM-DD)
+   * @param {Date} date The date to format
+   * @returns {string} ISO date string
+   */
+  function toLocalISO(date) {
+    const yr = date.getFullYear();
+    const mo = String(date.getMonth() + 1).padStart(2, "0");
+    const da = String(date.getDate()).padStart(2, "0");
+    return `${yr}-${mo}-${da}`;
+  }
+
+  /**
+   * Adds a specified number of days to a Date object and returns the new date.
+   * @param {Date} date Original date
+   * @param {number} days Number of days to add
+   * @returns {Date} New date with added days
+   */
+  function addDays(date, days) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
+  /**
+   * Generates an array of ISO date strings for a date range.
+   * @param {Date} startDate Starting date
+   * @param {number} days Number of days to include
+   * @returns {Array<string>} Array of ISO date strings (YYYY-MM-DD)
+   */
+  function generateDateLabels(startDate, days = 14) {
+    const dates = [];
+    for (let i = 0; i < days; i++) {
+      const d = addDays(startDate, i);
+      dates.push(toLocalISO(d));
+    }
+    return dates;
+  }
+
+  /**
    * Converts a Date object into an M/D format string (e.g., "5/22")
    * @param {Date} date The date to format
    * @returns {string} Formatted date string
@@ -407,6 +411,22 @@ globalThis.helpers = (function () {
     const mo = String(date.getMonth() + 1);
     const da = String(date.getDate());
     return `${mo}/${da}`;
+  }
+
+  /**
+   * Formats a Date object into a string: DD/MM/YY HH:MM AM/PM
+   * @param {Date} date The date to format
+   * @returns {string} Formatted date string
+   */
+  function formatDateTime(date) {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = String(date.getFullYear()).slice(-2);
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    return `${day}/${month}/${year} ${String(hours).padStart(2, "0")}:${minutes} ${ampm}`;
   }
 
   return {
@@ -424,5 +444,6 @@ globalThis.helpers = (function () {
     generateDateLabels,
     extractMediaItemName,
     toLocalMD,
+    formatDateTime,
   };
 })();

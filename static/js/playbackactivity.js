@@ -311,7 +311,7 @@
       const dateTd = document.createElement("td");
       dateTd.style.textAlign = "right";
       dateTd.textContent = it.activity_at
-        ? new Date(Number(it.activity_at) * 1000).toLocaleString()
+        ? globalThis.helpers.formatDateTime(new Date(Number(it.activity_at) * 1000))
         : "";
       tr.appendChild(dateTd);
 
