@@ -6,12 +6,12 @@
 
   async function loadLibraries() {
     try {
-      const resp = await fetch("/api/analytics/stats/libraries");
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-      if (!data?.ok) throw new Error(data.error || "Unknown error");
+      const result = await globalThis.helpers.fetchJson(
+        "/api/analytics/stats/libraries",
+      );
+      if (!result?.ok) throw new Error(result?.message || "Unknown error");
 
-      const libs = Array.isArray(data.data) ? data.data : [];
+      const libs = Array.isArray(result.data) ? result.data : [];
       renderLibraries(libs);
 
       if (
@@ -123,12 +123,12 @@
     if (!itemLineCanvas || !libs || libs.length === 0) return;
 
     try {
-      const resp = await fetch("/api/analytics/items/added-last-30-days");
-      if (!resp.ok) throw new Error("Network error");
-      const payload = await resp.json();
-      if (!payload?.ok) throw new Error(payload?.message || "API error");
+      const result = await globalThis.helpers.fetchJson(
+        "/api/analytics/items/added-last-30-days",
+      );
+      if (!result?.ok) throw new Error(result?.message || "API error");
 
-      const data = payload.data || {};
+      const data = result.data || {};
       const dates = Array.isArray(data.dates)
         ? data.dates.map((d) => globalThis.helpers.toLocalMD(new Date(d)))
         : globalThis.helpers

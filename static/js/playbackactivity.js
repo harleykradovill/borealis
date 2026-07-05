@@ -331,12 +331,12 @@
 
   async function loadGlanceTotals() {
     try {
-      const resp = await fetch("/api/analytics/activity-summary");
-      if (!resp.ok) throw new Error("Network error");
-      const payload = await resp.json();
-      if (!payload.ok) throw new Error(payload.message || "API error");
+      const result = await globalThis.helpers.fetchJson(
+        "/api/analytics/activity-summary",
+      );
+      if (!result?.ok) throw new Error(result?.message || "API error");
 
-      const { start, stop } = payload.data;
+      const { start, stop } = result.data || {};
       if (glanceStart) glanceStart.textContent = start.toLocaleString();
       if (glanceStop) glanceStop.textContent = stop.toLocaleString();
     } catch (error) {
@@ -423,15 +423,12 @@
         params.set("user_ids", selectedIds.join(","));
       }
 
-      const resp = await fetch(`/api/analytics/activitylog?${params.toString()}`);
-      if (!resp.ok) throw new Error("Network error");
+      const result = await globalThis.helpers.fetchJson(
+        `/api/analytics/activitylog?${params.toString()}`,
+      );
+      if (!result?.ok) throw new Error(result?.message || "API error");
 
-      const payload = await resp.json();
-      if (!payload?.ok) {
-        throw new Error(payload?.message || "API error");
-      }
-
-      render(payload.data || {});
+      render(result.data || {});
     } catch (error) {
       globalThis.helpers.handleError("Failed to load playback activity", error);
       renderEmpty();

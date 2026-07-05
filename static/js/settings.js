@@ -108,9 +108,9 @@
 
   async function loadSettings() {
     try {
-      const resp = await fetch("/api/settings");
-      if (!resp.ok) throw new Error(`GET failed: ${resp.status}`);
-      const data = await resp.json();
+      const result = await globalThis.helpers.fetchJson("/api/settings");
+      if (!result?.ok) throw new Error(result?.message || "GET failed");
+      const data = result.data || {};
 
       Object.entries(fieldConfig).forEach(([key, config]) => {
         if (!fields[key]) return;
@@ -335,12 +335,8 @@
 
   async function checkServerState() {
     try {
-      const resp = await fetch("/api/settings");
-      if (!resp.ok) {
-        console.warn(`Failed to check server state: ${resp.status}`);
-        return;
-      }
-      const data = await resp.json();
+      const result = await globalThis.helpers.fetchJson("/api/settings");
+      const data = result.data || {};
 
       if (data.jf_host && data.jf_port && data.jf_api_key) {
         displayServer(data);

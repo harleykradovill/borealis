@@ -157,28 +157,16 @@
     librariesList.innerHTML = "";
 
     try {
-      const resp = await fetch("/api/jellyfin/libraries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jf_host: state.jfHost,
-          jf_port: state.jfPort,
-          jf_api_key: state.jfApiKey,
-        }),
+      const result = await globalThis.helpers.postJson("/api/jellyfin/libraries", {
+        jf_host: state.jfHost,
+        jf_port: state.jfPort,
+        jf_api_key: state.jfApiKey,
       });
-
-      if (!resp.ok) {
-        globalThis.helpers.handleError("Failed to fetch libraries", resp?.message);
-      }
-
-      const result = await resp.json();
-
-      if (!result.ok || !Array.isArray(result.data)) {
+      if (!result?.ok || !Array.isArray(result.data)) {
         if (librariesEmpty) librariesEmpty.hidden = false;
         return;
       }
-
-      availableLibraries = result.data || [];
+      availableLibraries = result.data;
 
       if (availableLibraries.length === 0) {
         if (librariesEmpty) librariesEmpty.hidden = false;
@@ -316,14 +304,13 @@
       };
 
       try {
-        const resp = await fetch("/api/settings", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        if (!resp.ok) {
-          globalThis.helpers.handleError("Failed to save settings", resp?.message);
+        const result = await globalThis.helpers.postJson(
+          "/api/settings",
+          payload,
+          "PUT",
+        );
+        if (!result?.ok) {
+          globalThis.helpers.handleError("Failed to save settings", result?.message);
           buttons.page3Finish.textContent = original;
           buttons.page3Finish.disabled = false;
           return;
