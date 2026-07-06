@@ -58,7 +58,6 @@
   border-radius: var(--border-circle);
   object-fit: cover;
   flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .hero-name {

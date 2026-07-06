@@ -6,7 +6,7 @@
   --highlight: #294735;
   --accent: #10aa4d;
   --border: #1f2b22;
-  --text: #e8ebe0;
+  --text: #ffffffde;
   --text-muted: #b3b3b3;
   --positive: #37a718;
   --negative: #c71d1d;
@@ -16,7 +16,7 @@
   /* Border Radius */
   --border-element: 6px;
   --border-small: 3px;
-  --border-circle: 100px;
+  --border-circle: 50%;
 
   /* Transitions */
   --transition-all: all 150ms ease;
@@ -190,12 +190,6 @@ body {
 .sidebar-users-list a.active {
   background-color: var(--surface);
   color: var(--text);
-}
-
-.content {
-  flex: 1;
-  max-width: 1500px;
-  margin: 2rem auto;
 }
 
 /* ======= */
