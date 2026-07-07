@@ -23,244 +23,260 @@
       <main id="content" class="content" tabindex="-1">
         {% block content %}{% endblock %}
 
-        <nav class="settings-nav">
-          <a
-            id="general-tab"
-            href="#general"
-            class="settings-tab active"
-            role="tab"
-            tabindex="0"
-          >
-            General
-          </a>
-          <a
-            id="task-log-tab"
-            href="#tasklog"
-            class="settings-tab"
-            role="tab"
-            tabindex="-1"
-          >
-            Task Log
-          </a>
-          <a id="auth-tab" href="#auth" class="settings-tab" role="tab" tabindex="-1">
-            Auth
-          </a>
-          <a
-            id="discord-tab"
-            href="#discord"
-            class="settings-tab"
-            role="tab"
-            tabindex="-1"
-          >
-            Discord Notifications
-          </a>
-          <a id="about-tab" href="#about" class="settings-tab" role="tab" tabindex="-1">
-            About
-          </a>
-        </nav>
-
-        <section id="general" class="settings-content" role="tabpanel">
-          <form class="settings-form">
-            <section class="settings-group">
-              <h2>Display</h2>
-
-              <div class="form-field">
-                <label for="hour-format">Hour Format</label>
-                <select id="hour-format" name="hour_format">
-                  <option value="12">12 Hours</option>
-                  <option value="24">24 Hours</option>
-                </select>
-              </div>
-
-              <div class="form-field">
-                <label for="language">Language</label>
-                <select id="language" name="language">
-                  <option value="en">English</option>
-                </select>
-              </div>
-            </section>
-
-            <section class="settings-group">
-              <h2>Sync</h2>
-
-              <div class="form-field">
-                <label for="sync-interval">Sync Interval</label>
-                <select id="sync-interval" name="sync_interval">
-                  <option value="1800">30 Minutes</option>
-                  <option value="3600">1 Hour</option>
-                  <option value="43200">12 Hours</option>
-                </select>
-              </div>
-
-              <div class="sync-status-card" id="sync-status-card">
-                <div class="sync-status-grid">
-                  <div class="sync-stat">
-                    <div class="sync-stat-label">Next Scheduled Sync</div>
-                    <div class="sync-stat-value" id="sync-next-at">Not scheduled</div>
-                    <div class="sync-stat-sub" id="sync-next-eta"></div>
-                  </div>
-                </div>
-
-                <button id="manual-periodic-sync-btn" class="btn" type="button">
-                  Sync Now
-                </button>
-              </div>
-            </section>
-
-            <section class="settings-group">
-              <h2>Database</h2>
-
-              <div class="db-info-grid" id="db-info-grid">
-                <div class="db-stat">
-                  <div class="db-stat-label">Version</div>
-                  <div class="db-stat-value" id="db-version">Loading...</div>
-                </div>
-
-                <div class="db-stat">
-                  <div class="db-stat-label">Size</div>
-                  <div class="db-stat-value" id="db-size">Loading...</div>
-                </div>
-
-                <div class="db-stat">
-                  <div class="db-stat-label">Created</div>
-                  <div class="db-stat-value" id="db-created">Loading...</div>
-                </div>
-
-                <div class="db-stat">
-                  <div class="db-stat-label">Last Modified</div>
-                  <div class="db-stat-value" id="db-modified">Loading...</div>
-                </div>
-              </div>
-            </section>
-
-            <section class="settings-group">
-              <h2>Jellyfin</h2>
-
-              <div class="jf-server-info">
-                <div class="jf-server-details">
-                  <div class="jf-server-host" id="jf-server-host-display">
-                    127.0.0.1:8096
-                  </div>
-                  <div class="jf-server-key" id="jf-server-key-display">
-                    API Key: ••••••••••••••••••••••••••••••••
-                  </div>
-                </div>
-                <button id="jf-remove-server-btn" class="btn btn-danger" type="button">
-                  Remove Server & Reset Borealis
-                </button>
-              </div>
-            </section>
-          </form>
+        <section class="header">
+          <h2>General</h2>
         </section>
 
-        <section id="tasklog" class="settings-content" role="tabpanel" hidden>
-          <div id="tasklog-panel" class="settings-content">
-            <div id="tasklog-empty" class="settings-placeholder" hidden>
-              <p>No task logs found.</p>
+        <div class="settings-layout">
+          <nav class="settings-nav">
+            <a
+              id="general-tab"
+              href="#general"
+              class="settings-tab active"
+              role="tab"
+              tabindex="0"
+            >
+              General
+            </a>
+            <a
+              id="task-log-tab"
+              href="#tasklog"
+              class="settings-tab"
+              role="tab"
+              tabindex="-1"
+            >
+              Task Log
+            </a>
+            <a id="auth-tab" href="#auth" class="settings-tab" role="tab" tabindex="-1">
+              Auth
+            </a>
+            <a
+              id="discord-tab"
+              href="#discord"
+              class="settings-tab"
+              role="tab"
+              tabindex="-1"
+            >
+              Discord Notifications
+            </a>
+            <a
+              id="about-tab"
+              href="#about"
+              class="settings-tab"
+              role="tab"
+              tabindex="-1"
+            >
+              About
+            </a>
+          </nav>
+
+          <section id="general" class="settings-content" role="tabpanel">
+            <form class="settings-form">
+              <section class="settings-group">
+                <h2>Display</h2>
+
+                <div class="form-field">
+                  <label for="hour-format">Hour Format</label>
+                  <select id="hour-format" name="hour_format">
+                    <option value="12">12 Hours</option>
+                    <option value="24">24 Hours</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="language">Language</label>
+                  <select id="language" name="language">
+                    <option value="en">English</option>
+                  </select>
+                </div>
+              </section>
+
+              <section class="settings-group">
+                <h2>Sync</h2>
+
+                <div class="form-field">
+                  <label for="sync-interval">Sync Interval</label>
+                  <select id="sync-interval" name="sync_interval">
+                    <option value="1800">30 Minutes</option>
+                    <option value="3600">1 Hour</option>
+                    <option value="43200">12 Hours</option>
+                  </select>
+                </div>
+
+                <div class="sync-status-card" id="sync-status-card">
+                  <div class="sync-status-grid">
+                    <div class="sync-stat">
+                      <div class="sync-stat-label">Next Scheduled Sync</div>
+                      <div class="sync-stat-value" id="sync-next-at">Not scheduled</div>
+                      <div class="sync-stat-sub" id="sync-next-eta"></div>
+                    </div>
+                  </div>
+
+                  <button id="manual-periodic-sync-btn" class="btn" type="button">
+                    Sync Now
+                  </button>
+                </div>
+              </section>
+
+              <section class="settings-group">
+                <h2>Database</h2>
+
+                <div class="db-info-grid" id="db-info-grid">
+                  <div class="db-stat">
+                    <div class="db-stat-label">Version</div>
+                    <div class="db-stat-value" id="db-version">Loading...</div>
+                  </div>
+
+                  <div class="db-stat">
+                    <div class="db-stat-label">Size</div>
+                    <div class="db-stat-value" id="db-size">Loading...</div>
+                  </div>
+
+                  <div class="db-stat">
+                    <div class="db-stat-label">Created</div>
+                    <div class="db-stat-value" id="db-created">Loading...</div>
+                  </div>
+
+                  <div class="db-stat">
+                    <div class="db-stat-label">Last Modified</div>
+                    <div class="db-stat-value" id="db-modified">Loading...</div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="settings-group">
+                <h2>Jellyfin</h2>
+
+                <div class="jf-server-info">
+                  <div class="jf-server-details">
+                    <div class="jf-server-host" id="jf-server-host-display">
+                      127.0.0.1:8096
+                    </div>
+                    <div class="jf-server-key" id="jf-server-key-display">
+                      API Key: ••••••••••••••••••••••••••••••••
+                    </div>
+                  </div>
+                  <button
+                    id="jf-remove-server-btn"
+                    class="btn btn-danger"
+                    type="button"
+                  >
+                    Remove Server & Reset Borealis
+                  </button>
+                </div>
+              </section>
+            </form>
+          </section>
+
+          <section id="tasklog" class="settings-content" role="tabpanel" hidden>
+            <div id="tasklog-panel" class="settings-content">
+              <div id="tasklog-empty" class="settings-placeholder" hidden>
+                <p>No task logs found.</p>
+              </div>
+
+              <ul class="tasklog-list" id="tasklog-list"></ul>
             </div>
+          </section>
 
-            <ul class="tasklog-list" id="tasklog-list"></ul>
-          </div>
-        </section>
+          <section id="about" class="settings-content" role="tabpanel" hidden>
+            <div class="about-list">
+              <p>
+                <strong>Borealis Version:</strong>
+                <span id="borealis-version">0.1.0</span>
+              </p>
+              <p>
+                <strong>Latest Borealis Version:</strong>
+                <span id="borealis-latest">0.1.0</span>
+              </p>
+              <p>
+                <strong>Repository:</strong>
+                <a
+                  href="https://github.com/harleykradovill/borealis"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  github.com/harleykradovill/borealis
+                </a>
+              </p>
+            </div>
+          </section>
 
-        <section id="about" class="settings-content" role="tabpanel" hidden>
-          <div class="about-list">
-            <p>
-              <strong>Borealis Version:</strong>
-              <span id="borealis-version">0.1.0</span>
-            </p>
-            <p>
-              <strong>Latest Borealis Version:</strong>
-              <span id="borealis-latest">0.1.0</span>
-            </p>
-            <p>
-              <strong>Repository:</strong>
-              <a
-                href="https://github.com/harleykradovill/borealis"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                github.com/harleykradovill/borealis
-              </a>
-            </p>
-          </div>
-        </section>
+          <section id="discord" class="settings-content" role="tabpanel" hidden>
+            <form class="settings-form">
+              <section class="settings-group">
+                <h2>Configuration</h2>
 
-        <section id="discord" class="settings-content" role="tabpanel" hidden>
-          <form class="settings-form">
-            <section class="settings-group">
-              <h2>Configuration</h2>
+                <div class="form-field">
+                  <label for="discord-enabled">Enable Discord Notifications</label>
+                  <input type="checkbox" id="discord-enabled" name="discord-enabled" />
+                </div>
 
-              <div class="form-field">
-                <label for="discord-enabled">Enable Discord Notifications</label>
-                <input type="checkbox" id="discord-enabled" name="discord-enabled" />
-              </div>
+                <div class="form-field">
+                  <label for="discord-url">Webhook URL</label>
+                  <input id="discord-url" name="discord-url" />
+                </div>
 
-              <div class="form-field">
-                <label for="discord-url">Webhook URL</label>
-                <input id="discord-url" name="discord-url" />
-              </div>
+                <div class="form-field">
+                  <label for="discord-url">Username</label>
+                  <input
+                    id="discord-username"
+                    name="discord-username"
+                    placeholder="Optional"
+                  />
+                </div>
 
-              <div class="form-field">
-                <label for="discord-url">Username</label>
-                <input
-                  id="discord-username"
-                  name="discord-username"
-                  placeholder="Optional"
-                />
-              </div>
+                <div class="form-field">
+                  <label for="discord-avatar">Avatar URL</label>
+                  <input
+                    id="discord-avatar"
+                    name="discord-avatar"
+                    placeholder="Optional"
+                  />
+                </div>
+              </section>
 
-              <div class="form-field">
-                <label for="discord-avatar">Avatar URL</label>
-                <input
-                  id="discord-avatar"
-                  name="discord-avatar"
-                  placeholder="Optional"
-                />
-              </div>
-            </section>
+              <section class="settings-group">
+                <h2>Triggers</h2>
 
-            <section class="settings-group">
-              <h2>Triggers</h2>
+                <div class="form-field">
+                  <label for="discord-playback-start">Playback Start</label>
+                  <input
+                    type="checkbox"
+                    id="discord-playback-start"
+                    name="discord-playback-start"
+                  />
+                </div>
 
-              <div class="form-field">
-                <label for="discord-playback-start">Playback Start</label>
-                <input
-                  type="checkbox"
-                  id="discord-playback-start"
-                  name="discord-playback-start"
-                />
-              </div>
+                <div class="form-field">
+                  <label for="discord-playback-stop">Playback Stop</label>
+                  <input
+                    type="checkbox"
+                    id="discord-playback-stop"
+                    name="discord-playback-stop"
+                  />
+                </div>
 
-              <div class="form-field">
-                <label for="discord-playback-stop">Playback Stop</label>
-                <input
-                  type="checkbox"
-                  id="discord-playback-stop"
-                  name="discord-playback-stop"
-                />
-              </div>
+                <div class="form-field">
+                  <label for="discord-sync-complete">Sync Complete</label>
+                  <input
+                    type="checkbox"
+                    id="discord-sync-complete"
+                    name="discord-sync-complete"
+                  />
+                </div>
 
-              <div class="form-field">
-                <label for="discord-sync-complete">Sync Complete</label>
-                <input
-                  type="checkbox"
-                  id="discord-sync-complete"
-                  name="discord-sync-complete"
-                />
-              </div>
-
-              <div class="form-field">
-                <label for="discord-sync-error">Sync Error</label>
-                <input
-                  type="checkbox"
-                  id="discord-sync-error"
-                  name="discord-sync-error"
-                />
-              </div>
-            </section>
-          </form>
-        </section>
+                <div class="form-field">
+                  <label for="discord-sync-error">Sync Error</label>
+                  <input
+                    type="checkbox"
+                    id="discord-sync-error"
+                    name="discord-sync-error"
+                  />
+                </div>
+              </section>
+            </form>
+          </section>
+        </div>
       </main>
     </div>
 
