@@ -280,12 +280,18 @@
     panels.forEach((p) => {
       p.hidden = p.id !== id;
     });
+
+    const header = document.getElementById("header");
+    if (header) {
+      const activeTab = tabs.find((t) => t.getAttribute("href") === `#${id}`);
+      if (activeTab) header.textContent = activeTab.textContent.trim();
+    }
   }
 
   function fromHash() {
-    const id = (location.hash || "#general").slice(1);
+    const id = (location.hash || "#display").slice(1);
     const known = panels.some((p) => p.id === id);
-    activate(known ? id : "general");
+    activate(known ? id : "display");
   }
 
   tabs.forEach((t) => {

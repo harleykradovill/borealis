@@ -59,6 +59,12 @@
   filter: none;
 }
 
+.settings-link-separator {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
 .settings-placeholder {
   margin: 0;
   color: var(--text-muted);

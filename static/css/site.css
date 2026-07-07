@@ -323,6 +323,10 @@ body {
   transition: var(--transition-all);
 }
 
+.form-field label {
+  font-size: var(--font-size-base);
+}
+
 .form-field select,
 .form-field input[type="checkbox"],
 .form-field input[type="radio"] {

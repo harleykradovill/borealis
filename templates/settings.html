@@ -24,14 +24,22 @@
         {% block content %}{% endblock %}
 
         <section class="header">
-          <h2>General</h2>
+          <h2 id="header">Display</h2>
         </section>
 
         <div class="settings-layout">
           <nav class="settings-links">
             <a
-              id="general-tab"
-              href="#general"
+              id="divider"
+              class="settings-link-separator"
+              role="separator"
+              tabindex="0"
+            >
+              General Settings
+            </a>
+            <a
+              id="display-tab"
+              href="#display"
               class="settings-link active"
               role="tab"
               tabindex="0"
@@ -41,7 +49,49 @@
                 alt=""
                 class="settings-link-icon"
               />
-              General
+              Display
+            </a>
+            <a
+              id="sync-tab"
+              href="#sync"
+              class="settings-link"
+              role="tab"
+              tabindex="-1"
+            >
+              <img
+                src="{{ url_for('assets', filename='icons/settings/general.svg') }}"
+                alt=""
+                class="settings-link-icon"
+              />
+              Sync
+            </a>
+            <a
+              id="database-tab"
+              href="#database"
+              class="settings-link"
+              role="tab"
+              tabindex="-1"
+            >
+              <img
+                src="{{ url_for('assets', filename='icons/settings/general.svg') }}"
+                alt=""
+                class="settings-link-icon"
+              />
+              Database
+            </a>
+            <a
+              id="jellyfin-tab"
+              href="#jellyfin"
+              class="settings-link"
+              role="tab"
+              tabindex="-1"
+            >
+              <img
+                src="{{ url_for('assets', filename='icons/settings/general.svg') }}"
+                alt=""
+                class="settings-link-icon"
+              />
+              Jellyfin
             </a>
             <a
               id="task-log-tab"
@@ -101,7 +151,7 @@
             </a>
           </nav>
 
-          <section id="general" class="settings-content" role="tabpanel">
+          <section id="display" class="settings-content" role="tabpanel">
             <form class="settings-form">
               <section class="settings-group">
                 <h2>Display</h2>
@@ -121,7 +171,11 @@
                   </select>
                 </div>
               </section>
+            </form>
+          </section>
 
+          <section id="sync" class="settings-content" role="tabpanel" hidden>
+            <form class="settings-form">
               <section class="settings-group">
                 <h2>Sync</h2>
 
@@ -148,7 +202,11 @@
                   </button>
                 </div>
               </section>
+            </form>
+          </section>
 
+          <section id="database" class="settings-content" role="tabpanel" hidden>
+            <form class="settings-form">
               <section class="settings-group">
                 <h2>Database</h2>
 
@@ -174,7 +232,11 @@
                   </div>
                 </div>
               </section>
+            </form>
+          </section>
 
+          <section id="jellyfin" class="settings-content" role="tabpanel" hidden>
+            <form class="settings-form">
               <section class="settings-group">
                 <h2>Jellyfin</h2>
 
