@@ -62,6 +62,12 @@
 .settings-link-separator {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
+  margin: 0.5rem 0;
+}
+
+.settings-link-separator-top {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
   margin-bottom: 0.5rem;
 }
 
