@@ -16,7 +16,7 @@
   /* Border Radius */
   --border-element: 6px;
   --border-small: 3px;
-  --border-circle: 50%;
+  --border-circle: 100px;
 
   /* Transitions */
   --transition-all: all 150ms ease;
