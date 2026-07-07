@@ -169,7 +169,9 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
 
     logging.info("\033[93m-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\033[0m")
 
-    if not app.config.get("DEBUG") and has_server:
+    sync_enabled = bool(current_settings.get("sync_enabled", True))
+
+    if not app.config.get("DEBUG") and has_server and sync_enabled:
         sync_scheduler.start()
         sessions_svc.start()
 

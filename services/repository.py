@@ -523,7 +523,7 @@ class Repository:
     # Stats & Activity
     # -------------------------
 
-    def refresh_play_stats(self) -> Dict[str, int]:
+    def refresh_play_stats(self, minimum_play_seconds: int = 120) -> Dict[str, int]:
         """
         Refresh all denormalized play count statistics from PlaybackActivity records.
 
@@ -531,7 +531,9 @@ class Repository:
         """
         try:
             with self._session() as session:
-                return StatsAggregator.refresh_all_stats(session)
+                return StatsAggregator.refresh_all_stats(
+                    session, minimum_play_seconds=minimum_play_seconds
+                )
         except Exception as error:
             logger.exception(f"[ERROR] Failed to refresh play stats: {error}")
             raise

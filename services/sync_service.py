@@ -373,7 +373,11 @@ class SyncService:
                     break
 
             if events_count > 0:
-                self.repository.refresh_play_stats()
+                play_threshold = int(
+                    self.settings_service.get().get("play_threshold", 120)
+                )
+
+                self.repository.refresh_play_stats(minimum_play_seconds=play_threshold)
 
             if latest_event_ts:
                 self.settings_service.set_last_activity_log_sync(int(latest_event_ts))
@@ -520,7 +524,11 @@ class SyncService:
                     )
 
             if processed > 0:
-                self.repository.refresh_play_stats()
+                play_threshold = int(
+                    self.settings_service.get().get("play_threshold", 120)
+                )
+
+                self.repository.refresh_play_stats(minimum_play_seconds=play_threshold)
 
             result = self._build_result(
                 start_time,

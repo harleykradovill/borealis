@@ -176,7 +176,9 @@ def _calculate_watch_metrics(
 class StatsAggregator:
 
     @staticmethod
-    def refresh_all_stats(session: Session) -> Dict[str, int]:
+    def refresh_all_stats(
+        session: Session, minimum_play_seconds: int = 120
+    ) -> Dict[str, int]:
         """
         Refresh denormalized user, item, and library play statistics.
 
@@ -185,7 +187,7 @@ class StatsAggregator:
         :raises Exception: Propagates database/query errors from SQLAlchemy
         """
         stop_filter = PlaybackActivity.playback_type == "VideoPlaybackStopped"
-        qualified_play_seconds = 120
+        qualified_play_seconds = minimum_play_seconds
         (
             watch_seconds_by_user,
             watch_seconds_by_item,
