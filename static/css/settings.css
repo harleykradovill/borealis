@@ -1,5 +1,6 @@
 .header h2 {
   margin-bottom: 1rem;
+  margin-top: 0rem;
   color: var(--text);
   font-size: var(--font-size-xl);
   font-weight: 600;
@@ -73,16 +74,13 @@
 
 .settings-form {
   display: grid;
-  gap: 1rem;
+  gap: 3rem;
 }
 
 .settings-group {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--border-element);
 }
 
 .settings-group-title {
