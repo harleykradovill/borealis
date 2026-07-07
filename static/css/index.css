@@ -261,14 +261,15 @@
 .plays-trend-card-header {
   position: absolute;
   top: 1rem;
-  right: 1rem;
+  left: 1rem;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.5rem;
 }
 
 .plays-trend-card-value {
-  font-size: var(--font-size-xxl);
+  font-size: var(--font-size-xl);
   font-weight: 800;
   color: var(--black);
 }

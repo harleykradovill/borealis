@@ -466,7 +466,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 minRotation: 0,
                 padding: 6,
               },
-              grid: { display: false },
+              grid: { display: true },
             },
             y: {
               display: true,
@@ -475,7 +475,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 color: "#000000",
                 precision: 0,
               },
-              grid: { display: false },
+              grid: { display: true },
               min: yMin,
               max: yMax,
             },
