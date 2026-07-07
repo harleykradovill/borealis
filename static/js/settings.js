@@ -8,6 +8,8 @@
     hour_format: { element: "hour-format", type: "value", default: "12" },
     language: { element: "language", type: "value", default: "en" },
     sync_interval: { element: "sync-interval", type: "value", default: "1800" },
+    sync_enabled: { element: "sync-enabled", type: "checked", default: true },
+    play_threshold: { element: "play-threshold", type: "value", default: "120" },
     discord_enabled: { element: "discord-enabled", type: "checked", default: false },
     discord_url: { element: "discord-url", type: "value", default: "" },
     discord_username: { element: "discord-username", type: "value", default: "" },
