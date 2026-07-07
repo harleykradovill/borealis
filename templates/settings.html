@@ -35,7 +35,7 @@
               role="separator"
               tabindex="0"
             >
-              Interface Settings
+              Interface
             </a>
             <a
               id="display-tab"
@@ -71,7 +71,7 @@
               role="separator"
               tabindex="0"
             >
-              Server Settings
+              Server
             </a>
             <a
               id="sync-tab"
@@ -121,7 +121,7 @@
               role="separator"
               tabindex="0"
             >
-              Notification Settings
+              Notifications
             </a>
             <a
               id="discord-tab"
@@ -143,7 +143,7 @@
               role="separator"
               tabindex="0"
             >
-              System Settings
+              System
             </a>
             <a
               id="task-log-tab"
@@ -200,12 +200,30 @@
             <form class="settings-form">
               <section class="settings-group">
                 <div class="form-field">
+                  <label for="sync-enabled">Enable Automatic Sync</label>
+                  <input type="checkbox" id="sync-enabled" name="sync-enabled" />
+                </div>
+
+                <div class="form-field">
                   <label for="sync-interval">Sync Interval</label>
                   <select id="sync-interval" name="sync_interval">
                     <option value="1800">30 Minutes</option>
                     <option value="3600">1 Hour</option>
                     <option value="43200">12 Hours</option>
                   </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="play_threshold">Qualified Play Threshold</label>
+                  <select id="play_threshold" name="play_threshold">
+                    <option value="30">30 Seconds</option>
+                    <option value="60">60 Seconds</option>
+                    <option value="120">120 Seconds</option>
+                  </select>
+                  <label for="play_threshold" class="form-hint"
+                    >The minimum playback duration required for a watch event to count
+                    as a play.</label
+                  >
                 </div>
 
                 <div class="sync-status-card" id="sync-status-card">
