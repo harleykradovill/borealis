@@ -62,8 +62,7 @@ body {
 .content {
   flex: 1;
   max-width: 1700px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  margin: 1rem;
 }
 
 /* ======= */

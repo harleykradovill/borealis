@@ -1,5 +1,5 @@
 (function () {
-  const tabs = Array.from(document.querySelectorAll(".settings-tab"));
+  const tabs = Array.from(document.querySelectorAll(".settings-link"));
   const panels = Array.from(
     document.querySelectorAll('.settings-content[role="tabpanel"]'),
   );

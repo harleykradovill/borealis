@@ -28,44 +28,75 @@
         </section>
 
         <div class="settings-layout">
-          <nav class="settings-nav">
+          <nav class="settings-links">
             <a
               id="general-tab"
               href="#general"
-              class="settings-tab active"
+              class="settings-link active"
               role="tab"
               tabindex="0"
             >
+              <img
+                src="{{ url_for('assets', filename='icons/dashboard.svg') }}"
+                alt=""
+                class="settings-link-icon"
+              />
               General
             </a>
             <a
               id="task-log-tab"
               href="#tasklog"
-              class="settings-tab"
+              class="settings-link"
               role="tab"
               tabindex="-1"
             >
+              <img
+                src="{{ url_for('assets', filename='icons/dashboard.svg') }}"
+                alt=""
+                class="settings-link-icon"
+              />
               Task Log
             </a>
-            <a id="auth-tab" href="#auth" class="settings-tab" role="tab" tabindex="-1">
+            <a
+              id="auth-tab"
+              href="#auth"
+              class="settings-link"
+              role="tab"
+              tabindex="-1"
+            >
+              <img
+                src="{{ url_for('assets', filename='icons/dashboard.svg') }}"
+                alt=""
+                class="settings-link-icon"
+              />
               Auth
             </a>
             <a
               id="discord-tab"
               href="#discord"
-              class="settings-tab"
+              class="settings-link"
               role="tab"
               tabindex="-1"
             >
-              Discord Notifications
+              <img
+                src="{{ url_for('assets', filename='icons/dashboard.svg') }}"
+                alt=""
+                class="settings-link-icon"
+              />
+              Webhooks
             </a>
             <a
               id="about-tab"
               href="#about"
-              class="settings-tab"
+              class="settings-link"
               role="tab"
               tabindex="-1"
             >
+              <img
+                src="{{ url_for('assets', filename='icons/dashboard.svg') }}"
+                alt=""
+                class="settings-link-icon"
+              />
               About
             </a>
           </nav>
