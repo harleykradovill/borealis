@@ -146,20 +146,6 @@
               System
             </a>
             <a
-              id="task-log-tab"
-              href="#tasklog"
-              class="settings-link"
-              role="tab"
-              tabindex="-1"
-            >
-              <img
-                src="{{ url_for('assets', filename='icons/settings/tasklog.svg') }}"
-                alt=""
-                class="settings-link-icon"
-              />
-              Task Log
-            </a>
-            <a
               id="about-tab"
               href="#about"
               class="settings-link"
@@ -239,6 +225,16 @@
                     Sync Now
                   </button>
                 </div>
+
+                <h2>Sync Log</h2>
+
+                <div id="tasklog-panel" class="settings-content">
+                  <div id="tasklog-empty" class="settings-placeholder">
+                    <p>No task logs found.</p>
+                  </div>
+
+                  <ul class="tasklog-list" id="tasklog-list"></ul>
+                </div>
               </section>
             </form>
           </section>
@@ -293,16 +289,6 @@
                 </div>
               </section>
             </form>
-          </section>
-
-          <section id="tasklog" class="settings-content" role="tabpanel" hidden>
-            <div id="tasklog-panel" class="settings-content">
-              <div id="tasklog-empty" class="settings-placeholder" hidden>
-                <p>No task logs found.</p>
-              </div>
-
-              <ul class="tasklog-list" id="tasklog-list"></ul>
-            </div>
           </section>
 
           <section id="about" class="settings-content" role="tabpanel" hidden>

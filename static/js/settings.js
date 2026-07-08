@@ -380,10 +380,10 @@
 
 (function () {
   const elements = {
-    panel: document.getElementById("tasklog"),
+    panel: document.getElementById("sync"),
     list: document.getElementById("tasklog-list"),
     empty: document.getElementById("tasklog-empty"),
-    tab: document.getElementById("task-log-tab"),
+    tab: document.getElementById("sync-tab"),
   };
 
   function setVisibility(showList) {
@@ -457,7 +457,7 @@
     if (elements.panel && !elements.panel.hidden) loadTaskLogs();
   }
 
-  if (location.hash === "#tasklog") setTimeout(loadIfVisible, 0);
+  if (location.hash === "#sync") setTimeout(loadIfVisible, 0);
   if (elements.tab)
     elements.tab.addEventListener("click", () => setTimeout(loadIfVisible, 0));
 })();
