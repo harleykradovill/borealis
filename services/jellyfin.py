@@ -149,7 +149,7 @@ class JellyfinClient:
         url = self._build_url(scheme, host, port, path)
 
         req = Request(url, method="GET")
-        req.add_header("X-Emby-Token", token)
+        req.add_header("Authorization", f'MediaBrowser Token="{token}"')
         req.add_header("Accept", "application/json")
 
         last_exception = None
@@ -410,7 +410,7 @@ class JellyfinClient:
         url = self._build_url(scheme, host, port, path)
 
         req = Request(url, method="GET")
-        req.add_header("X-Emby-Token", token)
+        req.add_header("Authorization", f'MediaBrowser Token="{token}"')
         req.add_header("Accept", "image/*")
 
         try:
@@ -484,7 +484,7 @@ class JellyfinClient:
 
         try:
             req = Request(url)
-            req.add_header("X-MediaBrowser-Token", token)
+            req.add_header("Authorization", f'MediaBrowser Token="{token}"')
             with urlopen(req, timeout=10) as response:
                 return {
                     "ok": True,

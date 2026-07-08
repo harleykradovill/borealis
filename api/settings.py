@@ -143,7 +143,7 @@ def create_settings_blueprint(*, svc, repo, sync):
         url = f"{scheme}://{host}:{port}/System/Info"
 
         req = Request(url, method="GET")
-        req.add_header("X-Emby-Token", token)
+        req.add_header("Authorization", f'MediaBrowser Token="{token}"')
         req.add_header("Accept", "application/json")
 
         try:
