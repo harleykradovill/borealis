@@ -1,6 +1,6 @@
 """
 SQLAlchemy ORM models for Borealis persisted entities. Defines User, Library,
-Item, PlaybackActivity, TaskLog, Settings, and cached Statistics with simple
+Item, PlaybackActivity, SyncLog, Settings, and cached Statistics with simple
 serialization helpers.
 """
 
@@ -193,12 +193,12 @@ class PlaybackActivity(Base):
         }
 
 
-class TaskLog(Base):
+class SyncLog(Base):
     """
-    Persisted background task execution record for sync and maintenance jobs.
+    Persisted background sync execution record for sync and maintenance jobs.
     """
 
-    __tablename__ = "task_logging"
+    __tablename__ = "sync_logs"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(256), nullable=False)
@@ -212,9 +212,9 @@ class TaskLog(Base):
 
     def to_dict(self) -> Dict[str, Any]:
         """
-        Serialize a task log entry for API responses.
+        Serialize a sync log entry for API responses.
 
-        :returns: Dictionary containing task metadata, timing, result, and log payload
+        :returns: Dictionary containing sync metadata, timing, result, and log payload
         """
         log_data = None
         if self.log_json:

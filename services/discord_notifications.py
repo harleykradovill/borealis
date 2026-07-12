@@ -147,14 +147,14 @@ class DiscordNotificationService:
             repo = self._sync_svc.repository
             try:
                 with repo._session() as session:
-                    recent_task = session.execute(
+                    recent_log = session.execute(
                         text(
-                            "SELECT log_json FROM task_logging WHERE type='sync' "
+                            "SELECT log_json FROM sync_logs WHERE type='sync' "
                             "ORDER BY finished_at DESC LIMIT 1"
                         )
                     ).fetchone()
-                if recent_task and recent_task[0]:
-                    result_data = json.loads(recent_task[0])
+                if recent_log and recent_log[0]:
+                    result_data = json.loads(recent_log[0])
                     if self._should_notify(
                         settings, f"sync_{result_data.get('phase', 'failed')}"
                     ):

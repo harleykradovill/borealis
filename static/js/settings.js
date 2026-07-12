@@ -381,8 +381,8 @@
 (function () {
   const elements = {
     panel: document.getElementById("sync"),
-    list: document.getElementById("tasklog-list"),
-    empty: document.getElementById("tasklog-empty"),
+    list: document.getElementById("synclog-list"),
+    empty: document.getElementById("synclog-empty"),
     tab: document.getElementById("sync-tab"),
   };
 
@@ -391,9 +391,9 @@
     if (elements.empty) elements.empty.hidden = showList;
   }
 
-  function createTaskLogItem(log) {
+  function createSyncLogItem(log) {
     const li = document.createElement("li");
-    li.classList.add("task-log-item");
+    li.classList.add("sync-log-item");
 
     const res = (log.result || "").toString().toUpperCase();
     if (res === "SUCCESS") li.classList.add("success");
@@ -402,8 +402,8 @@
     const started = log.started_at ? new Date(Number(log.started_at) * 1000) : null;
     const icon =
       res === "SUCCESS"
-        ? "/assets/icons/tasklog-success.svg"
-        : "/assets/icons/tasklog-failed.svg";
+        ? "/assets/icons/synclog-success.svg"
+        : "/assets/icons/synclog-failed.svg";
 
     li.innerHTML = `
       <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
@@ -427,11 +427,11 @@
     return li;
   }
 
-  async function loadTaskLogs() {
+  async function loadSyncLogs() {
     try {
-      const result = await globalThis.helpers.fetchJson("/api/analytics/task-logs");
+      const result = await globalThis.helpers.fetchJson("/api/analytics/sync-logs");
       if (!result?.ok) {
-        globalThis.helpers.handleError("Failed to load task logs", result?.message);
+        globalThis.helpers.handleError("Failed to load sync logs", result?.message);
         setVisibility(false);
         return;
       }
@@ -444,17 +444,17 @@
 
       if (elements.list) {
         elements.list.innerHTML = "";
-        logs.forEach((log) => elements.list.appendChild(createTaskLogItem(log)));
+        logs.forEach((log) => elements.list.appendChild(createSyncLogItem(log)));
       }
       setVisibility(true);
     } catch (error) {
-      globalThis.helpers.handleError("Failed to load task logs", error);
+      globalThis.helpers.handleError("Failed to load sync logs", error);
       setVisibility(false);
     }
   }
 
   function loadIfVisible() {
-    if (elements.panel && !elements.panel.hidden) loadTaskLogs();
+    if (elements.panel && !elements.panel.hidden) loadSyncLogs();
   }
 
   if (location.hash === "#sync") setTimeout(loadIfVisible, 0);

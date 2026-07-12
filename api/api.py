@@ -33,19 +33,19 @@ def create_api_blueprint(*, repo, sync, jf):
 
     def _build_sync_progress_payload() -> dict:
         """
-        Build a normalized sync-progress payload from latest task log.
+        Build a normalized sync-progress payload from latest sync log.
 
-        :returns: Dictionary containing sync state with ok, syncing, phase, task_id, processed_events,
+        :returns: Dictionary containing sync state with ok, syncing, phase, sync_id, processed_events,
         total_events, message, sync_complete
         """
-        task = repo.get_latest_sync_task()
+        log = repo.get_latest_sync_log()
 
-        if not task:
+        if not log:
             payload = {
                 "ok": True,
                 "syncing": False,
                 "phase": "idle",
-                "task_id": None,
+                "sync_id": None,
                 "processed_events": 0,
                 "total_events": 0,
                 "message": "",
@@ -53,17 +53,17 @@ def create_api_blueprint(*, repo, sync, jf):
             }
             return payload
 
-        result = (task.get("result") or "").upper()
-        task_id = task.get("id")
+        result = (log.get("result") or "").upper()
+        sync_id = log.get("id")
 
         log_data = {}
-        raw_log = task.get("log_json")
+        raw_log = log.get("log_json")
         if raw_log:
             try:
                 log_data = json.loads(raw_log)
             except Exception as e:
                 logger.warning(
-                    f"[WARN] Failed to parse task log JSON for task_id {task_id}: {str(e)}"
+                    f"[WARN] Failed to parse sync log JSON for sync_id {sync_id}: {str(e)}"
                 )
                 log_data = {}
 
@@ -86,7 +86,7 @@ def create_api_blueprint(*, repo, sync, jf):
                 "ok": True,
                 "syncing": True,
                 "phase": phase,
-                "task_id": task_id,
+                "sync_id": sync_id,
                 "processed_events": processed,
                 "total_events": total,
                 "message": message_from_log or "Sync in progress",
@@ -111,7 +111,7 @@ def create_api_blueprint(*, repo, sync, jf):
             "ok": True,
             "syncing": False,
             "phase": phase,
-            "task_id": task_id,
+            "sync_id": sync_id,
             "processed_events": processed,
             "total_events": total,
             "message": message_from_log
@@ -414,24 +414,24 @@ def create_api_blueprint(*, repo, sync, jf):
         }
         return Response(stream_with_context(event_stream()), headers=headers)
 
-    @bp.get("/analytics/task-logs")
-    def api_analytics_task_logs() -> Response:
+    @bp.get("/analytics/sync-logs")
+    def api_analytics_sync_logs() -> Response:
         """
-        Retrieve recent task log entries with pagination and bounded result limit of 1-500.
+        Retrieve recent sync log entries with pagination and bounded result limit of 1-500.
 
-        :returns: JSON response with the task log records with HTTP 500, or error details with HTTP 500
+        :returns: JSON response with the sync log records with HTTP 500, or error details with HTTP 500
         """
         try:
             limit = request.args.get("limit", 50, type=int)
             if limit < 1 or limit > 500:
                 limit = 50
 
-            logs = repo.get_task_logs(limit=limit)
+            logs = repo.get_sync_logs(limit=limit)
             return make_response(jsonify({"ok": True, "data": logs}), 200)
         except Exception:
-            logger.exception("[ERROR] Failed to fetch task logs")
+            logger.exception("[ERROR] Failed to fetch sync logs")
             return make_response(
-                jsonify({"ok": False, "message": "Failed to fetch task logs"}), 500
+                jsonify({"ok": False, "message": "Failed to fetch sync logs"}), 500
             )
 
     @bp.get("/analytics/activitylog")

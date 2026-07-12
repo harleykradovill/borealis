@@ -112,19 +112,19 @@ class SyncService:
             errors=errors,
         )
 
-    def _update_task_progress(
-        self, task_id: Optional[int], progress: Dict[str, Any]
+    def _update_sync_progress(
+        self, sync_id: Optional[int], progress: Dict[str, Any]
     ) -> None:
         """
-        Update task progress when a task id is available.
+        Update sync progress when a sync id is available.
 
-        :param task_id: Task log identifier or None
-        :param progress: Progress payload to store in the task log
+        :param sync_id: Sync log identifier or None
+        :param progress: Progress payload to store in the sync log
         :returns: None
         """
-        if task_id is None:
+        if sync_id is None:
             return
-        self.repository.update_task_log_progress(task_id, progress)
+        self.repository.update_sync_log_progress(sync_id, progress)
 
     def _build_user_lookup(self) -> Dict[str, str]:
         """
@@ -248,7 +248,7 @@ class SyncService:
         """
         Perform a full metadata sync: users → libraries → items.
 
-        :param task_id: Optional task log id for progress reporting
+        :param sync_id: Optional sync log id for progress reporting
         :returns: SyncResult with success status, duration, and sync counts
         """
         start_time = time.time()
@@ -559,11 +559,11 @@ class SyncService:
         start_time = time.time()
         errors: List[str] = []
 
-        task_id = self.repository.create_task_log(
-            name="Initial Server Setup Sync", task_type="sync", execution_type="initial"
+        sync_id = self.repository.create_sync_log(
+            name="Initial Server Setup Sync", sync_type="sync", execution_type="initial"
         )
-        self._update_task_progress(
-            task_id,
+        self._update_sync_progress(
+            sync_id,
             {
                 "phase": "running",
                 "message": "Starting initial sync",
@@ -577,8 +577,8 @@ class SyncService:
         time.sleep(1)
 
         try:
-            self._update_task_progress(
-                task_id,
+            self._update_sync_progress(
+                sync_id,
                 {
                     "phase": "running",
                     "message": "Syncing metadata",
@@ -590,8 +590,8 @@ class SyncService:
             if not metadata_result.success and metadata_result.errors:
                 errors.extend(metadata_result.errors)
 
-            self._update_task_progress(
-                task_id,
+            self._update_sync_progress(
+                sync_id,
                 {
                     "phase": "running",
                     "message": "Syncing activity log",
@@ -605,8 +605,8 @@ class SyncService:
 
             time.sleep(1)
 
-            self._update_task_progress(
-                task_id,
+            self._update_sync_progress(
+                sync_id,
                 {
                     "phase": "running",
                     "message": "Refreshing statistics",
@@ -636,8 +636,8 @@ class SyncService:
             )
             log_data["step"] = 5
 
-            self.repository.complete_task_log(
-                task_id=task_id,
+            self.repository.complete_sync_log(
+                sync_id=sync_id,
                 result="SUCCESS" if result.success else "FAILED",
                 log_data=log_data,
             )
@@ -666,8 +666,8 @@ class SyncService:
             log_data["phase"] = "failed"
             log_data["message"] = "Initial sync failed"
 
-            self.repository.complete_task_log(
-                task_id=task_id,
+            self.repository.complete_sync_log(
+                sync_id=sync_id,
                 result="FAILED",
                 log_data=log_data,
             )
@@ -686,11 +686,11 @@ class SyncService:
         start_time = time.time()
         errors: List[str] = []
 
-        task_id = self.repository.create_task_log(
-            name="Periodic Sync", task_type="sync", execution_type="periodic"
+        sync_id = self.repository.create_sync_log(
+            name="Periodic Sync", sync_type="sync", execution_type="periodic"
         )
-        self._update_task_progress(
-            task_id,
+        self._update_sync_progress(
+            sync_id,
             {
                 "phase": "running",
                 "message": "Starting periodic sync",
@@ -704,8 +704,8 @@ class SyncService:
         time.sleep(1)
 
         try:
-            self._update_task_progress(
-                task_id,
+            self._update_sync_progress(
+                sync_id,
                 {
                     "phase": "running",
                     "message": "Syncing metadata",
@@ -717,8 +717,8 @@ class SyncService:
             if not metadata_result.success and metadata_result.errors:
                 errors.extend(metadata_result.errors)
 
-            self._update_task_progress(
-                task_id,
+            self._update_sync_progress(
+                sync_id,
                 {
                     "phase": "running",
                     "message": "Syncing activity log",
@@ -734,8 +734,8 @@ class SyncService:
 
             time.sleep(1)
 
-            self._update_task_progress(
-                task_id,
+            self._update_sync_progress(
+                sync_id,
                 {
                     "phase": "running",
                     "message": "Refreshing statistics",
@@ -769,8 +769,8 @@ class SyncService:
             )
             log_data["step"] = 5
 
-            self.repository.complete_task_log(
-                task_id=task_id,
+            self.repository.complete_sync_log(
+                sync_id=sync_id,
                 result="SUCCESS" if result.success else "FAILED",
                 log_data=log_data,
             )
@@ -799,8 +799,8 @@ class SyncService:
             log_data["phase"] = "failed"
             log_data["message"] = "Periodic sync failed"
 
-            self.repository.complete_task_log(
-                task_id=task_id,
+            self.repository.complete_sync_log(
+                sync_id=sync_id,
                 result="FAILED",
                 log_data=log_data,
             )

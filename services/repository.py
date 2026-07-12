@@ -19,7 +19,7 @@ from services.data_models import (
     Item,
     Library,
     PlaybackActivity,
-    TaskLog,
+    SyncLog,
     User,
 )
 from services.sync_aggregator import StatsAggregator
@@ -858,45 +858,45 @@ class Repository:
         return {"start": int(start_total or 0), "stop": int(stop_total or 0)}
 
     # -------------------------
-    # Task Logging
+    # Sync Logging
     # -------------------------
 
-    def get_latest_sync_task(self) -> Optional[Dict[str, Any]]:
+    def get_latest_sync_log(self) -> Optional[Dict[str, Any]]:
         """
-        Retrieve the most recent sync task log entry.
+        Retrieve the most recent sync sync log entry.
 
-        :returns: Dictionary with task metadata and log data, or None if no sync tasks exist
+        :returns: Dictionary with sync metadata and log data, or None if no sync logs exist
         """
         with self._session() as session:
-            task = (
-                session.query(TaskLog)
-                .filter(TaskLog.type == "sync")
-                .order_by(TaskLog.started_at.desc())
+            log = (
+                session.query(SyncLog)
+                .filter(SyncLog.type == "sync")
+                .order_by(SyncLog.started_at.desc())
                 .first()
             )
-            if task:
+            if log:
                 return {
-                    "id": task.id,
-                    "name": task.name,
-                    "type": task.type,
-                    "execution_type": task.execution_type,
-                    "result": task.result,
-                    "started_at": task.started_at,
-                    "finished_at": task.finished_at,
-                    "duration_ms": task.duration_ms,
-                    "log_json": task.log_json,
+                    "id": log.id,
+                    "name": log.name,
+                    "type": log.type,
+                    "execution_type": log.execution_type,
+                    "result": log.result,
+                    "started_at": log.started_at,
+                    "finished_at": log.finished_at,
+                    "duration_ms": log.duration_ms,
+                    "log_json": log.log_json,
                 }
             return None
 
-    def update_task_log_progress(
+    def update_sync_log_progress(
         self,
-        task_id: int,
+        sync_id: int,
         log_data: Dict[str, Any],
     ) -> None:
         """
-        Merge progress fields into a RUNNING task log entry.
+        Merge progress fields into a RUNNING sync log entry.
 
-        :param task_id: ID of the task log to update
+        :param sync_id: ID of the sync log to update
         :param log_data: Dictionary of progress fields to merge
         :returns: None
         """
@@ -904,33 +904,33 @@ class Repository:
             return
 
         with self._session() as session:
-            task = session.query(TaskLog).filter_by(id=task_id).first()
-            if not task or task.result != "RUNNING":
+            log = session.query(SyncLog).filter_by(id=sync_id).first()
+            if not log or log.result != "RUNNING":
                 return
 
             current: Dict[str, Any] = {}
-            if task.log_json:
+            if log.log_json:
                 try:
-                    current = json.loads(task.log_json)
+                    current = json.loads(log.log_json)
                 except Exception:
                     current = {}
 
             current.update(log_data)
-            task.log_json = json.dumps(current)
+            log.log_json = json.dumps(current)
 
-    def create_task_log(self, name: str, task_type: str, execution_type: str) -> int:
+    def create_sync_log(self, name: str, sync_type: str, execution_type: str) -> int:
         """
-        Create a new task log entry with RUNNING status.
+        Create a new sync log entry with RUNNING status.
 
-        :param name: Task name for display
-        :param task_type: Type of task (e.g., "sync")
+        :param name: Sync name for display
+        :param sync_type: Type of sync
         :param execution_type: Execution mode (e.g., "full", "incremental", "initial", "periodic")
-        :returns: Task ID as integer for use in updates and completion
+        :returns: Sync ID as integer for use in updates and completion
         """
         with self._session() as session:
-            task = TaskLog(
+            log = SyncLog(
                 name=name,
-                type=task_type,
+                type=sync_type,
                 execution_type=execution_type,
                 duration_ms=0,
                 started_at=_now(),
@@ -938,48 +938,48 @@ class Repository:
                 result="RUNNING",
                 log_json=None,
             )
-            session.add(task)
+            session.add(log)
             session.flush()
-            return int(task.id)
+            return int(log.id)
 
-    def complete_task_log(
+    def complete_sync_log(
         self,
-        task_id: int,
+        sync_id: int,
         result: str,
         log_data: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
-        Mark a task log as complete with final result and optional log data.
+        Mark a sync log as complete with final result and optional log data.
 
-        :param task_id: ID of the task log to complete
+        :param sync_id: ID of the sync log to complete
         :param result: Final result status ("SUCCESS" or "FAILED")
         :param log_data: Optional dictionary of final log data to persist as JSON
         :returns: None
         """
         with self._session() as session:
-            task = session.query(TaskLog).filter_by(id=task_id).first()
-            if not task:
+            log = session.query(SyncLog).filter_by(id=sync_id).first()
+            if not log:
                 return
 
             now = _now()
-            task.finished_at = now
-            task.duration_ms = (now - task.started_at) * 1000
-            task.result = result
-            task.log_json = json.dumps(log_data) if log_data else None
+            log.finished_at = now
+            log.duration_ms = (now - log.started_at) * 1000
+            log.result = result
+            log.log_json = json.dumps(log_data) if log_data else None
 
-    def get_task_logs(self, limit: int = 25) -> List[Dict[str, Any]]:
+    def get_sync_logs(self, limit: int = 25) -> List[Dict[str, Any]]:
         """
-        Retrieve recent task log entries ordered by start time (newest first).
+        Retrieve recent sync log entries ordered by start time (newest first).
 
         :param limit: Maximum number of logs to return, clamped 1-500 (default 25)
-        :returns: List of task log dicts with metadata and log data
+        :returns: List of sync log dicts with metadata and log data
         """
         limit = min(max(int(limit or 25), 1), 500)
 
         with self._session() as session:
             rows = (
-                session.query(TaskLog)
-                .order_by(TaskLog.started_at.desc())
+                session.query(SyncLog)
+                .order_by(SyncLog.started_at.desc())
                 .limit(limit)
                 .all()
             )

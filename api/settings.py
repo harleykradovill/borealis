@@ -24,29 +24,29 @@ def create_settings_blueprint(*, svc, repo, sync):
 
     def _build_sync_progress_payload() -> dict:
         """
-        Build a normalized sync-progress payload from latest task log.
+        Build a normalized sync-progress payload from latest sync log.
 
-        :returns: Dictionary containing sync state with ok, syncing, phase, task_id, processed_events,
+        :returns: Dictionary containing sync state with ok, syncing, phase, sync_id, processed_events,
         total_events, message
         """
-        task = repo.get_latest_sync_task()
+        log = repo.get_latest_sync_log()
 
-        if not task:
+        if not log:
             return {
                 "ok": True,
                 "syncing": False,
                 "phase": "idle",
-                "task_id": None,
+                "sync_id": None,
                 "processed_events": 0,
                 "total_events": 0,
                 "message": "",
             }
 
-        result = (task.get("result") or "").upper()
-        task_id = task.get("id")
+        result = (log.get("result") or "").upper()
+        sync_id = log.get("id")
 
         log_data = {}
-        raw_log = task.get("log_json")
+        raw_log = log.get("log_json")
         if raw_log:
             try:
                 log_data = json.loads(raw_log)
@@ -72,7 +72,7 @@ def create_settings_blueprint(*, svc, repo, sync):
                 "ok": True,
                 "syncing": True,
                 "phase": phase,
-                "task_id": task_id,
+                "sync_id": sync_id,
                 "processed_events": processed,
                 "total_events": total,
                 "message": message_from_log or "Sync in progress",
@@ -88,7 +88,7 @@ def create_settings_blueprint(*, svc, repo, sync):
             "ok": True,
             "syncing": False,
             "phase": phase,
-            "task_id": task_id,
+            "sync_id": sync_id,
             "processed_events": processed,
             "total_events": total,
             "message": message_from_log
@@ -333,7 +333,7 @@ def create_settings_blueprint(*, svc, repo, sync):
     @bp.get("/analytics/server/sync-progress")
     def api_analytics_server_sync_progress() -> Response:
         """
-        Get the current progress of the active or most recent sync task.
+        Get the current progress of the active or most recent sync log.
 
         :returns: JSON response with sync state payload, or error details with HTTP 500
         """

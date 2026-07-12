@@ -218,10 +218,10 @@
 }
 
 /* ============ */
-/* Task Log Tab */
+/* sync Log Tab */
 /* ============ */
 
-.tasklog-list {
+.synclog-list {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -233,17 +233,17 @@
   border: 1px solid var(--border);
 }
 
-#tasklog-panel {
+#synclog-panel {
   max-height: 40rem;
   overflow-y: auto;
 }
 
-.tasklog-list > li {
+.synclog-list > li {
   padding: 0.5rem 0.5rem;
   border-bottom: 1px solid var(--border);
 }
 
-.tasklog-list > li:nth-child(even) {
+.synclog-list > li:nth-child(even) {
   background-color: var(--bg-lighter);
 }
 
