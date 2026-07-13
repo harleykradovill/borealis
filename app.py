@@ -157,8 +157,6 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     )
     app.discord_service = discord_svc
 
-    sync.register_sync_callback(lambda result: None)
-
     if has_server and current_settings.get("discord_enabled"):
         discord_svc.start()
 
@@ -234,7 +232,7 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
             :raises Exception: Propagates exceptions raised by the wrapped handler
             """
             if not bool(app.config.get("HAS_SERVER_CONFIGURED")):
-                return redirect("/setup")
+                return redirect("/setup#")
             return f(*args, **kwargs)
 
         return decorated_function
