@@ -267,16 +267,6 @@ def create_settings_blueprint(*, svc, repo, sync):
         except Exception:
             logging.exception("[ERROR] Failed to apply sync_interval to scheduler")
 
-        sync_enabled = updated.get("sync_enabled")
-
-        sched = getattr(current_app, "sync_scheduler", None)
-        if sched and sync_enabled is not None:
-            if sync_enabled:
-                if not sched._thread or not sched._thread.is_alive():
-                    sched.start()
-            else:
-                sched.stop()
-
         if not had_server and has_server:
             ts = int(time.time())
             svc.set_last_activity_log_sync(ts)

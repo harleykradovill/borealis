@@ -475,10 +475,9 @@ class JellyfinClient:
             }
 
         scheme, host, port, token = conn
-        path = f"/Users/{user_id}/Images/Primary"
+        path = f"/UserImage?userId={quote(user_id, safe='')}&format=Png"
         if tag:
-            encoded_tag = quote(tag, safe="")
-            path = f"{path}?tag={encoded_tag}"
+            path += f"&tag={quote(tag, safe='')}"
 
         url = self._build_url(scheme, host, port, path)
 
