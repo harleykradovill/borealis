@@ -130,7 +130,10 @@ function buildMatrix(items, days = 182) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  const startDate = new Date(now);
+  const endDate = new Date(now);
+  endDate.setDate(endDate.getDate() + (6 - endDate.getDay()));
+
+  const startDate = new Date(endDate);
   startDate.setDate(startDate.getDate() - (days - 1));
   startDate.setDate(startDate.getDate() - startDate.getDay());
 
@@ -231,8 +234,8 @@ function buildTrendSeries(items, days = 14) {
 
   const dateLabels = globalThis.helpers.generateDateLabels(start, days);
   dateLabels.forEach((iso) => {
-    const date = new Date(iso + "T00:00:00Z");
-    const label = globalThis.helpers.toLocalMD(date);
+    const parts = iso.split("-");
+    const label = `${Number.parseInt(parts[1])}/${Number.parseInt(parts[2])}`;
     labels.push(label);
     values.push(counts[iso] || 0);
   });
