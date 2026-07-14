@@ -218,19 +218,19 @@
 }
 
 /* ============ */
-/* sync Log Tab */
+/* Sync Log Tab */
 /* ============ */
 
-.synclog-list {
-  display: flex;
-  flex-direction: column;
+.synclog-table {
   width: 100%;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-radius: var(--border-element);
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.synclog-section {
+  position: relative;
   border: 1px solid var(--border);
+  border-radius: var(--border-element);
 }
 
 #synclog-panel {
@@ -238,13 +238,89 @@
   overflow-y: auto;
 }
 
-.synclog-list > li {
-  padding: 0.5rem 0.5rem;
+.synclog-table thead th {
+  text-align: left;
+  padding: 0.5rem 0.8rem;
   border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--text);
+  font-size: var(--font-size-base);
+  border-right: 1px solid var(--border);
 }
 
-.synclog-list > li:nth-child(even) {
+.synclog-table tbody td {
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--font-size-base);
+  border-right: 1px solid var(--border);
+}
+
+.synclog-table thead th.align-right,
+.synclog-table tbody td.align-right {
+  text-align: right;
+}
+
+.synclog-table thead th:last-child,
+.synclog-table tbody td:last-child {
+  border-right: none;
+}
+
+.synclog-table thead th:nth-child(1) {
+  width: auto;
+}
+.synclog-table thead th:nth-child(2) {
+  width: 118px;
+}
+.synclog-table thead th:nth-child(3) {
+  width: 100px;
+}
+.synclog-table thead th:nth-child(4) {
+  width: 180px;
+}
+
+.synclog-table tbody tr:nth-child(even) {
   background-color: var(--bg-lighter);
+}
+
+.synclog-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.synclog-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 100px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.synclog-chip-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.synclog-chip.synclog-success {
+  background-color: rgba(16, 170, 77, 0.15);
+  color: var(--positive);
+}
+
+.synclog-chip.synclog-failed {
+  background-color: rgba(231, 76, 60, 0.15);
+  color: var(--negative);
+}
+
+.synclog-chip.synclog-running {
+  background-color: rgba(241, 196, 15, 0.15);
+  color: var(--warning);
 }
 
 /* ========= */

@@ -392,39 +392,58 @@
   }
 
   function createSyncLogItem(log) {
-    const li = document.createElement("li");
-    li.classList.add("sync-log-item");
+    const tr = document.createElement("tr");
 
     const res = (log.result || "").toString().toUpperCase();
-    if (res === "SUCCESS") li.classList.add("success");
-    else if (res === "FAILED" || res === "ERROR") li.classList.add("failed");
-
     const started = log.started_at ? new Date(Number(log.started_at) * 1000) : null;
-    const icon =
+
+    const nameTd = document.createElement("td");
+    nameTd.textContent = log.name || "(unnamed)";
+    tr.appendChild(nameTd);
+
+    const statusTd = document.createElement("td");
+    const chip = document.createElement("span");
+    chip.className = "synclog-chip";
+    if (res === "SUCCESS") chip.classList.add("synclog-success");
+    else if (res === "FAILED" || res === "ERROR") chip.classList.add("synclog-failed");
+    else if (res === "RUNNING") chip.classList.add("synclog-running");
+
+    const icon = document.createElement("img");
+    icon.className = "synclog-chip-icon";
+    icon.src =
       res === "SUCCESS"
         ? "/assets/icons/synclog-success.svg"
-        : "/assets/icons/synclog-failed.svg";
+        : res === "FAILED" || res === "ERROR"
+          ? "/assets/icons/synclog-failed.svg"
+          : "/assets/icons/synclog-running.svg";
+    icon.alt = res;
+    chip.appendChild(icon);
+    chip.appendChild(
+      document.createTextNode(
+        " " +
+          (res === "SUCCESS"
+            ? "Success"
+            : res === "FAILED" || res === "ERROR"
+              ? "Failed"
+              : "Running"),
+      ),
+    );
+    statusTd.appendChild(chip);
+    tr.appendChild(statusTd);
 
-    li.innerHTML = `
-      <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:center;">
-        <div>
-          <div style="font-weight:600;color:var(--text);">${globalThis.helpers.escapeHtml(
-            log.name || "(unnamed)",
-          )}</div>
-          <div style="font-size:0.9rem;color:var(--text-muted);">
-            ${started ? globalThis.helpers.formatDateTime(started) : ""}
-            ${log.type ? " • " + globalThis.helpers.escapeHtml(log.type) : ""}
-          </div>
-        </div>
-        <div style="text-align:right;">
-          <img src="${icon}" alt="${res}" style="width:25px;height:25px;flex-shrink:0;">
-          <div style="font-weight:600;color:var(--text);">${globalThis.helpers.humanDuration(
-            Number(log.duration_ms || 0),
-          )}</div>
-        </div>
-      </div>
-    `;
-    return li;
+    const durationTd = document.createElement("td");
+    durationTd.className = "align-right";
+    durationTd.textContent = globalThis.helpers.humanDuration(
+      Number(log.duration_ms || 0),
+    );
+    tr.appendChild(durationTd);
+
+    const dateTd = document.createElement("td");
+    dateTd.className = "align-right";
+    dateTd.textContent = started ? globalThis.helpers.formatDateTime(started) : "";
+    tr.appendChild(dateTd);
+
+    return tr;
   }
 
   async function loadSyncLogs() {
