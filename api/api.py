@@ -382,29 +382,25 @@ def create_api_blueprint(*, repo, sync, jf):
             heartbeat_every = 15
             last_heartbeat = time.time()
 
-            try:
-                while True:
-                    try:
-                        payload = _build_sync_progress_payload()
-                        payload_json = json.dumps(payload, separators=(",", ":"))
+            while True:
+                try:
+                    payload = _build_sync_progress_payload()
+                    payload_json = json.dumps(payload, separators=(",", ":"))
 
-                        if payload_json != last_payload:
-                            yield f"event: sync_progress\ndata: {payload_json}\n\n"
-                            last_payload = payload_json
+                    if payload_json != last_payload:
+                        yield f"event: sync_progress\ndata: {payload_json}\n\n"
+                        last_payload = payload_json
 
-                        now = time.time()
-                        if now - last_heartbeat >= heartbeat_every:
-                            yield "event: heartbeat\ndata: {}\n\n"
-                            last_heartbeat = now
+                    now = time.time()
+                    if now - last_heartbeat >= heartbeat_every:
+                        yield "event: heartbeat\ndata: {}\n\n"
+                        last_heartbeat = now
 
-                        time.sleep(1)
-                    except Exception as e:
-                        logger.exception("[ERROR] Exception in sync progress stream")
-                        yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
-                        time.sleep(1)
-            except GeneratorExit:
-                logger.info("[INFO] Sync progress stream closed by client")
-                raise
+                    time.sleep(1)
+                except Exception as e:
+                    logger.exception("[ERROR] Exception in sync progress stream")
+                    yield f"event: error\ndata: {json.dumps({'error': str(e)})}\n\n"
+                    time.sleep(1)
 
         headers = {
             "Content-Type": "text/event-stream",
