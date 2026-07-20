@@ -476,9 +476,9 @@ document.addEventListener("DOMContentLoaded", () => {
               title: { display: false },
               ticks: {
                 color: "#000000",
-                autoSkip: false,
-                maxRotation: days >= 90 ? 90 : 0,
-                minRotation: days >= 90 ? 90 : 0,
+                autoSkip: true,
+                maxRotation: 0,
+                minRotation: 0,
                 padding: 6,
               },
               grid: { display: true },

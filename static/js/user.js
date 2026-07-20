@@ -335,19 +335,20 @@ function populateRecentActivity() {
     }
   }
 
-  async function renderUserTrend() {
+  async function renderUserTrend(days = 14) {
     const userIdMatch = /\/user\/([^/]+)$/.exec(globalThis.location.pathname);
     if (!userIdMatch) return;
 
     const userId = userIdMatch[1];
     const totalCountEl = document.getElementById("plays-trend-total");
+    const trendLabelEl = document.querySelector(".plays-trend-card-label");
     const numberFmt = new Intl.NumberFormat();
 
     if (trendLoading) trendLoading.hidden = false;
     trendCanvas.style.display = "none";
 
     try {
-      const items = await loadUserActivity(userId, 14);
+      const items = await loadUserActivity(userId, days);
 
       const now = new Date();
       now.setHours(0, 0, 0, 0);
@@ -362,9 +363,9 @@ function populateRecentActivity() {
 
       const labels = [];
       const values = [];
-      const start = globalThis.helpers.addDays(now, -13);
+      const start = globalThis.helpers.addDays(now, -(days - 1));
 
-      const dateLabels = globalThis.helpers.generateDateLabels(start, 14);
+      const dateLabels = globalThis.helpers.generateDateLabels(start, days);
       dateLabels.forEach((iso) => {
         const date = new Date(iso + "T00:00:00Z");
         labels.push(globalThis.helpers.toLocalMD(date));
@@ -374,6 +375,9 @@ function populateRecentActivity() {
       const totalPlays = values.reduce((sum, v) => sum + Number(v || 0), 0);
       if (totalCountEl) {
         totalCountEl.textContent = numberFmt.format(totalPlays);
+      }
+      if (trendLabelEl) {
+        trendLabelEl.textContent = `Plays in last ${days} days`;
       }
 
       const minV = Math.min(...values);
@@ -420,7 +424,7 @@ function populateRecentActivity() {
               title: { display: false },
               ticks: {
                 color: "#000000",
-                autoSkip: false,
+                autoSkip: true,
                 maxRotation: 0,
                 minRotation: 0,
                 padding: 6,
@@ -469,6 +473,20 @@ function populateRecentActivity() {
   } else {
     globalThis.setTimeout(run, 0);
   }
+
+  const trendDayMap = [null, 7, 14, 30, 90];
+  const trendNavs = document.querySelectorAll(".plays-trend-nav li");
+
+  trendNavs.forEach((item, index) => {
+    item.addEventListener("click", () => {
+      const days = trendDayMap[index];
+      if (days === null) return;
+
+      trendNavs.forEach((nav) => nav.classList.remove("active"));
+      item.classList.add("active");
+      renderUserTrend(days);
+    });
+  });
 
   document.addEventListener("syncComplete", () => {
     renderUserTrend().catch((error) => {
