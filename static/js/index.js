@@ -409,9 +409,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   scheduleHeatmapRender();
 
-  async function renderTrend() {
+  async function renderTrend(days = 14) {
     const trendCanvas = document.getElementById("plays-trend-chart");
     const totalCountEl = document.getElementById("plays-trend-total");
+    const trendLabelEl = document.querySelector(".plays-trend-card-label");
     const numberFmt = new Intl.NumberFormat();
 
     if (!trendCanvas) return;
@@ -420,12 +421,15 @@ document.addEventListener("DOMContentLoaded", () => {
     trendCanvas.style.display = "none";
 
     try {
-      const items = await loadActivity(14);
-      const { labels, values } = buildTrendSeries(items, 14);
+      const items = await loadActivity(days);
+      const { labels, values } = buildTrendSeries(items, days);
 
       const totalPlays = values.reduce((sum, value) => sum + Number(value || 0), 0);
       if (totalCountEl) {
         totalCountEl.textContent = numberFmt.format(totalPlays);
+      }
+      if (trendLabelEl) {
+        trendLabelEl.textContent = `Plays in last ${days} days`;
       }
 
       const minV = Math.min(...values);
@@ -473,8 +477,8 @@ document.addEventListener("DOMContentLoaded", () => {
               ticks: {
                 color: "#000000",
                 autoSkip: false,
-                maxRotation: 0,
-                minRotation: 0,
+                maxRotation: days >= 90 ? 90 : 0,
+                minRotation: days >= 90 ? 90 : 0,
                 padding: 6,
               },
               grid: { display: true },
@@ -511,9 +515,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function scheduleTrendRender() {
+  function scheduleTrendRender(days = 14) {
     const run = () => {
-      renderTrend().catch((error) => {
+      renderTrend(days).catch((error) => {
         globalThis.helpers.handleError("Failed to render plays trend:", error);
       });
     };
@@ -527,6 +531,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   scheduleTrendRender();
+
+  const trendDayMap = [null, 7, 14, 30, 90]; // Null 1D until I get around to implementing by-hour activity
+  const trendNavs = document.querySelectorAll(".plays-trend-nav li");
+
+  trendNavs.forEach((item, index) => {
+    item.addEventListener("click", () => {
+      const days = trendDayMap[index];
+      if (days === null) return;
+
+      trendNavs.forEach((nav) => nav.classList.remove("active"));
+      item.classList.add("active");
+      renderTrend(days);
+    });
+  });
 });
 
 (function () {
