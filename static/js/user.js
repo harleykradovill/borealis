@@ -350,34 +350,62 @@ function populateRecentActivity() {
     try {
       const items = await loadUserActivity(userId, days);
 
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      const counts = {};
-      items.forEach((it) => {
-        const ts = Number(it.activity_at || 0) * 1000;
-        if (!ts) return;
-        const d = new Date(ts);
-        const iso = globalThis.helpers.toLocalISO(d);
-        counts[iso] = (counts[iso] || 0) + 1;
-      });
+      let labels, values;
+      if (days === 1) {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const todayEnd = new Date(todayStart);
+        todayEnd.setDate(todayEnd.getDate() + 1);
 
-      const labels = [];
-      const values = [];
-      const start = globalThis.helpers.addDays(now, -(days - 1));
+        const counts = new Array(24).fill(0);
+        items.forEach((it) => {
+          const ts = Number(it.activity_at || 0) * 1000;
+          if (!ts) return;
+          const d = new Date(ts);
+          if (d >= todayStart && d < todayEnd) {
+            counts[d.getHours()] += 1;
+          }
+        });
 
-      const dateLabels = globalThis.helpers.generateDateLabels(start, days);
-      dateLabels.forEach((iso) => {
-        const date = new Date(iso + "T00:00:00Z");
-        labels.push(globalThis.helpers.toLocalMD(date));
-        values.push(counts[iso] || 0);
-      });
+        labels = [];
+        values = [];
+        for (let h = 0; h < 24; h++) {
+          const d = new Date(todayStart);
+          d.setHours(h);
+          labels.push(globalThis.helpers.formatHour(d));
+          values.push(counts[h]);
+        }
+      } else {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const counts = {};
+        items.forEach((it) => {
+          const ts = Number(it.activity_at || 0) * 1000;
+          if (!ts) return;
+          const d = new Date(ts);
+          const iso = globalThis.helpers.toLocalISO(d);
+          counts[iso] = (counts[iso] || 0) + 1;
+        });
+
+        labels = [];
+        values = [];
+        const start = globalThis.helpers.addDays(now, -(days - 1));
+
+        const dateLabels = globalThis.helpers.generateDateLabels(start, days);
+        dateLabels.forEach((iso) => {
+          const date = new Date(iso + "T00:00:00Z");
+          labels.push(globalThis.helpers.toLocalMD(date));
+          values.push(counts[iso] || 0);
+        });
+      }
 
       const totalPlays = values.reduce((sum, v) => sum + Number(v || 0), 0);
       if (totalCountEl) {
         totalCountEl.textContent = numberFmt.format(totalPlays);
       }
       if (trendLabelEl) {
-        trendLabelEl.textContent = `Plays in last ${days} days`;
+        trendLabelEl.textContent =
+          days === 1 ? "Plays today by hour" : `Plays in last ${days} days`;
       }
 
       const minV = Math.min(...values);
@@ -474,7 +502,7 @@ function populateRecentActivity() {
     globalThis.setTimeout(run, 0);
   }
 
-  const trendDayMap = [null, 7, 14, 30, 90];
+  const trendDayMap = [1, 7, 14, 30, 90];
   const trendNavs = document.querySelectorAll(".plays-trend-nav li");
 
   trendNavs.forEach((item, index) => {
