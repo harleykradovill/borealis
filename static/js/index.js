@@ -150,18 +150,24 @@ function buildMatrix(items, days = 182) {
   let maxV = 0;
   let weekIdx = 0;
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const dateLabels = globalThis.helpers.generateDateLabels(startDate, days);
   dateLabels.forEach((iso) => {
+    const date = new Date(iso + "T00:00:00Z");
+    const isFuture = date > today;
+
     const v = counts[iso] || 0;
     if (v > maxV) maxV = v;
 
-    const date = new Date(iso + "T00:00:00Z");
     const weekday = date.getUTCDay();
     data.push({
       x: weekIdx + 1,
       y: weekday + 1,
       v,
       date: iso,
+      future: isFuture,
     });
 
     if (weekday === 6) weekIdx += 1;
@@ -314,6 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
               borderWidth: 0,
               borderRadius: 6,
               backgroundColor: (ctxArg) => {
+                if (ctxArg.raw.future) return "transparent";
                 const v = ctxArg.raw.v || 0;
                 return colorFor(v, maxV);
               },
@@ -345,6 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
               callbacks: {
                 title: () => "",
                 label: (ctxArg) => {
+                  if (ctxArg.raw.future) return "";
                   const r = ctxArg.raw;
                   return `${r.date} - ${r.v} plays`;
                 },
