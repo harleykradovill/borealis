@@ -249,6 +249,34 @@ function buildTrendSeries(items, days = 14) {
   return { labels, values };
 }
 
+function buildHourlySeries(items) {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayEnd = new Date(todayStart);
+  todayEnd.setDate(todayEnd.getDate() + 1);
+
+  const counts = new Array(24).fill(0);
+  items.forEach((it) => {
+    const ts = Number(it.activity_at || 0) * 1000;
+    if (!ts) return;
+    const d = new Date(ts);
+    if (d >= todayStart && d < todayEnd) {
+      counts[d.getHours()] += 1;
+    }
+  });
+
+  const labels = [];
+  const values = [];
+  for (let h = 0; h < 24; h++) {
+    const d = new Date(todayStart);
+    d.setHours(h);
+    labels.push(globalThis.helpers.formatHour(d));
+    values.push(counts[h]);
+  }
+
+  return { labels, values };
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("plays-matrix");
   const emptyEl = document.getElementById("matrix-chart-empty-files");
@@ -422,14 +450,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const items = await loadActivity(days);
-      const { labels, values } = buildTrendSeries(items, days);
+
+      let labels, values;
+      if (days === 1) {
+        const hourly = buildHourlySeries(items);
+        labels = hourly.labels;
+        values = hourly.values;
+      } else {
+        const series = buildTrendSeries(items, days);
+        labels = series.labels;
+        values = series.values;
+      }
 
       const totalPlays = values.reduce((sum, value) => sum + Number(value || 0), 0);
       if (totalCountEl) {
         totalCountEl.textContent = numberFmt.format(totalPlays);
       }
       if (trendLabelEl) {
-        trendLabelEl.textContent = `Plays in last ${days} days`;
+        trendLabelEl.textContent =
+          days === 1 ? "Plays today by hour" : `Plays in last ${days} days`;
       }
 
       const minV = Math.min(...values);
@@ -532,7 +571,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   scheduleTrendRender();
 
-  const trendDayMap = [null, 7, 14, 30, 90]; // Null 1D until I get around to implementing by-hour activity
+  const trendDayMap = [1, 7, 14, 30, 90];
   const trendNavs = document.querySelectorAll(".plays-trend-nav li");
 
   trendNavs.forEach((item, index) => {

@@ -449,6 +449,21 @@ globalThis.helpers = (function () {
     return `${day}/${month}/${year} ${String(hours).padStart(2, "0")}:${minutes} ${ampm}`;
   }
 
+  /**
+   * Formats a Date object into just the hour string (e.g., "00:00", "01:00" or "12 AM", "1 AM").
+   * @param {Date} date The date to format
+   * @returns {string} Formatted hour string
+   */
+  function formatHour(date) {
+    const hours = date.getHours();
+    if (userHourFormat === "24") {
+      return `${String(hours).padStart(2, "0")}:00`;
+    }
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const h = hours % 12 || 12;
+    return `${h} ${ampm}`;
+  }
+
   return {
     fetchJson,
     postJson,
@@ -465,5 +480,6 @@ globalThis.helpers = (function () {
     extractMediaItemName,
     toLocalMD,
     formatDateTime,
+    formatHour,
   };
 })();
