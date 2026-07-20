@@ -425,7 +425,7 @@ function populateRecentActivity() {
                 minRotation: 0,
                 padding: 6,
               },
-              grid: { display: false },
+              grid: { display: true },
             },
             y: {
               display: true,
@@ -434,7 +434,7 @@ function populateRecentActivity() {
                 color: "#000000",
                 precision: 0,
               },
-              grid: { display: false },
+              grid: { display: true },
               min: yMin,
               max: yMax,
             },

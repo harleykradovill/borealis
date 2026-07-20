@@ -185,28 +185,85 @@
 .plays-trend-section {
   flex: 3 1 0;
   min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 0.5rem;
+  row-gap: 0;
   border: 1px solid var(--border);
   background-color: #078f63;
   border-radius: var(--border-element);
+  padding: 0.75rem;
+}
+
+.plays-trend-section h2 {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  margin: 0 0 0.75rem 0;
+  color: var(--black);
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+.plays-trend-section > nav {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+}
+
+.plays-trend-nav {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0;
+  margin: 0 0 0.5rem 0;
+  align-items: center;
+  overflow: auto;
+  background-color: #067c57;
+  border-radius: var(--border-small);
+}
+
+.plays-trend-nav li {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--black);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-all);
+  border-radius: var(--border-small);
+  opacity: 0.7;
+}
+
+.plays-trend-nav li:hover,
+.plays-trend-nav li:focus {
+  opacity: 1;
+}
+
+.plays-trend-nav li.active {
+  opacity: 1;
+  background-color: #29473588;
+  transition: var(--transition-all);
 }
 
 .plays-trend-card {
-  position: relative;
+  grid-column: 1 / -1;
+  grid-row: 2;
   height: 300px;
-  padding: 1rem;
+  padding: 0;
 }
 
 .plays-trend-card-header {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.5rem;
 }
 
 .plays-trend-card-value {
-  font-size: var(--font-size-xxl);
+  font-size: var(--font-size-xl);
   font-weight: 800;
   color: var(--black);
 }
@@ -218,12 +275,14 @@
 }
 
 .plays-trend-card canvas {
-  position: absolute;
-  top: 3.5rem;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin-top: 1rem;
 }
 
 #plays-trend-loading .wrapper > div {
-  height: 270px;
+  height: 300px;
   border-radius: var(--border-element);
 }
 

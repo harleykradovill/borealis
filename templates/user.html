@@ -79,16 +79,22 @@
             </section>
 
             <section class="plays-trend-section">
-              <div class="plays-trend-card">
-                <div
-                  class="plays-trend-card-header"
-                  id="plays-trend-card-header"
-                  hidden
-                >
-                  <div id="plays-trend-total" class="plays-trend-card-value"></div>
-                  <div class="plays-trend-card-label">Plays in last 14 days</div>
-                </div>
+              <div class="plays-trend-card-header" id="plays-trend-card-header" hidden>
+                <div id="plays-trend-total" class="plays-trend-card-value"></div>
+                <div class="plays-trend-card-label">Plays in last 14 days</div>
+              </div>
 
+              <nav>
+                <ul class="plays-trend-nav">
+                  <li>1D</li>
+                  <li>7D</li>
+                  <li class="active">14D</li>
+                  <li>1M</li>
+                  <li>3M</li>
+                </ul>
+              </nav>
+
+              <div class="plays-trend-card">
                 <div id="plays-trend-loading" class="skeleton">
                   <div class="wrapper">
                     <div></div>
