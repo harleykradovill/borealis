@@ -358,6 +358,12 @@ body {
   color: var(--text-muted);
 }
 
+.form-field select:disabled,
+.form-field input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .form-field input[type="checkbox"],
 .form-field input[type="radio"] {
   width: 1rem;

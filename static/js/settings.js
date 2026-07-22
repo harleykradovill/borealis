@@ -83,6 +83,11 @@
   function renderSyncStatus(payload) {
     if (!payload || !fields.sync_next_at) return;
 
+    if (fields.sync_enabled && !fields.sync_enabled.checked) {
+      fields.sync_next_at.textContent = "Not scheduled";
+      return;
+    }
+
     const nextAt = payload.next_scheduled_sync_at;
     fields.sync_next_at.textContent = nextAt
       ? formatRelativeTime(nextAt, "Not scheduled")
@@ -127,6 +132,10 @@
           lastKnown[key] = fields[key].value;
         }
       });
+
+      if (fields.sync_enabled && fields.sync_interval) {
+        fields.sync_interval.disabled = !fields.sync_enabled.checked;
+      }
 
       const triggers = data.discord_triggers || {};
       discordTriggerKeys.forEach((key) => {
@@ -195,6 +204,9 @@
         if (value !== lastKnown[key]) {
           const saveValue = key === "sync_interval" ? Number(value) : value;
           scheduleSave({ [key]: saveValue });
+        }
+        if (key === "sync_enabled" && fields.sync_interval) {
+          fields.sync_interval.disabled = !fields.sync_enabled.checked;
         }
       });
     });
