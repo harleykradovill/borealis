@@ -19,6 +19,30 @@
   font-weight: 600;
 }
 
+/* Separator */
+.separator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 1700px;
+  margin-bottom: 1rem;
+}
+
+.separator hr {
+  flex: 1;
+  border: none;
+  border-top: 3px solid var(--text-muted);
+  border-radius: var(--border-circle);
+  margin: 0;
+}
+
+.separator h3 {
+  color: var(--text-muted);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
 /* ============== */
 /* Glance Section */
 /* ============== */
