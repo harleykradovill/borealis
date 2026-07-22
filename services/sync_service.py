@@ -547,153 +547,31 @@ class SyncService:
                 success=False,
             )
 
-    def sync_initial(self) -> SyncResult:
+    def sync_full(self, execution_type: str = "periodic") -> SyncResult:
         """
-        Perform initial server setup sync combining full data sync
-        and full activity log pull.
+        Execute a full sync cycle. The execution type determines the activity log
+        strategy and statistics refresh behavior.
 
-        :returns: SyncResult combining metrics from metadata, activity, and dashboard operations
-        """
-        logging.info("[INFO] Starting Initial Sync")
-
-        start_time = time.time()
-        errors: List[str] = []
-
-        sync_id = self.repository.create_sync_log(
-            name="Initial Server Setup Sync", sync_type="sync", execution_type="initial"
-        )
-        self._update_sync_progress(
-            sync_id,
-            {
-                "phase": "running",
-                "message": "Starting initial sync",
-                "step": 1,
-                "step_total": 4,
-                "items_synced": 0,
-                "total_events": 0,
-            },
-        )
-
-        time.sleep(1)
-
-        try:
-            self._update_sync_progress(
-                sync_id,
-                {
-                    "phase": "running",
-                    "message": "Syncing metadata",
-                    "step": 2,
-                },
-            )
-
-            metadata_result = self.sync_metadata()
-            if not metadata_result.success and metadata_result.errors:
-                errors.extend(metadata_result.errors)
-
-            self._update_sync_progress(
-                sync_id,
-                {
-                    "phase": "running",
-                    "message": "Syncing activity log",
-                    "step": 3,
-                },
-            )
-
-            activity_result = self.sync_activity_log_full()
-            if not activity_result.success and activity_result.errors:
-                errors.extend(activity_result.errors)
-
-            time.sleep(1)
-
-            self._update_sync_progress(
-                sync_id,
-                {
-                    "phase": "running",
-                    "message": "Refreshing statistics",
-                    "step": 4,
-                },
-            )
-            try:
-                self._refresh_statistics_cache()
-            except Exception:
-                errors.append("Failed to refresh statistics")
-
-            result = self._build_result(
-                start_time,
-                errors,
-                users_synced=metadata_result.users_synced,
-                libraries_synced=metadata_result.libraries_synced,
-                items_synced=(
-                    metadata_result.items_synced + activity_result.items_synced
-                ),
-                success=(metadata_result.success and activity_result.success),
-            )
-
-            log_data = result.to_dict()
-            log_data["phase"] = "complete" if result.success else "failed"
-            log_data["message"] = (
-                "Initial sync complete" if result.success else "Initial sync failed"
-            )
-            log_data["step"] = 5
-
-            self.repository.complete_sync_log(
-                sync_id=sync_id,
-                result="SUCCESS" if result.success else "FAILED",
-                log_data=log_data,
-            )
-
-            time.sleep(1)
-
-            self._invoke_sync_callbacks(result)
-
-            logging.info("[INFO] Initial Sync Complete")
-            return result
-
-        except Exception:
-            error_msg = "Unexpected error during initial sync"
-            errors.append(error_msg)
-
-            result = self._build_result(
-                start_time,
-                errors,
-                users_synced=0,
-                libraries_synced=0,
-                items_synced=0,
-                success=False,
-            )
-
-            log_data = result.to_dict()
-            log_data["phase"] = "failed"
-            log_data["message"] = "Initial sync failed"
-
-            self.repository.complete_sync_log(
-                sync_id=sync_id,
-                result="FAILED",
-                log_data=log_data,
-            )
-
-            return result
-
-    def sync_periodic(self) -> SyncResult:
-        """
-        Perform periodic sync: full metadata sync (users/libraries/items),
-        incremental activity log sync (if marker exists), and refresh play statistics.
-
+        :param execution_type: "initial" for full historical activity pull, "periodic" for incremental pull
         :returns: SyncResult with aggregated metrics from all sync phases
         """
-        logging.info("[INFO] Starting Periodic Sync")
+        is_initial = execution_type == "initial"
+        label = "Initial Server Setup Sync" if is_initial else "Periodic Sync"
+        log_prefix = "initial" if is_initial else "periodic"
+
+        logging.info("[INFO] Starting %s Sync", log_prefix.capitalize())
 
         start_time = time.time()
         errors: List[str] = []
 
         sync_id = self.repository.create_sync_log(
-            name="Periodic Sync", sync_type="sync", execution_type="periodic"
+            name=label, sync_type="sync", execution_type=execution_type
         )
         self._update_sync_progress(
             sync_id,
             {
                 "phase": "running",
-                "message": "Starting periodic sync",
+                "message": f"Starting {log_prefix} sync",
                 "step": 1,
                 "step_total": 4,
                 "items_synced": 0,
@@ -728,7 +606,11 @@ class SyncService:
 
             time.sleep(1)
 
-            activity_result = self.sync_activity_log_incremental()
+            activity_result = (
+                self.sync_activity_log_full()
+                if is_initial
+                else self.sync_activity_log_incremental()
+            )
             if not activity_result.success and activity_result.errors:
                 errors.extend(activity_result.errors)
 
@@ -743,13 +625,14 @@ class SyncService:
                 },
             )
 
-            if activity_result.items_synced > 0:
+            if is_initial or activity_result.items_synced > 0:
                 try:
                     self._refresh_statistics_cache()
                 except Exception:
                     errors.append("Failed to refresh statistics")
 
-            time.sleep(1)
+            if not is_initial:
+                time.sleep(1)
 
             result = self._build_result(
                 start_time,
@@ -765,7 +648,9 @@ class SyncService:
             log_data = result.to_dict()
             log_data["phase"] = "complete" if result.success else "failed"
             log_data["message"] = (
-                "Periodic sync complete" if result.success else "Periodic sync failed"
+                f"{log_prefix.capitalize()} sync complete"
+                if result.success
+                else f"{log_prefix.capitalize()} sync failed"
             )
             log_data["step"] = 5
 
@@ -779,11 +664,11 @@ class SyncService:
 
             self._invoke_sync_callbacks(result)
 
-            logging.info("[INFO] Periodic Sync Complete")
+            logging.info("[INFO] %s Sync Complete", label)
             return result
 
         except Exception:
-            error_msg = "Unexpected error during periodic sync"
+            error_msg = f"Unexpected error during {log_prefix} sync"
             errors.append(error_msg)
 
             result = self._build_result(
@@ -797,7 +682,7 @@ class SyncService:
 
             log_data = result.to_dict()
             log_data["phase"] = "failed"
-            log_data["message"] = "Periodic sync failed"
+            log_data["message"] = f"{log_prefix.capitalize()} sync failed"
 
             self.repository.complete_sync_log(
                 sync_id=sync_id,

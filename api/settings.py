@@ -278,7 +278,7 @@ def create_settings_blueprint(*, svc, repo, sync):
                 :returns: None
                 """
                 try:
-                    sync.sync_initial()
+                    sync.sync_full("initial")
                 except Exception as exc:
                     logging.exception(
                         "[ERROR] Initial sync failed: %s", exc, exc_info=True
@@ -359,7 +359,7 @@ def create_settings_blueprint(*, svc, repo, sync):
             :returns: None
             """
             try:
-                sync.sync_periodic()
+                sync.sync_full("periodic")
             except Exception:
                 logging.exception("[ERROR] Manual periodic sync failed")
 

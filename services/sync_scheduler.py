@@ -115,7 +115,7 @@ class SyncScheduler:
                 self._next_run_at = None
 
             try:
-                self.sync_service.sync_periodic()
+                self.sync_service.sync_full("periodic")
             except Exception:
                 logging.error("[ERROR] Periodic sync failed")
                 traceback.print_exc()
