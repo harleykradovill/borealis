@@ -120,7 +120,11 @@ def create_app(test_config: Optional[Dict] = None) -> "Flask":
     current_settings = svc.get()
     initial_interval = int(current_settings.get("sync_interval") or 1800)
 
-    sync_scheduler = SyncScheduler(sync_service=sync, interval_seconds=initial_interval)
+    sync_scheduler = SyncScheduler(
+        sync_service=sync,
+        interval_seconds=initial_interval,
+        settings_service=svc,
+    )
 
     logging.info(
         "\033[93m- Sync loop set at %s seconds\033[0m",

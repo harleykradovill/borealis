@@ -19,7 +19,9 @@ class SyncScheduler:
     - Only run incremental activity-log sync if a last-activity marker exists.
     """
 
-    def __init__(self, sync_service, interval_seconds: int = 1800):
+    def __init__(
+        self, sync_service, interval_seconds: int = 1800, settings_service=None
+    ):
         """
         Initialize background sync scheduler with configurable interval.
 
@@ -27,6 +29,7 @@ class SyncScheduler:
         :param interval_seconds: Interval between syncs in seconds (default 1800)
         """
         self.sync_service = sync_service
+        self.settings_service = settings_service
         self.interval_seconds = int(interval_seconds)
         self._stop_event = threading.Event()
         self._wake_event = threading.Event()
@@ -69,15 +72,11 @@ class SyncScheduler:
         logging.info("[INFO] SyncScheduler stopped")
 
     def _run_loop(self) -> None:
-        """
-        Main scheduler loop that manages sync timing and execution.
-
-        :returns: None
-        """
         run_immediately = True
 
         while not self._stop_event.is_set():
             should_run = False
+            is_manual = False
 
             if run_immediately:
                 should_run = True
@@ -98,6 +97,7 @@ class SyncScheduler:
                     with self._state_lock:
                         if self._pending_manual_run:
                             should_run = True
+                            is_manual = True
                             self._pending_manual_run = False
                             self._next_run_at = int(time.time())
                 else:
@@ -107,6 +107,13 @@ class SyncScheduler:
 
             if not should_run:
                 continue
+
+            if not is_manual and self.settings_service:
+                try:
+                    if not self.settings_service.get().get("sync_enabled", True):
+                        continue
+                except Exception:
+                    pass
 
             started_at = int(time.time())
             with self._state_lock:
