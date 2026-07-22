@@ -405,7 +405,7 @@ function populateRecentActivity() {
       }
       if (trendLabelEl) {
         trendLabelEl.textContent =
-          days === 1 ? "Plays today by hour" : `Plays in last ${days} days`;
+          days === 1 ? "Plays today by the hour" : `Plays in the last ${days} days`;
       }
 
       const minV = Math.min(...values);
