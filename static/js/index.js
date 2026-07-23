@@ -1020,10 +1020,22 @@ document.addEventListener("DOMContentLoaded", () => {
     statsCanvas.style.display = "";
   }
 
+  const statTitles = [
+    "Top users by plays",
+    "Top items by plays",
+    "Top libraries by plays",
+    "Top users by watch time",
+  ];
+
   async function switchStatistic(index) {
     navItems.forEach((item, i) => {
       item.classList.toggle("active", i === index);
     });
+
+    const titleEl = document.getElementById("statistics-section-title");
+    if (titleEl) {
+      titleEl.textContent = statTitles[index];
+    }
 
     if (!cachedData) {
       if (statsLoading) statsLoading.hidden = false;
