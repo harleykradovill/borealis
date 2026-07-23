@@ -14,7 +14,7 @@
 
       const playCanvas = document.getElementById("plays-matrix");
       if (playCanvas && playCanvas.style.display !== "none") {
-        loadActivity(182)
+        loadActivity(91)
           .then(() => {
             const render = globalThis.__indexRenderHeatmap;
             if (typeof render === "function") {
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-async function loadActivity(days = 182) {
+async function loadActivity(days = 91) {
   try {
     const perPage = 1000;
     const maxPages = 20;
@@ -126,7 +126,7 @@ async function loadActivity(days = 182) {
   }
 }
 
-function buildMatrix(items, days = 182) {
+function buildMatrix(items, days = 91) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
@@ -286,8 +286,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function renderHeatmap() {
     try {
-      const items = await loadActivity(182);
-      const { data, maxV, weeks } = buildMatrix(items, 182);
+      const items = await loadActivity(91);
+      const { data, maxV, weeks } = buildMatrix(items, 91);
       if (!data.length || maxV === 0) {
         if (emptyEl) emptyEl.hidden = false;
         canvas.style.display = "none";
