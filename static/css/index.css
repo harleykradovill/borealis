@@ -24,7 +24,6 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  max-width: 1700px;
   margin-bottom: 1rem;
 }
 
@@ -158,7 +157,6 @@
   font-size: var(--font-size-base);
   text-align: right;
   flex: 1;
-  word-break: normal;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -178,7 +176,6 @@
   font-size: var(--font-size-lg);
   font-weight: 600;
   color: var(--text);
-  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -194,14 +191,14 @@
   flex: 1;
   height: 6px;
   background: #294735;
-  border-radius: 3px;
+  border-radius: var(--border-small);
   overflow: hidden;
 }
 
 .session-card-progress-fill {
   height: 100%;
   background: var(--white);
-  border-radius: 3px;
+  border-radius: var(--border-small);
   transition: var(--transition-all);
 }
 
@@ -217,7 +214,6 @@
 .session-card-progress-icon {
   width: 18px;
   height: 18px;
-  object-fit: contain;
   flex-shrink: 0;
 }
 
@@ -247,7 +243,6 @@
 .session-card-user {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   gap: 0.5rem;
   color: var(--text-muted);
   font-size: var(--font-size-base);
@@ -275,21 +270,10 @@
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
   column-gap: 0.5rem;
-  row-gap: 0;
   border: 1px solid var(--border);
   background-color: #078f63;
   border-radius: var(--border-element);
   padding: 0.75rem;
-}
-
-.plays-trend-section h2 {
-  grid-column: 1;
-  grid-row: 1;
-  align-self: center;
-  margin: 0 0 0.75rem 0;
-  color: var(--black);
-  font-size: var(--font-size-lg);
-  font-weight: 600;
 }
 
 .plays-trend-section > nav {
@@ -304,7 +288,6 @@
   padding: 0;
   margin: 0 0 0.5rem 0;
   align-items: center;
-  overflow: auto;
   background-color: #067c57;
   border-radius: var(--border-small);
 }
@@ -387,7 +370,6 @@
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
   column-gap: 0.5rem;
-  row-gap: 0;
   flex: 4 1 0;
   min-width: 0;
   border: 1px solid var(--border);
@@ -590,7 +572,6 @@
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
   column-gap: 0.5rem;
-  row-gap: 0;
   min-width: 0;
   border: 1px solid var(--border);
   border-radius: var(--border-element);
