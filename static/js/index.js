@@ -35,7 +35,7 @@
         });
       }
 
-      const codecCards = document.querySelectorAll("[data-codec-key]");
+      const codecCards = document.querySelectorAll();
       if (codecCards.length > 0) {
         fetchCodecsData().catch((error) => {
           globalThis.helpers.handleError("Failed to refresh codecs:", error);
@@ -1166,105 +1166,129 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 (function () {
-  const codecsCanvas = document.getElementById("codecs-chart");
-  const codecsLoading = document.getElementById("codecs-loading");
-  if (!codecsCanvas) return;
+  const videoCanvas = document.getElementById("video-codecs-chart");
+  const videoLoading = document.getElementById("video-codecs-loading");
+  if (!videoCanvas) return;
 
-  const codecsNav = document.querySelectorAll(".codecs-nav li");
-  let cachedData = null;
-
-  async function fetchCodecsData() {
+  async function loadVideoCodecs() {
     try {
-      if (codecsLoading) codecsLoading.hidden = false;
-      codecsCanvas.style.display = "none";
+      if (videoLoading) videoLoading.hidden = false;
+      videoCanvas.style.display = "none";
 
       const resp = await fetch("/api/analytics/stats/dashboard");
       if (!resp.ok) return;
-
       const payload = await resp.json();
       if (!payload?.ok) return;
 
-      cachedData = payload.data?.sections || {};
-    } catch (error) {
-      globalThis.helpers.handleError("Failed to load codecs data", error);
-    } finally {
-      if (codecsLoading) codecsLoading.hidden = true;
-    }
-  }
+      const dataArray = payload.data?.sections?.video_codecs;
+      if (!Array.isArray(dataArray) || !dataArray.length) return;
 
-  function renderChart(codecType) {
-    if (!cachedData) return;
+      const labels = dataArray.map((r) => r?.video_codec || "");
+      const values = dataArray.map((r) => Number(r?.count || 0));
+      const palette = globalThis.helpers.getPalette(values.length, true);
 
-    const dataArray =
-      codecType === 0 ? cachedData.video_codecs : cachedData.audio_codecs;
-    if (!Array.isArray(dataArray) || !dataArray.length) return;
-
-    const codecKey = codecType === 0 ? "video_codec" : "audio_codec";
-    const labels = dataArray.map((r) => r?.[codecKey] || "");
-    const values = dataArray.map((r) => Number(r?.count || 0));
-
-    const palette = globalThis.helpers.getPalette(values.length, true);
-
-    const ctx = codecsCanvas.getContext("2d");
-    const config = {
-      type: "doughnut",
-      data: {
-        labels,
-        datasets: [
-          {
-            data: values,
-            backgroundColor: palette,
-            borderWidth: 0,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: { duration: 200 },
-        plugins: {
-          legend: {
-            display: true,
-            position: "right",
-            labels: {
-              color: "#b3b3b3",
-              font: { size: 12 },
-              padding: 12,
+      const ctx = videoCanvas.getContext("2d");
+      const config = {
+        type: "doughnut",
+        data: {
+          labels,
+          datasets: [
+            {
+              data: values,
+              backgroundColor: palette,
+              borderWidth: 0,
             },
-          },
-          tooltip: {
-            callbacks: {
-              label: (ctxArg) => `${ctxArg.label}: ${ctxArg.raw}`,
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 200 },
+          plugins: {
+            legend: {
+              display: true,
+              position: "right",
+              labels: { color: "#b3b3b3", font: { size: 12 }, padding: 12 },
+            },
+            tooltip: {
+              callbacks: { label: (ctxArg) => `${ctxArg.label}: ${ctxArg.raw}` },
             },
           },
         },
-      },
-    };
+      };
 
-    if (globalThis.__codecsChart) {
-      globalThis.__codecsChart.destroy();
+      if (globalThis.__videoCodecsChart) globalThis.__videoCodecsChart.destroy();
+      globalThis.__videoCodecsChart = new Chart(ctx, config);
+      videoCanvas.style.display = "";
+    } finally {
+      if (videoLoading) videoLoading.hidden = true;
     }
-    globalThis.__codecsChart = new Chart(ctx, config);
-    codecsCanvas.style.display = "";
   }
 
-  async function switchCodec(index) {
-    codecsNav.forEach((item, i) => {
-      item.classList.toggle("active", i === index);
-    });
+  loadVideoCodecs();
+})();
 
-    if (!cachedData) {
-      await fetchCodecsData();
+(function () {
+  const audioCanvas = document.getElementById("audio-codecs-chart");
+  const audioLoading = document.getElementById("audio-codecs-loading");
+  if (!audioCanvas) return;
+
+  async function loadAudioCodecs() {
+    try {
+      if (audioLoading) audioLoading.hidden = false;
+      audioCanvas.style.display = "none";
+
+      const resp = await fetch("/api/analytics/stats/dashboard");
+      if (!resp.ok) return;
+      const payload = await resp.json();
+      if (!payload?.ok) return;
+
+      const dataArray = payload.data?.sections?.audio_codecs;
+      if (!Array.isArray(dataArray) || !dataArray.length) return;
+
+      const labels = dataArray.map((r) => r?.audio_codec || "");
+      const values = dataArray.map((r) => Number(r?.count || 0));
+      const palette = globalThis.helpers.getPalette(values.length, true);
+
+      const ctx = audioCanvas.getContext("2d");
+      const config = {
+        type: "doughnut",
+        data: {
+          labels,
+          datasets: [
+            {
+              data: values,
+              backgroundColor: palette,
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 200 },
+          plugins: {
+            legend: {
+              display: true,
+              position: "right",
+              labels: { color: "#b3b3b3", font: { size: 12 }, padding: 12 },
+            },
+            tooltip: {
+              callbacks: { label: (ctxArg) => `${ctxArg.label}: ${ctxArg.raw}` },
+            },
+          },
+        },
+      };
+
+      if (globalThis.__audioCodecsChart) globalThis.__audioCodecsChart.destroy();
+      globalThis.__audioCodecsChart = new Chart(ctx, config);
+      audioCanvas.style.display = "";
+    } finally {
+      if (audioLoading) audioLoading.hidden = true;
     }
-
-    renderChart(index);
   }
 
-  codecsNav.forEach((item, index) => {
-    item.addEventListener("click", () => switchCodec(index));
-  });
-
-  switchCodec(0);
+  loadAudioCodecs();
 })();
 
 (function () {
