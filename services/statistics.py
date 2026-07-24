@@ -30,6 +30,17 @@ SECTION_MOST_POPULAR_GENRES = "most_popular_genres"
 SECTION_TOP_LIBRARIES_BY_USER = "top_libraries_by_user"
 SECTION_TOP_ITEMS_BY_USER = "top_items_by_user"
 
+_RESOLUTION_TIER = [
+    (360, "360p"),
+    (480, "480p"),
+    (720, "720p"),
+    (1080, "1080p"),
+    (1200, "1200p"),
+    (1440, "1440p"),
+    (1600, "1600p"),
+    (2160, "4K"),
+]
+
 
 def _sqlite_weekday_expr():
     """
@@ -45,6 +56,28 @@ def _sqlite_weekday_expr():
         Integer,
     )
     return (w + 6) % 7
+
+
+def _normalize_resolution(raw: str) -> str:
+    """
+    Map a raw resolution string (e.g. '1920x1080') to a common name.
+
+    :param raw: Raw resolution value from the database
+    :returns: Normalized resolution name (e.g. '1080p', '4K')
+    """
+    known = {name for _, name in _RESOLUTION_TIER}
+    if raw in known:
+        return raw
+
+    try:
+        height = int(raw.split("x", 1)[1].strip())
+    except (ValueError, IndexError, AttributeError):
+        return raw
+
+    for threshold, name in _RESOLUTION_TIER:
+        if height <= threshold:
+            return name
+    return "8K"
 
 
 class StatisticsBuilder:
@@ -360,7 +393,26 @@ class StatisticsBuilder:
         :param limit: Maximum number of rows to return
         :returns: List of dictionaries with resolution value and count
         """
-        return StatisticsBuilder._codec_stats(session, Item.resolution, limit)
+        rows = (
+            session.query(Item.resolution, func.count(Item.id).label("total"))
+            .filter(
+                Item.archived.is_(False),
+                func.lower(Item.type).in_(["episode", "movie"]),
+                Item.resolution.isnot(None),
+                func.trim(Item.resolution) != "",
+            )
+            .group_by(Item.resolution)
+            .order_by(func.count(Item.id).desc())
+            .all()
+        )
+
+        merged: Dict[str, int] = {}
+        for val, cnt in rows:
+            name = _normalize_resolution(val)
+            merged[name] = merged.get(name, 0) + int(cnt or 0)
+
+        sorted_items = sorted(merged.items(), key=lambda x: -x[1])[:limit]
+        return [{"resolution": name, "count": count} for name, count in sorted_items]
 
     @staticmethod
     def most_popular_genres(session: Session, limit: int = 5) -> List[Dict[str, Any]]:
