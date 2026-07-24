@@ -1189,31 +1189,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const ctx = videoCanvas.getContext("2d");
       const config = {
-        type: "doughnut",
+        type: "bar",
         data: {
           labels,
           datasets: [
             {
               data: values,
-              backgroundColor: palette,
-              borderWidth: 0,
+              backgroundColor: palette.slice(0, values.length),
+              borderRadius: 100,
+              barThickness: 18,
             },
           ],
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
+          indexAxis: "y",
           animation: { duration: 200 },
           plugins: {
-            legend: {
-              display: true,
-              position: "right",
-              labels: { color: "#b3b3b3", font: { size: 12 }, padding: 12 },
-            },
+            legend: { display: false },
             tooltip: {
-              callbacks: { label: (ctxArg) => `${ctxArg.label}: ${ctxArg.raw}` },
+              callbacks: { label: (ctxArg) => `Items: ${ctxArg.raw}` },
             },
           },
+          scales: {
+            x: {
+              type: "logarithmic",
+              display: true,
+              title: { display: false },
+              ticks: {
+                color: "#b3b3b3",
+                padding: 6,
+                autoSkip: true,
+                maxTicksLimit: 6,
+                callback: (value) => (Number.isInteger(value) ? value : null),
+              },
+              grid: { display: false },
+              min: 0.5,
+            },
+            y: {
+              display: true,
+              title: { display: false },
+              ticks: { color: "#b3b3b3" },
+              grid: { display: false },
+            },
+          },
+          maintainAspectRatio: false,
+          responsive: true,
         },
       };
 
@@ -1252,31 +1272,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const ctx = audioCanvas.getContext("2d");
       const config = {
-        type: "doughnut",
+        type: "bar",
         data: {
           labels,
           datasets: [
             {
               data: values,
-              backgroundColor: palette,
-              borderWidth: 0,
+              backgroundColor: palette.slice(0, values.length),
+              borderRadius: 100,
+              barThickness: 18,
             },
           ],
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
+          indexAxis: "y",
           animation: { duration: 200 },
           plugins: {
-            legend: {
-              display: true,
-              position: "right",
-              labels: { color: "#b3b3b3", font: { size: 12 }, padding: 12 },
-            },
+            legend: { display: false },
             tooltip: {
-              callbacks: { label: (ctxArg) => `${ctxArg.label}: ${ctxArg.raw}` },
+              callbacks: { label: (ctxArg) => `Items: ${ctxArg.raw}` },
             },
           },
+          scales: {
+            x: {
+              type: "logarithmic",
+              display: true,
+              title: { display: false },
+              ticks: {
+                color: "#b3b3b3",
+                padding: 6,
+                autoSkip: true,
+                maxTicksLimit: 6,
+                callback: (value) => (Number.isInteger(value) ? value : null),
+              },
+              grid: { display: false },
+              min: 0.5,
+            },
+            y: {
+              display: true,
+              title: { display: false },
+              ticks: { color: "#b3b3b3" },
+              grid: { display: false },
+            },
+          },
+          maintainAspectRatio: false,
+          responsive: true,
         },
       };
 
