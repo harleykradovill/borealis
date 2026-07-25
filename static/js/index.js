@@ -34,13 +34,6 @@
           globalThis.helpers.handleError("Failed to refresh stats:", error);
         });
       }
-
-      const codecCards = document.querySelectorAll();
-      if (codecCards.length > 0) {
-        fetchCodecsData().catch((error) => {
-          globalThis.helpers.handleError("Failed to refresh codecs:", error);
-        });
-      }
     } catch (error) {
       globalThis.helpers.handleError("Error refreshing dashboard data:", error);
     }
@@ -1112,16 +1105,18 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         scales: {
           x: {
+            type: "logarithmic",
             display: true,
             title: { display: false },
             ticks: {
               color: "#b3b3b3",
-              precision: 0,
               padding: 6,
+              autoSkip: true,
+              maxTicksLimit: 6,
+              callback: (value) => (Number.isInteger(value) ? value : null),
             },
             grid: { display: false },
-            min: 0,
-            max: xMax,
+            min: 0.5,
           },
           y: {
             display: true,
