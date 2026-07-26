@@ -181,6 +181,7 @@ def create_api_blueprint(*, repo, sync, jf):
                 "video_codecs",
                 "audio_codecs",
                 "most_popular_genres",
+                "largest_items",
             ]
 
             rows_by_key = repo.get_statistics_map(section_keys=section_keys)

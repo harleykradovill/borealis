@@ -29,6 +29,7 @@ SECTION_AUDIO_CODECS = "audio_codecs"
 SECTION_MOST_POPULAR_GENRES = "most_popular_genres"
 SECTION_TOP_LIBRARIES_BY_USER = "top_libraries_by_user"
 SECTION_TOP_ITEMS_BY_USER = "top_items_by_user"
+SECTION_LARGEST_ITEMS = "largest_items"
 
 _RESOLUTION_TIER = [
     (360, "360p"),
@@ -128,6 +129,9 @@ class StatisticsBuilder:
             ),
             SECTION_TOP_ITEMS_BY_USER: (
                 StatisticsBuilder.top_items_by_user(session, limit=5)
+            ),
+            SECTION_LARGEST_ITEMS: StatisticsBuilder.top_largest_items(
+                session, limit=10
             ),
         }
 
@@ -589,3 +593,33 @@ class StatisticsBuilder:
             )
 
         return out
+
+    @staticmethod
+    def top_largest_items(session: Session, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Return items ordered by size descending with library name and play count.
+
+        :param session: Active SQL session
+        :param limit: Max number of items to return
+        :returns: List of items with name, library_name, total_plays, size_bytes, date_created
+        """
+        rows = (
+            session.query(Item, Library)
+            .join(Library, Item.library_id == Library.id)
+            .filter(Item.archived.is_(False), Library.archived.is_(False))
+            .filter(Item.size_bytes > 0)
+            .order_by(Item.size_bytes.desc(), Item.name.asc())
+            .limit(limit)
+            .all()
+        )
+        return [
+            {
+                "item_id": item.jellyfin_id,
+                "name": item.name,
+                "library_name": library.name,
+                "total_plays": int(item.total_plays or 0),
+                "size_bytes": int(item.size_bytes or 0),
+                "date_created": item.date_created,
+            }
+            for item, library in rows
+        ]

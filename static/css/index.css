@@ -495,7 +495,6 @@
   color: var(--text-muted);
   font-weight: 500;
   text-align: right;
-  padding-right: 0.5rem;
   height: calc((260px - 3.5rem - 0.5rem) / 7);
   display: flex;
   align-items: center;
