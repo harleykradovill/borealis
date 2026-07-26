@@ -1481,3 +1481,79 @@ document.addEventListener("DOMContentLoaded", () => {
   loadGenres();
   globalThis.refreshGenresChart = loadGenres;
 })();
+
+(function () {
+  const container = document.getElementById("largest-items-table-wrapper");
+  const tbody = document.getElementById("largest-items-tbody");
+  const loading = document.getElementById("largest-items-loading");
+  const empty = document.getElementById("largest-items-empty");
+  const numberFmt = new Intl.NumberFormat();
+
+  if (!tbody) return;
+
+  async function loadLargestItems() {
+    try {
+      if (loading) loading.hidden = false;
+      if (container) container.hidden = true;
+      if (empty) empty.hidden = true;
+
+      const resp = await fetch("/api/analytics/stats/dashboard");
+      if (!resp.ok) return;
+      const payload = await resp.json();
+      if (!payload?.ok) return;
+
+      const items = payload.data?.sections?.largest_items;
+      if (!Array.isArray(items) || !items.length) {
+        if (empty) empty.hidden = false;
+        return;
+      }
+
+      tbody.innerHTML = "";
+
+      items.forEach((item) => {
+        const tr = document.createElement("tr");
+
+        const titleTd = document.createElement("td");
+        titleTd.textContent = item.name || "Unknown";
+        tr.appendChild(titleTd);
+
+        const libTd = document.createElement("td");
+        libTd.textContent = item.library_name || "-";
+        tr.appendChild(libTd);
+
+        const playsTd = document.createElement("td");
+        playsTd.textContent = numberFmt.format(item.total_plays || 0);
+        tr.appendChild(playsTd);
+
+        const sizeTd = document.createElement("td");
+        sizeTd.className = "align-right";
+        sizeTd.textContent = globalThis.helpers.humanBytes(item.size_bytes || 0);
+        tr.appendChild(sizeTd);
+
+        const dateTd = document.createElement("td");
+        dateTd.className = "align-right";
+        dateTd.textContent = item.date_created
+          ? globalThis.helpers.formatDateTime(
+              new Date(Number(item.date_created) * 1000),
+            )
+          : "-";
+        tr.appendChild(dateTd);
+
+        tbody.appendChild(tr);
+      });
+
+      if (container) container.hidden = false;
+    } catch (error) {
+      globalThis.helpers.handleError("Failed to load largest items:", error);
+      if (empty) empty.hidden = false;
+    } finally {
+      if (loading) loading.hidden = true;
+    }
+  }
+
+  loadLargestItems();
+
+  document.addEventListener("syncComplete", () => {
+    loadLargestItems();
+  });
+})();

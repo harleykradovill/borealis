@@ -217,7 +217,31 @@
         </div>
 
         <div class="row-4">
-          <section class="storage-table-section"></section>
+          <section class="storage-table-section">
+            <div class="storage-table-container">
+              <h2>Largest Media Items</h2>
+              <div id="largest-items-loading" class="skeleton">
+                <div class="wrapper"><div></div></div>
+              </div>
+              <div id="largest-items-table-wrapper" hidden>
+                <table id="largest-items-table" class="table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Library</th>
+                      <th>Plays</th>
+                      <th class="align-right">Size</th>
+                      <th class="align-right">Date Added</th>
+                    </tr>
+                  </thead>
+                  <tbody id="largest-items-tbody"></tbody>
+                </table>
+              </div>
+              <div id="largest-items-empty" class="settings-placeholder" hidden>
+                <p>No media items found.</p>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
     </div>
