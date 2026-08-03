@@ -329,7 +329,7 @@ body {
   font-size: var(--font-size-base);
 }
 
-.form-hint {
+.form-field .form-hint {
   font-size: var(--font-size-sm);
   color: var(--text-muted);
 }

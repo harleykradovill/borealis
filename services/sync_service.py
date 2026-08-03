@@ -664,7 +664,7 @@ class SyncService:
 
             self._invoke_sync_callbacks(result)
 
-            logging.info("[INFO] %s Sync Complete", label)
+            logging.info("[INFO] %s Complete", label)
             return result
 
         except Exception:
