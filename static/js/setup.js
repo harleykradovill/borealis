@@ -15,6 +15,7 @@
   let availableLibraries = [];
 
   const pageElements = {
+    0: document.querySelector('.setup-page[data-page="0"]'),
     1: document.querySelector('.setup-page[data-page="1"]'),
     2: document.querySelector('.setup-page[data-page="2"]'),
     3: document.querySelector('.setup-page[data-page="3"]'),
@@ -31,6 +32,7 @@
   };
 
   const buttons = {
+    onboardingStart: document.getElementById("onboarding-start"),
     page1Next: document.getElementById("page1-next"),
     page2Prev: document.getElementById("page2-prev"),
     page2Next: document.getElementById("page2-next"),
@@ -196,6 +198,12 @@
       globalThis.helpers.handleError("Failed to load libraries", error);
       if (librariesEmpty) librariesEmpty.hidden = false;
     }
+  }
+
+  if (buttons.onboardingStart) {
+    buttons.onboardingStart.addEventListener("click", () => {
+      showPage(1);
+    });
   }
 
   if (buttons.page1Next) {
