@@ -131,7 +131,7 @@ class StatisticsBuilder:
                 StatisticsBuilder.top_items_by_user(session, limit=5)
             ),
             SECTION_LARGEST_ITEMS: StatisticsBuilder.top_largest_items(
-                session, limit=10
+                session, limit=8
             ),
         }
 
@@ -595,7 +595,7 @@ class StatisticsBuilder:
         return out
 
     @staticmethod
-    def top_largest_items(session: Session, limit: int = 10) -> List[Dict[str, Any]]:
+    def top_largest_items(session: Session, limit: int = 8) -> List[Dict[str, Any]]:
         """
         Return items ordered by size descending with library name and play count.
 

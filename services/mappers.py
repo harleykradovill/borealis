@@ -211,7 +211,7 @@ def map_item(
                     codec = _clean_str(stream.get("Codec"))
                     channels = stream.get("Channels")
                     if codec and channels:
-                        audio_codec = f"{codec}{channels}.0"
+                        audio_codec = f"{codec} {channels}.0"
                     elif codec:
                         audio_codec = codec
 
