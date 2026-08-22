@@ -7,7 +7,7 @@
 
 .setup-wizard {
   max-width: 600px;
-  margin: 4rem auto;
+  margin: 6rem auto;
   padding: 0.75rem;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -33,6 +33,24 @@
   height: 100px;
   margin: auto;
   display: block;
+}
+
+.onboarding-btn {
+  appearance: none;
+  border: none;
+  border-radius: var(--border-small);
+  background: var(--accent);
+  color: var(--black);
+  padding: 0.5rem 0.9rem;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--transition-all);
+  width: 100%;
+}
+
+.onboarding-btn:hover {
+  background: var(--highlight);
 }
 
 /* ===== */
@@ -92,6 +110,17 @@
   background: var(--white);
 }
 
+/* ==================== */
+/* Page 0 - Onboarding */
+/* ==================== */
+.onboarding-title {
+  margin-top: 1rem;
+  display: block;
+  text-align: center;
+  color: var(--text);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+}
 /* ==================== */
 /* Page 3 - Server Info */
 /* ==================== */
