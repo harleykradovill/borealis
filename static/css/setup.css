@@ -1,8 +1,12 @@
 /* =============== */
 /* Setup Container */
 /* =============== */
+.setup-content {
+  max-width: none;
+}
+
 .setup-wizard {
-  max-width: 920px;
+  max-width: 600px;
   margin: 4rem auto;
   padding: 0.75rem;
   background: var(--bg);
@@ -22,6 +26,13 @@
   color: var(--text);
   font-size: var(--font-size-lg);
   font-weight: 600;
+}
+
+.setup-icon {
+  width: 100px;
+  height: 100px;
+  margin: auto;
+  display: block;
 }
 
 /* ===== */
