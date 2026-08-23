@@ -10,9 +10,73 @@
     serverVersion: "",
   };
 
-  let currentPage = 1;
+  let currentPage = 0;
   let testConnectionOk = false;
   let availableLibraries = [];
+
+  const STORAGE_KEY = "borealis.setupState";
+
+  /**
+   * Persist the current wizard state to local storage so it survives refreshes.
+   * @returns {void}
+   */
+  function persistSetup() {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ ...state, currentPage, testConnectionOk }),
+      );
+    } catch (error) {
+      globalThis.helpers.handleError("Failed to save setup progress", error);
+    }
+  }
+
+  /**
+   * Restore a previously saved wizard state from local storage.
+   * @returns {void}
+   */
+  function restoreSetup() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      Object.assign(state, saved);
+      if (typeof saved.currentPage === "number") currentPage = saved.currentPage;
+      if (typeof saved.testConnectionOk === "boolean") {
+        testConnectionOk = saved.testConnectionOk;
+      }
+      if (state.jfHost && state.jfPort && state.jfApiKey) {
+        testConnectionOk = true;
+      }
+    } catch (error) {
+      globalThis.helpers.handleError("Failed to restore setup progress", error);
+    }
+  }
+
+  /**
+   * Clear the persisted wizard state once setup has completed.
+   * @returns {void}
+   */
+  function clearSetup() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      globalThis.helpers.handleError("Failed to clear setup progress", error);
+    }
+  }
+
+  /**
+   * Reflect the current page in the address bar as a fragment.
+   * @param {number|string} pageNum Page identifier currently shown
+   * @returns {void}
+   */
+  function updateFragment(pageNum) {
+    if (typeof pageNum === "number" && pageNum > 0) {
+      history.replaceState(null, "", `#${pageNum}`);
+    } else {
+      history.replaceState(null, "", location.pathname);
+    }
+  }
 
   const pageElements = {
     0: document.querySelector('.setup-page[data-page="0"]'),
@@ -84,6 +148,8 @@
     }
 
     updateProgressIndicator();
+    updateFragment(pageNum);
+    persistSetup();
     window.scrollTo(0, 0);
   }
 
@@ -260,6 +326,7 @@
         state.serverVersion = result.server_version || "";
         globalThis.Toast.showToast("Connection successful");
         updatePage2NextButton();
+        persistSetup();
       } else {
         testConnectionOk = false;
         const msg = result?.message || `Failed (status: ${result?.status ?? "n/a"})`;
@@ -325,6 +392,7 @@
         }
 
         globalThis.Toast.showToast("Settings saved");
+        clearSetup();
         showPage("sync");
 
         const syncText = document.getElementById("jf-first-sync-text");
@@ -370,5 +438,12 @@
     });
   }
 
+  restoreSetup();
   loadPage1();
+  loadPage2();
+  if (currentPage === 3) {
+    loadPage3().then(() => showPage(currentPage));
+  } else {
+    showPage(currentPage);
+  }
 })();
