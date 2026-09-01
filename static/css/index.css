@@ -542,7 +542,8 @@
 
 .resolutions-section,
 .video-codecs-section,
-.audio-codecs-section {
+.audio-codecs-section,
+.audio-channels-section {
   flex: 1 1 0;
   min-width: 0;
   border: 1px solid var(--border);
@@ -552,7 +553,8 @@
 
 .resolutions-section h2,
 .video-codecs-section h2,
-.audio-codecs-section h2 {
+.audio-codecs-section h2,
+.audio-channels-section h2 {
   margin: 0 0 0.75rem 0;
   color: var(--text);
   font-size: var(--font-size-lg);
