@@ -573,7 +573,8 @@
 
 #resolutions-loading .wrapper > div,
 #video-codecs-loading .wrapper > div,
-#audio-codecs-loading .wrapper > div {
+#audio-codecs-loading .wrapper > div,
+#audio-channels-loading .wrapper > div {
   height: 250px;
   border-radius: var(--border-element);
 }

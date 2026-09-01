@@ -1327,6 +1327,91 @@ document.addEventListener("DOMContentLoaded", () => {
 })();
 
 (function () {
+  const audioChannelsCanvas = document.getElementById("audio-channels-chart");
+  const audioChannelsLoading = document.getElementById("audio-channels-loading");
+  if (!audioChannelsCanvas) return;
+
+  async function loadAudioChannels() {
+    try {
+      if (audioChannelsLoading) audioChannelsLoading.hidden = false;
+      audioChannelsCanvas.style.display = "none";
+
+      const resp = await fetch("/api/analytics/stats/dashboard");
+      if (!resp.ok) return;
+      const payload = await resp.json();
+      if (!payload?.ok) return;
+
+      const dataArray = payload.data?.sections?.audio_channels;
+      if (!Array.isArray(dataArray) || !dataArray.length) return;
+
+      const labels = dataArray.map((r) => r?.audio_channels || "");
+      const values = dataArray.map((r) => Number(r?.count || 0));
+      const palette = globalThis.helpers.getPalette(values.length, true);
+
+      const ctx = audioChannelsCanvas.getContext("2d");
+      const config = {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              data: values,
+              backgroundColor: palette.slice(0, values.length),
+              borderRadius: 100,
+              barThickness: 18,
+            },
+          ],
+        },
+        options: {
+          indexAxis: "y",
+          animation: { duration: 200 },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: { label: (ctxArg) => `Items: ${ctxArg.raw}` },
+            },
+          },
+          scales: {
+            x: {
+              type: "logarithmic",
+              display: true,
+              title: { display: false },
+              ticks: {
+                color: "#b3b3b3",
+                padding: 6,
+                autoSkip: true,
+                maxTicksLimit: 6,
+                callback: (value) => (Number.isInteger(value) ? value : null),
+              },
+              grid: { display: false },
+              min: 0.5,
+            },
+            y: {
+              display: true,
+              title: { display: false },
+              ticks: { color: "#b3b3b3" },
+              grid: { display: false },
+            },
+          },
+          maintainAspectRatio: false,
+          responsive: true,
+        },
+      };
+
+      if (globalThis.__audioChannelsChart) {
+        globalThis.__audioChannelsChart.destroy();
+      }
+      globalThis.__audioChannelsChart = new Chart(ctx, config);
+      audioChannelsCanvas.style.display = "";
+    } finally {
+      if (audioChannelsLoading) audioChannelsLoading.hidden = true;
+    }
+  }
+
+  loadAudioChannels();
+})();
+
+(function () {
   const genresCanvas = document.getElementById("genres-chart");
   const genresCard = document.querySelector(".genres-card");
   const genresLoading = document.getElementById("genres-loading");

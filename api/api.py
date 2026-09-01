@@ -180,6 +180,7 @@ def create_api_blueprint(*, repo, sync, jf):
                 "resolutions",
                 "video_codecs",
                 "audio_codecs",
+                "audio_channels",
                 "most_popular_genres",
                 "largest_items",
             ]
