@@ -26,6 +26,7 @@ SECTION_RECENTLY_WATCHED = "recently_watched"
 SECTION_RESOLUTIONS = "resolutions"
 SECTION_VIDEO_CODECS = "video_codecs"
 SECTION_AUDIO_CODECS = "audio_codecs"
+SECTION_AUDIO_CHANNELS = "audio_channels"
 SECTION_MOST_POPULAR_GENRES = "most_popular_genres"
 SECTION_TOP_LIBRARIES_BY_USER = "top_libraries_by_user"
 SECTION_TOP_ITEMS_BY_USER = "top_items_by_user"
@@ -121,6 +122,7 @@ class StatisticsBuilder:
             SECTION_RESOLUTIONS: StatisticsBuilder.resolutions(session, limit=8),
             SECTION_VIDEO_CODECS: StatisticsBuilder.video_codecs(session, limit=8),
             SECTION_AUDIO_CODECS: StatisticsBuilder.audio_codecs(session, limit=8),
+            SECTION_AUDIO_CHANNELS: StatisticsBuilder.audio_channels(session, limit=8),
             SECTION_MOST_POPULAR_GENRES: StatisticsBuilder.most_popular_genres(
                 session, limit=5
             ),
@@ -376,6 +378,17 @@ class StatisticsBuilder:
         :returns: List of dictionaries with audio-codec name and count
         """
         return StatisticsBuilder._codec_stats(session, Item.audio_codec, limit)
+
+    @staticmethod
+    def audio_channels(session: Session, limit: int) -> List[Dict[str, Any]]:
+        """
+        Return audio channel statistics
+
+        :param session: Active SQLAlchemy session
+        :param limit: Maximum number of rows to return
+        :returns: List of dictionaries with audio-channel count and item count
+        """
+        return StatisticsBuilder._codec_stats(session, Item.audio_channels, limit)
 
     @staticmethod
     def video_codecs(session: Session, limit: int) -> List[Dict[str, Any]]:

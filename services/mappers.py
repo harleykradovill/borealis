@@ -194,6 +194,7 @@ def map_item(
 
     video_codec = None
     audio_codec = None
+    audio_channels = None
     resolution = None
     genres = jf_item.get("Genres", [])
     media_sources = jf_item.get("MediaSources", [])
@@ -208,12 +209,13 @@ def map_item(
                     if width and height:
                         resolution = f"{width}x{height}"
                 elif stream.get("Type") == "Audio" and not audio_codec:
-                    codec = _clean_str(stream.get("Codec"))
+                    audio_codec = _clean_str(stream.get("Codec"))
                     channels = stream.get("Channels")
-                    if codec and channels:
-                        audio_codec = f"{codec} {channels}.0"
-                    elif codec:
-                        audio_codec = codec
+                    if channels:
+                        try:
+                            audio_channels = int(channels)
+                        except (ValueError, TypeError):
+                            audio_channels = None
 
     return {
         "jellyfin_id": jf_id,
@@ -226,6 +228,7 @@ def map_item(
         "date_created": _parse_jf_date(jf_item.get("DateCreated")),
         "video_codec": video_codec,
         "audio_codec": audio_codec,
+        "audio_channels": audio_channels,
         "resolution": resolution,
         "genres": genres,
     }

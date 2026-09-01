@@ -364,6 +364,9 @@ class Repository:
                         )
                         item.video_codec = data.get("video_codec", item.video_codec)
                         item.audio_codec = data.get("audio_codec", item.audio_codec)
+                        item.audio_channels = data.get(
+                            "audio_channels", item.audio_channels
+                        )
                         item.resolution = data.get("resolution", item.resolution)
                         item.genres = (
                             json.dumps(data.get("genres"))
@@ -384,6 +387,7 @@ class Repository:
                                 date_created=data.get("date_created"),
                                 video_codec=data.get("video_codec"),
                                 audio_codec=data.get("audio_codec"),
+                                audio_channels=data.get("audio_channels"),
                                 resolution=data.get("resolution"),
                                 genres=(
                                     json.dumps(data.get("genres"))

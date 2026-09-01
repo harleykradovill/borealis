@@ -129,6 +129,7 @@ class Item(Base):
     date_created = Column(BigInteger, nullable=True)
     video_codec = Column(String(64), nullable=True)
     audio_codec = Column(String(64), nullable=True)
+    audio_channels = Column(Integer, nullable=True)
     resolution = Column(String(64), nullable=True)
     genres = Column(Text, nullable=True)
 
@@ -154,6 +155,7 @@ class Item(Base):
             "date_created": self.date_created,
             "video_codec": self.video_codec,
             "audio_codec": self.audio_codec,
+            "audio_channels": self.audio_channels,
             "resolution": self.resolution,
             "genres": json.loads(self.genres) if self.genres else None,
         }
